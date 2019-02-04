@@ -22,25 +22,18 @@ public class GrassrootsDocument {
 		/*
 		 * Add the common fields
 		 */
-		if (addText (json_doc, "so:name", 4.0f)) {
-			if (addText (json_doc, "so:description", 3.0f)) {
-				
-			} else {
-				throw getError (json_doc, "so:description");				
-			}
-			
-		} else {
-			throw getError (json_doc, "so:name");
-		}
+		addText (json_doc, "so:name", 4.0f);
+		addText (json_doc, "so:description", 3.0f);
 							
 	}
+
 	
 	public Document getDocument () {
 		return gd_document;
 	}
 
 	
-	public boolean addText (JSONObject json_doc, String key, float boost) {
+	public boolean addText (JSONObject json_doc, String key, float boost) throws IllegalArgumentException {
 		boolean success_flag = false;
 		String value = (String) json_doc.get (key);
 		
@@ -49,6 +42,10 @@ public class GrassrootsDocument {
 			addField (f, boost);
 			
 			success_flag = true;
+		} else {
+			String json = json_doc.toJSONString ();
+			
+			throw new IllegalArgumentException ("No " + key + " in " + json);
 		}
 
 		return success_flag;
@@ -60,11 +57,5 @@ public class GrassrootsDocument {
 		gd_document.add (new FloatDocValuesField (field.name() + GD_BOOST_SUFFIX, boost));
 	}
 
-	
-	protected IllegalArgumentException getError (JSONObject json_doc, String error_key) {
-		String json = json_doc.toJSONString ();
-		
-		return new IllegalArgumentException ("No " + error_key + " in " + json);
-	}
 }
 
