@@ -1,0 +1,42 @@
+<project name="grassroots-luecene" default="main" basedir=".">
+	<property name="current-version" value="0.1" />
+	<property name="classes.dir" value="classes" />
+	<property name="source.dir" value="src" />
+
+  <path id="class.path">
+    <fileset dir="lib">
+      <include name="**/*.jar" />
+    </fileset>
+  </path>
+
+	<target name="main" depends="jar"></target>
+	
+	<target name="clean">
+		<delete includeemptydirs="true">
+			<fileset dir="${classes.dir}" includes="**/*"/>
+		</delete>
+	</target>
+	
+	<target name="init">
+	    <mkdir dir="${classes.dir}"/>
+	</target>
+	
+	<target name="compile" depends="init">
+		<javac srcdir="${source.dir}" destdir="${classes.dir}" includes="**/*.java">
+      <classpath refid="class.path" />
+    </javac>
+	</target>
+	
+	<target name="jar" depends="compile">
+		<jar destfile="${ant.project.name}-${current-version}.jar"
+				basedir="${classes.dir}"
+				includes="**/*.class">
+			<manifest>
+				<attribute name="Bundle-Name" value="Grassroots.Lucene"/>
+				<attribute name="Bundle-Version" value="${current-version}"/>
+				<attribute name="Bundle-License" value="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<attribute name="Bundle-Description" value="A simple Java toolkit for JSON"/>
+			</manifest>
+		</jar>
+	</target>
+</project>
