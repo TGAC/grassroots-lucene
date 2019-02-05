@@ -1,12 +1,11 @@
 package uk.ac.earlham.grassroots.document;
 
-import org.apache.lucene.document.Document;
 import org.json.simple.JSONObject;
 
 public class FieldTrialDocument extends GrassrootsDocument {
 
 	public FieldTrialDocument (JSONObject json_doc) throws IllegalArgumentException {
-		super (obj);
+		super (json_doc);
 		
 		/*
 		 * Add the field trial-specific fields

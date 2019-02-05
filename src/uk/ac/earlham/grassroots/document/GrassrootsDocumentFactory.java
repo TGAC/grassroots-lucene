@@ -19,6 +19,13 @@ public class GrassrootsDocumentFactory {
 				case "FieldTrial":
 					doc = new FieldTrialDocument (json_doc);
 					break;
+					
+				case "Study": 
+					doc = new StudyDocument (json_doc);					
+					break;
+					
+				default:
+					break;
 			}	
 		}
 		

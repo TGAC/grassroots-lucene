@@ -1,6 +1,9 @@
 package uk.ac.earlham.grassroots.document;
 
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FloatDocValuesField;
@@ -98,5 +101,40 @@ public class GrassrootsDocument {
 		gd_document.add (new FloatDocValuesField (field.name() + GD_BOOST_SUFFIX, boost));
 	}
 
+	
+	public boolean addDateString (JSONObject json_doc, String key) throws IllegalArgumentException {
+		boolean success_flag = false;
+		String value = (String) json_doc.get (key);
+		
+		if (value != null) {
+			/*
+			 * Grassroots dates are as YYYY-MM-DD and for easy sorting let's store them as
+			 * YYYYMMDD. First let's check that is valid.
+			 */
+			try {
+				LocalDate d  = LocalDate.parse (value);
+			} catch (DateTimeParseException dtpe) {	
+				throw new IllegalArgumentException ("invalid date " + value + " in " + json_doc);
+			}
+			
+			StringBuilder sb = new StringBuilder ();
+			
+			sb.append (value.substring (0, 3));
+			sb.append (value.substring (5, 6));
+			sb.append (value.substring (8, 9));
+		
+			Field f = new StoredField (key, sb.toString ());
+			gd_document.add (f);
+			
+			success_flag = true;
+		} else {
+			String json = json_doc.toJSONString ();
+			
+			throw new IllegalArgumentException ("No " + key + " in " + json);
+		}
+
+		return success_flag;
+	}
+	
 }
 
