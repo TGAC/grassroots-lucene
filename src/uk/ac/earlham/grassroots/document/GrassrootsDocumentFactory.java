@@ -5,9 +5,22 @@ import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 
-
+/**
+ * A factory class for inspecting the JSON data sent by Grassroots and 
+ * creates the appropriate GrassrootsDocument.
+ * 
+ * @author billy
+ *
+ */
 public class GrassrootsDocumentFactory {
 
+	/**
+	 * Create the GrassrootsDocument for a given JSON object.
+	 * 
+	 * @param json_doc The JSON object created from the Grassroots JSON.
+	 * @return The appropriate GrassrootsDocument or <code>null<code> upon
+	 * error
+	 */
 	static public GrassrootsDocument createDocument (JSONObject json_doc) {
 		GrassrootsDocument doc = null;
 		Object obj_type = json_doc.get ("@type");
