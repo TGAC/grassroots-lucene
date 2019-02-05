@@ -87,7 +87,7 @@ public class Indexer {
 
 		final Path docDir = Paths.get(docsPath);
 		if (!Files.isReadable(docDir)) {
-			System.out.println("Document directory '" + docDir.toAbsolutePath()
+			System.err.println("Document directory '" + docDir.toAbsolutePath()
 					+ "' does not exist or is not readable, please check the path");
 			System.exit(1);
 		}
@@ -133,7 +133,7 @@ public class Indexer {
 			System.out.println(end.getTime() - start.getTime() + " total milliseconds");
 
 		} catch (IOException e) {
-			System.out.println(" caught a " + e.getClass() + "\n with message: " + e.getMessage());
+			System.err.println(" caught a " + e.getClass() + "\n with message: " + e.getMessage());
 		}
 	}
 
@@ -160,9 +160,9 @@ public class Indexer {
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 					try {
-						indexDoc(writer, file.toString(), attrs.lastModifiedTime().toMillis());
-					} catch (IOException ignore) {
-						// don't index files that can't be read.
+						indexDoc(writer, file.toString (), attrs.lastModifiedTime().toMillis());
+					} catch (IOException ioe) {
+						System.err.println ("Failed to index " + file.toString() + " exception: " + ioe.getMessage ());
 					}
 					return FileVisitResult.CONTINUE;
 				}
@@ -181,9 +181,9 @@ public class Indexer {
 		try {
 			obj = parser.parse (reader);
 		} catch (IOException ioe) {
-			
+			System.err.println ("Failed to load JSON from " + filename + " exception: " + ioe.getMessage ());
 		} catch (ParseException pe) {
-			
+			System.err.println ("Failed to parse JSON from " + filename + " exception: " + pe.getMessage ());			
 		}
 		
 		if (obj != null) {
