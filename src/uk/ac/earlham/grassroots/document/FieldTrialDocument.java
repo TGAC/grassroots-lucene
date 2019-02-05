@@ -14,4 +14,9 @@ public class FieldTrialDocument extends GrassrootsDocument {
 		
 	}
 
+	@Override
+	public String getUserFriendlyTypename() {
+		return "Field Trial";
+	}
+
 }

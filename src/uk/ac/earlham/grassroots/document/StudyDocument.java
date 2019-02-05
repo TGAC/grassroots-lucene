@@ -13,7 +13,12 @@ public class StudyDocument extends GrassrootsDocument {
 		addText (json_doc, "soil", 1.0f);
 		addNonIndexedString (json_doc, "parent_field_trial_id");	
 		addDateString (json_doc, "sowing_date");
-		addDateString (json_doc, "harvest_date");
+		addDateString (json_doc, "harvest_date");	
+	}
 	
+	
+	@Override
+	public String getUserFriendlyTypename() {
+		return "Study";
 	}
 }

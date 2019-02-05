@@ -10,6 +10,9 @@ import org.apache.lucene.document.FloatDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+
+import org.apache.lucene.facet.FacetField;
+
 import org.apache.lucene.index.IndexableField;
 
 import org.json.simple.JSONObject;
@@ -20,10 +23,11 @@ import org.json.simple.JSONObject;
  * 
  * @author billy
  */
-public class GrassrootsDocument {
+abstract public class GrassrootsDocument {
 	static private String GD_BOOST_SUFFIX = "_boost";
 	static private String GD_MONGO_ID = "_id";
-
+	static public String GD_DATATYPE = "type";
+	
 	protected Document gd_document;
 	
 	/**
@@ -38,9 +42,13 @@ public class GrassrootsDocument {
 		/*
 		 * Add the common fields
 		 */
-		addText (json_doc, "so:name", 4.0f);
+		addText (json_doc, getNameKey (), 4.0f);
 		addText (json_doc, "so:description", 3.0f);
 		addNonIndexedString (json_doc, GD_MONGO_ID);
+		
+		FacetField type_facet = new FacetField (GD_DATATYPE, getUserFriendlyTypename ());
+		gd_document.add (type_facet);
+		
 	}
 
 	
@@ -171,7 +179,7 @@ public class GrassrootsDocument {
 			 * YYYYMMDD. First let's check that is valid.
 			 */
 			try {
-				LocalDate d  = LocalDate.parse (value);
+				LocalDate.parse (value);
 			} catch (DateTimeParseException dtpe) {	
 				throw new IllegalArgumentException ("invalid date " + value + " in " + json_doc);
 			}
@@ -195,5 +203,11 @@ public class GrassrootsDocument {
 		return success_flag;
 	}
 	
+	
+	public String getNameKey () {
+		return "so:name";
+	}
+	
+	abstract public String getUserFriendlyTypename ();
 }
 
