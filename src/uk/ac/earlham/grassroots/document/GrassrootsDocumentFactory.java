@@ -37,6 +37,10 @@ public class GrassrootsDocumentFactory {
 					doc = new StudyDocument (json_doc);					
 					break;
 					
+				case "Address": 
+					doc = new AddressDocument (json_doc);					
+					break;
+					
 				default:
 					break;
 			}	

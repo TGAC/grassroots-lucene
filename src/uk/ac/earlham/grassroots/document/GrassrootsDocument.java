@@ -27,8 +27,14 @@ abstract public class GrassrootsDocument {
 	static private String GD_BOOST_SUFFIX = "_boost";
 	static private String GD_MONGO_ID = "_id";
 	static public String GD_DATATYPE = "type";
+	static public String GD_NAME = "name";
+	static public String GD_DESCRIPTION = "description";
+	static public String GD_DEFAULT_SEARCH_KEY = "default";
+
+	
 	
 	protected Document gd_document;
+	protected StringBuilder gd_default_field_buffer;
 	
 	/**
 	 * Create a new GrassrootsDocument
@@ -38,17 +44,39 @@ abstract public class GrassrootsDocument {
 	 */
 	public GrassrootsDocument (JSONObject json_doc) throws IllegalArgumentException {
 		gd_document = new Document ();
-		
-		/*
-		 * Add the common fields
-		 */
-		addText (json_doc, getNameKey (), 4.0f);
-		addText (json_doc, "so:description", 3.0f);
-		addNonIndexedString (json_doc, GD_MONGO_ID);
+		gd_default_field_buffer = new StringBuilder ();
 		
 		FacetField type_facet = new FacetField (GD_DATATYPE, getUserFriendlyTypename ());
 		gd_document.add (type_facet);
 		
+		if (!addFields (json_doc)) {
+			System.err.println ("Error adding fields for " + json_doc);
+			throw new IllegalArgumentException (json_doc.toJSONString ());
+		}
+		
+		if (gd_default_field_buffer.length () > 0) {
+			String s = gd_default_field_buffer.toString ();
+			TextField default_field = new TextField (GD_DEFAULT_SEARCH_KEY, s, Field.Store.YES);
+			gd_document.add (default_field);			
+		}
+	}
+
+	
+	protected boolean addFields (JSONObject json_doc) {
+		boolean success_flag = false;
+		
+		/*
+		 * Add the common fields
+		 */
+		addText (json_doc, "so:description", GD_DESCRIPTION, 3.0f);
+		
+		if (addText (json_doc, getNameKey (), GD_NAME, 5.0f)) {
+			if (addMongoId (json_doc, GD_MONGO_ID)) {
+				success_flag = true;
+			}			
+		}
+			
+		return success_flag;
 	}
 
 	
@@ -61,34 +89,64 @@ abstract public class GrassrootsDocument {
 		return gd_document;
 	}
 
+	
+	public boolean addMongoId (JSONObject json_doc, String key) {
+		boolean success_flag = false;
+		JSONObject id_obj = (JSONObject) json_doc.get (key);
+		
+		String oid = (String) id_obj.get ("$oid");
+		
+		if (oid != null) {
+			Field f = new StoredField (key, oid);
+			gd_document.add (f);
+			
+			success_flag = true;
+		}
+		
+		return success_flag;
+	}
 
+	
 	/**
 	 * Add a TextField to the Lucene document with a given boost value for search scoring.
 	 * 
 	 * @param json_doc The Grassroots JSON document to pull the data from.
 	 * @param key The key within the given Grassroots JSON document to get the value for.
 	 * @param boost The boost value that will be used for this field when searching.
-	 * @return <code>true</code> if the Field was added to the underlying Lucene document successfully, 
-	 * <code>false</code> otherwise.
+	 * @return The value that was added for the given input_key or <code>null</code> if it was not 
+	 * found in the given JSON document.
 	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the given key.
 	 */
 	public boolean addText (JSONObject json_doc, String key, float boost) throws IllegalArgumentException {
+		return addText (json_doc, key, key, boost);
+	}
+
+	
+	/**
+	 * Add a TextField to the Lucene document with a given boost value for search scoring.
+	 * 
+	 * @param json_doc The Grassroots JSON document to pull the data from.
+	 * @param key The key within the given Grassroots JSON document to get the value for.
+	 * @param boost The boost value that will be used for this field when searching.
+	 * @return The value that was added for the given input_key or <code>null</code> if it was not 
+	 * found in the given JSON document.
+	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the given key.
+	 */
+	public boolean addText (JSONObject json_doc, String input_key, String output_key, float boost) throws IllegalArgumentException {
 		boolean success_flag = false;
-		String value = (String) json_doc.get (key);
+		String value = (String) json_doc.get (input_key);
 		
 		if (value != null) {
-			Field f = new TextField (key, value, Field.Store.YES);
+			Field f = new TextField (output_key, value, Field.Store.YES);
 			addField (f, boost);
 			
+			addToDefaultBuffer (value);
 			success_flag = true;
-		} else {
-			String json = json_doc.toJSONString ();
-			
-			throw new IllegalArgumentException ("No " + key + " in " + json);
-		}
+		} 
 
 		return success_flag;
 	}
+
 
 	
 	/**
@@ -110,11 +168,7 @@ abstract public class GrassrootsDocument {
 			addField (f, boost);
 			
 			success_flag = true;
-		} else {
-			String json = json_doc.toJSONString ();
-			
-			throw new IllegalArgumentException ("No " + key + " in " + json);
-		}
+		} 
 
 		return success_flag;
 	}
@@ -137,12 +191,8 @@ abstract public class GrassrootsDocument {
 			gd_document.add (f);
 			
 			success_flag = true;
-		} else {
-			String json = json_doc.toJSONString ();
-			
-			throw new IllegalArgumentException ("No " + key + " in " + json);
-		}
-
+		} 
+		
 		return success_flag;
 	}
 	
@@ -159,6 +209,15 @@ abstract public class GrassrootsDocument {
 	}
 
 
+	protected void addToDefaultBuffer (String value) {
+		if (gd_default_field_buffer.length () > 0) {
+			gd_default_field_buffer.append (" ");				
+		}
+		
+		gd_default_field_buffer.append (value);
+	}
+
+	
 	/**
 	 * Add a YYYY-MM-DD date value to be stored, but not indexed, to the Lucene document.
 	 * 
@@ -194,11 +253,7 @@ abstract public class GrassrootsDocument {
 			gd_document.add (f);
 			
 			success_flag = true;
-		} else {
-			String json = json_doc.toJSONString ();
-			
-			throw new IllegalArgumentException ("No " + key + " in " + json);
-		}
+		} 
 
 		return success_flag;
 	}
@@ -207,7 +262,8 @@ abstract public class GrassrootsDocument {
 	public String getNameKey () {
 		return "so:name";
 	}
-	
+
+
 	abstract public String getUserFriendlyTypename ();
 }
 

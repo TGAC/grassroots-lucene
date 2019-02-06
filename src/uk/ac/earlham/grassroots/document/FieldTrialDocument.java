@@ -6,14 +6,26 @@ public class FieldTrialDocument extends GrassrootsDocument {
 
 	public FieldTrialDocument (JSONObject json_doc) throws IllegalArgumentException {
 		super (json_doc);
-		
-		/*
-		 * Add the field trial-specific fields
-		 */
-		addText (json_doc, "team", 3.0f);
-		
 	}
 
+	
+	protected boolean addFields (JSONObject json_doc) {
+		boolean success_flag = false;
+		
+		if (super.addFields (json_doc)) {
+			
+			/*
+			 * Add the field trial-specific fields
+			 */
+			if (addText (json_doc, "team", 3.0f)) {
+				success_flag = true;
+			}
+		}
+	
+		return success_flag;
+	}
+	
+	
 	@Override
 	public String getUserFriendlyTypename() {
 		return "Field Trial";

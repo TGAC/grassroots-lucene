@@ -39,4 +39,15 @@
 			</manifest>
 		</jar>
 	</target>
+	
+	
+	<target name="run-indexer" depends="jar">
+		<java classname="uk.ac.earlham.grassroots.app.Indexer">
+		  <arg value="-index ~/Desktop/lucene_test/index -data ~/Desktop/lucene_test/docs"/>
+		  <classpath>
+		    <pathelement path="${ant.project.name}-${current-version}.jar" />
+		  	<pathelement refid="class.path" />
+		  </classpath>
+		</java>
+	</target>
 </project>
