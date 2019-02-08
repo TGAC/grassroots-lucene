@@ -263,7 +263,6 @@ abstract public class GrassrootsDocument {
 		return "so:name";
 	}
 
-
 	abstract public String getUserFriendlyTypename ();
 }
 

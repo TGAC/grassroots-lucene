@@ -26,11 +26,16 @@ package uk.ac.earlham.grassroots.app;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.facet.DrillDownQuery;
+import org.apache.lucene.facet.DrillSideways;
+import org.apache.lucene.facet.DrillSideways.DrillSidewaysResult;
 import org.apache.lucene.facet.FacetResult;
 import org.apache.lucene.facet.Facets;
 import org.apache.lucene.facet.FacetsCollector;
@@ -40,6 +45,7 @@ import org.apache.lucene.facet.taxonomy.TaxonomyReader;
 import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -49,6 +55,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 
@@ -83,7 +90,7 @@ public class Searcher {
 		String tax_dirname = null;
 		String query_str = null;
 		int hits_per_page = 10;
-
+		
 		for (int i = 0; i < args.length; ++ i) {
 			if ("-index".equals (args [i])) {
 				index = args [++ i];
@@ -136,13 +143,29 @@ public class Searcher {
 		Query q = null;		
 		
 		StringBuilder sb = new StringBuilder ();
-		buildQuery (sb, GrassrootsDocument.GD_NAME, query_str, NAME_BOOST);
-		buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, query_str, DESCRIPTION_BOOST);
-		sb.append (" \"");
-		sb.append (query_str);
-		sb.append ("\"");
+		String [] query_parts = query_str.split ("\\s");
 		
-		System.out.println ("query: " + query_str);		
+		for (int i = 0; i < query_parts.length; ++ i) {
+			
+			if (sb.length () != 0) {
+				sb.append (' ');
+			}
+
+			if (query_parts [i].contains (":")) {
+				sb.append (" AND ");
+				sb.append (query_parts [i]);
+			} else {	
+				sb.append ("(");				
+				buildQuery (sb, GrassrootsDocument.GD_NAME, query_parts [i], NAME_BOOST);
+				buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, query_parts [i], DESCRIPTION_BOOST);
+				sb.append (" \"");
+				sb.append (query_parts [i]);
+				sb.append ("\")");				
+			}
+		}
+		
+		
+		System.out.println ("query: " + sb.toString ());		
 		
 		try {				
 			q = parser.parse (sb.toString ());
@@ -155,6 +178,7 @@ public class Searcher {
 			try {
 				doSearch (q, 100);
 				results = getFacetsOnly (q);
+				
 				success_flag = true;
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
@@ -167,10 +191,34 @@ public class Searcher {
 				while (itr.hasNext ()) {
 					FacetResult res = itr.next ();
 					
-					System.out.println (Integer.toString (i) + ": " + res.toString ());
-					++ i;
+					if (res != null) {
+						System.out.println (Integer.toString (i) + ": " + res.toString ());
+						++ i;
+					}
 				}
 			}
+			
+			try {
+				results = drillSideways (q, GrassrootsDocument.GD_DATATYPE, "Field Trial");
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+				results = null;
+			}
+			
+			if (results != null) {
+				Iterator <FacetResult> itr = results.iterator ();
+				int i = 0;
+				
+				while (itr.hasNext ()) {
+					FacetResult res = itr.next ();
+					
+					if (res != null) {
+						System.out.println (Integer.toString (i) + ": " + res.toString ());
+						++ i;
+					}
+				}
+			}
+		
 		}
 		
 		return success_flag;
@@ -205,6 +253,48 @@ public class Searcher {
 		return results;
 	}
 
+
+	  /** User drills down on 'Publish Date/2010', and we
+	   *  return facets for both 'Publish Date' and 'Author',
+	   *  using DrillSideways. */
+	  private List <FacetResult> drillSideways (Query base_query, String facet_name, String facet_value) throws IOException {
+	    IndexSearcher searcher = new IndexSearcher(se_index_reader);
+		FacetsCollector fc = new FacetsCollector ();
+
+		
+	    // Passing no baseQuery means we drill down on all
+	    // documents ("browse only"):
+		DrillDownQuery q = null;
+	    if (base_query != null) {
+	    	q = new DrillDownQuery (se_config, base_query);
+	    } else {
+	    	q = new DrillDownQuery (se_config);    	
+	    }
+	    
+	    // Now user drills down on Publish Date/2010:
+	    q.add (facet_name, facet_value);
+		
+	    DrillSideways ds = new DrillSideways(searcher, se_config, se_taxonomy_reader);
+	    DrillSidewaysResult result = ds.search(q, 10);
+
+	    // Retrieve results
+	    List<FacetResult> facets = result.facets.getAllDims(10);
+
+	    
+	    // Retrieve results
+		ScoreDoc [] hits = result.hits.scoreDocs;
+		int num_total_hits = Math.toIntExact (result.hits.totalHits);
+
+		
+		System.out.println ("***** drillSideways 1");
+		for (int i = 0; i < num_total_hits; ++ i) {
+			Document doc = searcher.doc (hits [i].doc);
+			System.out.println ("doc [" + i + "]: " + doc);
+		}
+	    
+	    
+	    return null;
+	  }
 	
 	/**
 	 * This demonstrates a typical paging search scenario, where the search engine presents 
@@ -228,4 +318,28 @@ public class Searcher {
 			System.out.println ("doc [" + i + "]: " + doc);
 		}
 	}
+	
+	
+	
+
+	public JSONObject getLuceneDocumentAsProperties (Document doc) {
+		List <IndexableField> fields = doc.getFields ();
+		final int num_fields = fields.size ();
+		Map <String, String> done_fields = new HashMap <String, String> ();
+		
+		for (int i = 0; i < num_fields; ++ i) {
+			String field_name = fields.get (i).name ();
+
+			if (done_fields.containsKey (field_name)) {
+				IndexableField [] named_fields = doc.getFields (field_name);
+				
+				
+				
+				done_fields.put (field_name, field_name);
+			}
+		}
+		
+		return null;
+	}
+
 }
