@@ -86,12 +86,16 @@ public class Searcher {
 			System.exit(0);
 		}
 
-		String index = "index";
+		String index = null;
+		String output_filename = null;
 		String tax_dirname = null;
 		String query_str = null;
 		int hits_per_page = 10;
 		String facet_name = null;
 		String facet_value = null;
+		String search_type = "default";
+		
+		
 		
 		for (int i = 0; i < args.length; ++ i) {
 			if ("-index".equals (args [i])) {
@@ -104,6 +108,10 @@ public class Searcher {
 				facet_name = args [++ i];
 			} else if ("-facet_value".equals (args [i])) {
 				facet_value = args [++ i];
+			} else if ("-out".equals (args [i])) {
+				output_filename = args [++ i];
+			} else if ("-search_type".equals (args [i])) {
+				search_type = args [++ i];
 			} else if ("-paging".equals(args[i])) {
 				hits_per_page = Integer.parseInt (args [++ i]);
 
@@ -118,7 +126,33 @@ public class Searcher {
 			Searcher searcher = new Searcher (index, tax_dirname);			
 
 			if (query_str != null) {
-				searcher.search (query_str, facet_name, facet_value);
+				
+				Query q = searcher.buildGrassrootsQuery (query_str);
+				
+				if (q != null) {
+					switch (search_type) {
+						case "default": {
+							List <Document> docs = searcher.standardSearch (q, hits_per_page);
+						}
+						break;
+						
+						case "facets-only": {
+							List <FacetResult> results = searcher.facetsOnlySearch (q, facet_name, hits_per_page);
+						}
+						break;
+
+						case "drill-down": {
+							FacetResult result = searcher.drillDown (q, facet_name, facet_value, facet_name);
+						}
+						break;
+
+						case "drill-sideways": {
+							List <FacetResult> results = searcher.drillSideways (q, facet_name, facet_value);
+						}
+						break;
+					}
+				}
+				
 			}
 		}
 		
@@ -138,15 +172,13 @@ public class Searcher {
 		sb.append (boost);		
 	}
 	
-	public boolean search (String query_str, String facet_name, String facet_value) {
+	
+	public Query buildGrassrootsQuery (String query_str) {
 		final float NAME_BOOST = 5.0f;
 		final float DESCRIPTION_BOOST = 3.0f;
-		
-		boolean success_flag = false;
-		List <FacetResult> results = null;
+		Query q = null;		
 		StandardAnalyzer analyzer = new StandardAnalyzer ();
 		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, analyzer);
-		Query q = null;		
 		
 		StringBuilder sb = new StringBuilder ();
 		String [] query_parts = query_str.split ("\\s");
@@ -176,10 +208,53 @@ public class Searcher {
 		try {				
 			q = parser.parse (sb.toString ());
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println ("Failed to parse query \"" + q + "\", exception: "+ e);
 		}
 		
+		return q;
+	}
+	
+	
+	public List <FacetResult> drillSidewaysSearch (String query_str, String facet_name, String facet_value) {
+		Query q = buildGrassrootsQuery (query_str);
+		List <FacetResult> results = null;
+			
+		if (q != null) {
+			
+			try {
+				results = drillSideways (q, facet_name, facet_value);
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+				results = null;
+			}
+			
+		}
+		
+		return results;
+	}
+
+	
+	public FacetResult drillDownSearch (String query_str, String facet_name, String facet_value) {
+		Query q = buildGrassrootsQuery (query_str);
+		FacetResult facet_result = null;
+		
+		try {
+			facet_result = drillDown (q, facet_name, facet_value, facet_name);
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+		
+		if (facet_result != null) {
+			System.out.println (facet_result.toString ());
+		}
+		
+		return facet_result;
+	}
+	
+	/*
+	public boolean search (String query_str, String facet_name, String facet_value) {
+		boolean success_flag = false;
+		List <FacetResult> results = null;
 		if (q != null) {
 			try {
 				doSearch (q, 100);
@@ -206,25 +281,6 @@ public class Searcher {
 				}
 			}
 			
-			try {
-				results = drillSideways (q, facet_name, facet_value);
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-				results = null;
-			}
-			
-			if (results != null) {
-				Iterator <FacetResult> itr = results.iterator ();
-				int i = 0;
-				
-				while (itr.hasNext ()) {
-					FacetResult res = itr.next ();
-					
-					if (res != null) {
-						System.out.println (Integer.toString (i) + ": " + res.toString ());
-						++ i;
-					}
-				}
 			}
 		
 			FacetResult facet_result = null;
@@ -244,12 +300,12 @@ public class Searcher {
 		
 		return success_flag;
 	}
-
+*/
 	
 	
 	  
 	/** User runs a query and counts facets only without collecting the matching documents.*/
-	private List <FacetResult> getFacetsOnly (Query q, String facet_name) {
+	private List <FacetResult> facetsOnlySearch (Query q, String facet_name, int max_num_facets) {
 		IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector();
 
@@ -265,10 +321,10 @@ public class Searcher {
 		List <FacetResult> results = new ArrayList <FacetResult> ();
 
 		try {
-			FacetsCollector.search (searcher, q, 10, fc);
+			FacetsCollector.search (searcher, q, max_num_facets, fc);
 			// Count both "Publish Date" and "Author" dimensions
 			Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
-			results.add (facets.getTopChildren (10, facet_name));
+			results.add (facets.getTopChildren (max_num_facets, facet_name));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -377,7 +433,8 @@ public class Searcher {
 	 * is executed another time and all hits are collected.
 	 * 
 	 */
-	public void doSearch (Query query, int max_num_hits) throws IOException {
+	public List <Document> standardSearch (Query query, int max_num_hits) throws IOException {
+		List <Document> docs = new ArrayList <Document> ();
 		IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		TopDocs results = searcher.search (query, max_num_hits);
 		ScoreDoc [] hits = results.scoreDocs;
@@ -386,8 +443,10 @@ public class Searcher {
 
 		for (int i = 0; i < num_total_hits; ++ i) {
 			Document doc = searcher.doc (hits [i].doc);
-			System.out.println ("doc [" + i + "]: " + getLuceneDocumentAsProperties (doc));
+			docs.add (doc);
 		}
+		
+		return docs;
 	}
 	
 	
