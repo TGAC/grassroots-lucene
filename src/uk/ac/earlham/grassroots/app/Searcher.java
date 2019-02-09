@@ -90,6 +90,8 @@ public class Searcher {
 		String tax_dirname = null;
 		String query_str = null;
 		int hits_per_page = 10;
+		String facet_name = null;
+		String facet_value = null;
 		
 		for (int i = 0; i < args.length; ++ i) {
 			if ("-index".equals (args [i])) {
@@ -98,6 +100,10 @@ public class Searcher {
 				tax_dirname = args [++ i];
 			} else if ("-query".equals (args [i])) {
 				query_str = args [++ i];
+			} else if ("-facet_name".equals (args [i])) {
+				facet_name = args [++ i];
+			} else if ("-facet_value".equals (args [i])) {
+				facet_value = args [++ i];
 			} else if ("-paging".equals(args[i])) {
 				hits_per_page = Integer.parseInt (args [++ i]);
 
@@ -112,7 +118,7 @@ public class Searcher {
 			Searcher searcher = new Searcher (index, tax_dirname);			
 
 			if (query_str != null) {
-				searcher.search (query_str);
+				searcher.search (query_str, facet_name, facet_value);
 			}
 		}
 		
@@ -132,7 +138,7 @@ public class Searcher {
 		sb.append (boost);		
 	}
 	
-	public boolean search (String query_str) {
+	public boolean search (String query_str, String facet_name, String facet_value) {
 		final float NAME_BOOST = 5.0f;
 		final float DESCRIPTION_BOOST = 3.0f;
 		
@@ -177,8 +183,10 @@ public class Searcher {
 		if (q != null) {
 			try {
 				doSearch (q, 100);
-				results = getFacetsOnly (q);
 				
+				if (facet_name != null) {
+					results = getFacetsOnly (q, facet_name);
+				}
 				success_flag = true;
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
@@ -199,7 +207,7 @@ public class Searcher {
 			}
 			
 			try {
-				results = drillSideways (q, GrassrootsDocument.GD_DATATYPE, "Field Trial");
+				results = drillSideways (q, facet_name, facet_value);
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 				results = null;
@@ -219,6 +227,19 @@ public class Searcher {
 				}
 			}
 		
+			FacetResult facet_result = null;
+			try {
+				facet_result = drillDown (q, facet_name, facet_value, facet_name);
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+				results = null;
+			}
+			
+			if (facet_result != null) {
+				System.out.println (facet_result.toString ());
+			}
+			
+			
 		}
 		
 		return success_flag;
@@ -228,7 +249,7 @@ public class Searcher {
 	
 	  
 	/** User runs a query and counts facets only without collecting the matching documents.*/
-	private List <FacetResult> getFacetsOnly (Query q) throws IOException {
+	private List <FacetResult> getFacetsOnly (Query q, String facet_name) {
 		IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector();
 
@@ -240,15 +261,19 @@ public class Searcher {
 			q = new MatchAllDocsQuery ();
 		}
 
-		FacetsCollector.search (searcher, q, 10, fc);
-
-
 		// Retrieve results
 		List <FacetResult> results = new ArrayList <FacetResult> ();
 
-		// Count both "Publish Date" and "Author" dimensions
-		Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
-		results.add (facets.getTopChildren (10, GrassrootsDocument.GD_DATATYPE));
+		try {
+			FacetsCollector.search (searcher, q, 10, fc);
+			// Count both "Publish Date" and "Author" dimensions
+			Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
+			results.add (facets.getTopChildren (10, facet_name));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 
 		return results;
 	}
@@ -289,13 +314,59 @@ public class Searcher {
 		System.out.println ("***** drillSideways 1");
 		for (int i = 0; i < num_total_hits; ++ i) {
 			Document doc = searcher.doc (hits [i].doc);
-			System.out.println ("doc [" + i + "]: " + doc);
+			System.out.println ("doc [" + i + "]:\n" + getLuceneDocumentAsProperties (doc));
 		}
 	    
 	    
-	    return null;
+	    return facets;
 	  }
 	
+	  
+	  
+	  /** User drills down on 'Publish Date/2010', and we
+	   *  return facets for 'Author' */
+	  private FacetResult drillDown (Query base_query, String facet_name, String facet_value, String facet_to_return) throws IOException {
+	    IndexSearcher searcher = new IndexSearcher (se_index_reader);
+		FacetsCollector fc = new FacetsCollector ();
+
+		
+	    // Passing no baseQuery means we drill down on all
+	    // documents ("browse only"):
+		DrillDownQuery q = null;
+	    if (base_query != null) {
+	    	q = new DrillDownQuery (se_config, base_query);
+	    } else {
+	    	q = new DrillDownQuery (se_config);    	
+	    }
+	    
+	    // Now user drills down on Publish Date/2010:
+	    q.add (facet_name, facet_value);
+		
+	    
+	    TopDocs resultDocs = FacetsCollector.search (searcher, q, 10, fc);
+
+
+	    // Retrieve results
+	    Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
+	    FacetResult result = facets.getTopChildren (10, facet_to_return);
+
+	    
+	    // Retrieve results
+		ScoreDoc [] hits = resultDocs.scoreDocs;
+		int num_total_hits = Math.toIntExact (resultDocs.totalHits);
+
+		
+		System.out.println ("***** drillDown 1");
+		for (int i = 0; i < num_total_hits; ++ i) {
+			Document doc = searcher.doc (hits [i].doc);
+			System.out.println ("doc [" + i + "]:\n" + getLuceneDocumentAsProperties (doc));
+		}
+	    
+	    return result;
+	  }
+	
+	  
+	  
 	/**
 	 * This demonstrates a typical paging search scenario, where the search engine presents 
 	 * pages of size n to the user. The user can then go to the next page if interested in
@@ -315,31 +386,27 @@ public class Searcher {
 
 		for (int i = 0; i < num_total_hits; ++ i) {
 			Document doc = searcher.doc (hits [i].doc);
-			System.out.println ("doc [" + i + "]: " + doc);
+			System.out.println ("doc [" + i + "]: " + getLuceneDocumentAsProperties (doc));
 		}
 	}
 	
 	
 	
 
-	public JSONObject getLuceneDocumentAsProperties (Document doc) {
+	public String getLuceneDocumentAsProperties (Document doc) {
+		StringBuilder sb = new StringBuilder (); 
 		List <IndexableField> fields = doc.getFields ();
 		final int num_fields = fields.size ();
-		Map <String, String> done_fields = new HashMap <String, String> ();
 		
 		for (int i = 0; i < num_fields; ++ i) {
-			String field_name = fields.get (i).name ();
-
-			if (done_fields.containsKey (field_name)) {
-				IndexableField [] named_fields = doc.getFields (field_name);
-				
-				
-				
-				done_fields.put (field_name, field_name);
-			}
+			IndexableField field = fields.get (i);
+			sb.append (field.name ());
+			sb.append (" = ");
+			sb.append (field.stringValue ());	
+			sb.append ('\n');
 		}
 		
-		return null;
+		return sb.toString ();
 	}
 
 }
