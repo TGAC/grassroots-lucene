@@ -23,7 +23,10 @@
 package uk.ac.earlham.grassroots.app;
 
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,7 +81,7 @@ public class Searcher {
 	}
 
 	/** Simple command-line based search demo. */
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args)  {
 		String usage =
 				"Usage:\tjava uk.ac.earlham.grassroots.app.Searcher [-index dir] [-field f] [-repeat n] [-queries file] [-query string] [-raw] [-paging hitsPerPage]\n\nSee http://lucene.apache.org/core/4_1_0/demo/ for details.";
 		if (args.length > 0 && ("-h".equals(args[0]) || "-help".equals(args[0]))) {
@@ -123,37 +126,117 @@ public class Searcher {
 		}
 
 		if (index != null) {
-			Searcher searcher = new Searcher (index, tax_dirname);			
+			Searcher searcher = null;
+			
+			try {
+				searcher = new Searcher (index, tax_dirname);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}			
 
-			if (query_str != null) {
-				
-				Query q = searcher.buildGrassrootsQuery (query_str);
-				
-				if (q != null) {
-					switch (search_type) {
-						case "default": {
-							List <Document> docs = searcher.standardSearch (q, hits_per_page);
-						}
-						break;
+			if (searcher != null) {
+				if (query_str != null) {
+					
+					Query q = searcher.buildGrassrootsQuery (query_str);
+					
+					if (q != null) {
+						PrintStream out_stm = System.out;
 						
-						case "facets-only": {
-							List <FacetResult> results = searcher.facetsOnlySearch (q, facet_name, hits_per_page);
+						if (output_filename != null) {
+							PrintStream stm = null;
+							
+							try {
+								stm = new PrintStream (new FileOutputStream (output_filename));
+								out_stm = stm;
+							} catch (FileNotFoundException e) {
+								System.err.println ("Failed to open output stream for " + output_filename + " e: " + e);
+							}
+							
 						}
-						break;
+						
+						switch (search_type) {
+							case "default": {
+								List <Document> docs = null;
 
-						case "drill-down": {
-							FacetResult result = searcher.drillDown (q, facet_name, facet_value, facet_name);
-						}
-						break;
+								try {
+									docs = searcher.standardSearch (q, hits_per_page);
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								
+								if (docs != null) {
+									int i = 0;
+									
+									for (Document doc : docs) {
+										out_stm.println ("doc [" + i + "]:\n" + searcher.getLuceneDocumentAsProperties (doc));
+										++ i;
+									}
+								    
+								}
+							}
+							break;
+							
+							case "facets-only": {
+								List <FacetResult> results = searcher.facetsOnlySearch (q, facet_name, hits_per_page);
+								
+								if (results != null) {
+									int i = 0;
+									
+									for (FacetResult facet : results) {
+										out_stm.println (i + ": " + facet.toString ());
+										++ i;
+									}
+								}
+							}
+							break;
 
-						case "drill-sideways": {
-							List <FacetResult> results = searcher.drillSideways (q, facet_name, facet_value);
+							case "drill-down": {
+								FacetResult result = null;
+								
+								try {
+									result = searcher.drillDown (q, facet_name, facet_value, facet_name);
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+
+								if (result != null) {
+									out_stm.println ("facet: " + result.toString ());								
+								}
+							}
+							break;
+
+							case "drill-sideways": {
+								List <FacetResult> results = null;
+
+								try {
+									results = searcher.drillSideways (q, facet_name, facet_value);
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+
+								
+								if (results != null) {
+									int i = 0;
+									
+									for (FacetResult facet : results) {
+										out_stm.println (i + ": " + facet.toString ());
+										++ i;
+									}
+								}
+							}
+							
+							break;
 						}
-						break;
 					}
-				}
+					
+				}				
 				
 			}
+
 		}
 		
 	}
