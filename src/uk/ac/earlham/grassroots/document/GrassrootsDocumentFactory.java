@@ -30,15 +30,15 @@ public class GrassrootsDocumentFactory {
 			String datatype = obj_type.toString ();
 			
 			switch (datatype) {
-				case "FieldTrial":
+				case "Grassroots:FieldTrial":
 					doc = new FieldTrialDocument (json_doc);
 					break;
 					
-				case "Study": 
+				case "Grassroots:Study": 
 					doc = new StudyDocument (json_doc);					
 					break;
 					
-				case "Address": 
+				case "Grassroots:Address": 
 					doc = new AddressDocument (json_doc);					
 					break;
 					

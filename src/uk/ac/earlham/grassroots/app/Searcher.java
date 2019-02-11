@@ -63,6 +63,18 @@ import org.json.simple.JSONObject;
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 
 
+class DrillDownData {
+	List <Document> ddd_hits;
+	FacetResult ddd_facet;
+}
+
+class DrillSidewaysData {
+	List <Document> dsd_hits;
+	List <FacetResult> dsd_facets;
+}
+
+
+
 /** Simple command-line based search demo. */
 public class Searcher {
 	private IndexReader se_index_reader;
@@ -90,14 +102,13 @@ public class Searcher {
 		}
 
 		String index = null;
-		String output_filename = null;
 		String tax_dirname = null;
 		String query_str = null;
 		int hits_per_page = 10;
 		String facet_name = null;
 		String facet_value = null;
 		String search_type = "default";
-		
+		PrintStream output_stm = System.out;
 		
 		
 		for (int i = 0; i < args.length; ++ i) {
@@ -112,7 +123,14 @@ public class Searcher {
 			} else if ("-facet_value".equals (args [i])) {
 				facet_value = args [++ i];
 			} else if ("-out".equals (args [i])) {
-				output_filename = args [++ i];
+				String filename = args [++ i];
+				
+				try {
+					output_stm = new PrintStream (new FileOutputStream (filename));
+				} catch (FileNotFoundException e) {
+					System.err.println ("Failed to open " + filename + " e: " + e);
+				}
+				
 			} else if ("-search_type".equals (args [i])) {
 				search_type = args [++ i];
 			} else if ("-paging".equals(args[i])) {
@@ -141,20 +159,6 @@ public class Searcher {
 					Query q = searcher.buildGrassrootsQuery (query_str);
 					
 					if (q != null) {
-						PrintStream out_stm = System.out;
-						
-						if (output_filename != null) {
-							PrintStream stm = null;
-							
-							try {
-								stm = new PrintStream (new FileOutputStream (output_filename));
-								out_stm = stm;
-							} catch (FileNotFoundException e) {
-								System.err.println ("Failed to open output stream for " + output_filename + " e: " + e);
-							}
-							
-						}
-						
 						switch (search_type) {
 							case "default": {
 								List <Document> docs = null;
@@ -162,18 +166,11 @@ public class Searcher {
 								try {
 									docs = searcher.standardSearch (q, hits_per_page);
 								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+									System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
 								}
 								
 								if (docs != null) {
-									int i = 0;
-									
-									for (Document doc : docs) {
-										out_stm.println ("doc [" + i + "]:\n" + searcher.getLuceneDocumentAsProperties (doc));
-										++ i;
-									}
-								    
+									searcher.saveHits (docs, output_stm);
 								}
 							}
 							break;
@@ -185,7 +182,7 @@ public class Searcher {
 									int i = 0;
 									
 									for (FacetResult facet : results) {
-										out_stm.println (i + ": " + facet.toString ());
+										output_stm.println (i + ": " + facet.toString ());
 										++ i;
 									}
 								}
@@ -193,40 +190,50 @@ public class Searcher {
 							break;
 
 							case "drill-down": {
-								FacetResult result = null;
+								DrillDownData results = null;
 								
 								try {
-									result = searcher.drillDown (q, facet_name, facet_value, facet_name);
+									results = searcher.drillDown (q, facet_name, facet_value, facet_name, hits_per_page);
 								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+									System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
 								}
-
-								if (result != null) {
-									out_stm.println ("facet: " + result.toString ());								
+								
+							
+								if (results != null) {
+									searcher.saveHits (results.ddd_hits, output_stm);
+									
+									if (results.ddd_facet != null) {										
+										System.out.println ("drill-down facet: " + results.ddd_facet.toString ());
+									}
+									
 								}
 							}
 							break;
 
 							case "drill-sideways": {
-								List <FacetResult> results = null;
+								DrillSidewaysData results = null;
 
 								try {
-									results = searcher.drillSideways (q, facet_name, facet_value);
+									results = searcher.drillSideways (q, facet_name, facet_value, hits_per_page);
 								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+									System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
 								}
-
 								
 								if (results != null) {
-									int i = 0;
+									searcher.saveHits (results.dsd_hits, output_stm);
 									
-									for (FacetResult facet : results) {
-										out_stm.println (i + ": " + facet.toString ());
-										++ i;
+									if (results.dsd_facets != null) {
+										int i = 0;
+										
+										System.out.println ("drill-sideways facets:");
+										for (FacetResult facet : results.dsd_facets) {
+											System.out.println (i + ": " + facet.toString ());
+											++ i;
+										}
 									}
+									
 								}
+								
 							}
 							
 							break;
@@ -239,6 +246,10 @@ public class Searcher {
 
 		}
 		
+		
+		if (output_stm != System.out) {
+			output_stm.close ();
+		}
 	}
 
 	
@@ -297,98 +308,9 @@ public class Searcher {
 		return q;
 	}
 	
-	
-	public List <FacetResult> drillSidewaysSearch (String query_str, String facet_name, String facet_value) {
-		Query q = buildGrassrootsQuery (query_str);
-		List <FacetResult> results = null;
-			
-		if (q != null) {
-			
-			try {
-				results = drillSideways (q, facet_name, facet_value);
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-				results = null;
-			}
-			
-		}
-		
-		return results;
-	}
-
-	
-	public FacetResult drillDownSearch (String query_str, String facet_name, String facet_value) {
-		Query q = buildGrassrootsQuery (query_str);
-		FacetResult facet_result = null;
-		
-		try {
-			facet_result = drillDown (q, facet_name, facet_value, facet_name);
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-		
-		if (facet_result != null) {
-			System.out.println (facet_result.toString ());
-		}
-		
-		return facet_result;
-	}
-	
-	/*
-	public boolean search (String query_str, String facet_name, String facet_value) {
-		boolean success_flag = false;
-		List <FacetResult> results = null;
-		if (q != null) {
-			try {
-				doSearch (q, 100);
-				
-				if (facet_name != null) {
-					results = getFacetsOnly (q, facet_name);
-				}
-				success_flag = true;
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			}
-			
-			if (results != null) {
-				Iterator <FacetResult> itr = results.iterator ();
-				int i = 0;
-				
-				while (itr.hasNext ()) {
-					FacetResult res = itr.next ();
-					
-					if (res != null) {
-						System.out.println (Integer.toString (i) + ": " + res.toString ());
-						++ i;
-					}
-				}
-			}
-			
-			}
-		
-			FacetResult facet_result = null;
-			try {
-				facet_result = drillDown (q, facet_name, facet_value, facet_name);
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-				results = null;
-			}
-			
-			if (facet_result != null) {
-				System.out.println (facet_result.toString ());
-			}
-			
-			
-		}
-		
-		return success_flag;
-	}
-*/
-	
-	
-	  
+		  
 	/** User runs a query and counts facets only without collecting the matching documents.*/
-	private List <FacetResult> facetsOnlySearch (Query q, String facet_name, int max_num_facets) {
+	public List <FacetResult> facetsOnlySearch (Query q, String facet_name, int max_num_facets) {
 		IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector();
 
@@ -418,15 +340,13 @@ public class Searcher {
 	}
 
 
-	  /** User drills down on 'Publish Date/2010', and we
-	   *  return facets for both 'Publish Date' and 'Author',
-	   *  using DrillSideways. */
-	  private List <FacetResult> drillSideways (Query base_query, String facet_name, String facet_value) throws IOException {
-	    IndexSearcher searcher = new IndexSearcher(se_index_reader);
-		FacetsCollector fc = new FacetsCollector ();
+	  /** 
+	   * Drill down on a given facet and return all hits and facets
+	   */
+	  public DrillSidewaysData drillSideways (Query base_query, String facet_name, String facet_value, int max_num_facets) throws IOException {
+	    IndexSearcher searcher = new IndexSearcher (se_index_reader);
 
-		
-	    // Passing no baseQuery means we drill down on all
+	    // Passing no base_query means we drill down on all
 	    // documents ("browse only"):
 		DrillDownQuery q = null;
 	    if (base_query != null) {
@@ -435,14 +355,14 @@ public class Searcher {
 	    	q = new DrillDownQuery (se_config);    	
 	    }
 	    
-	    // Now user drills down on Publish Date/2010:
+	    // Now user drills down on the given facet
 	    q.add (facet_name, facet_value);
 		
 	    DrillSideways ds = new DrillSideways(searcher, se_config, se_taxonomy_reader);
-	    DrillSidewaysResult result = ds.search(q, 10);
+	    DrillSidewaysResult result = ds.search (q, max_num_facets);
 
 	    // Retrieve results
-	    List<FacetResult> facets = result.facets.getAllDims(10);
+	    List <FacetResult> facets = result.facets.getAllDims (max_num_facets);
 
 	    
 	    // Retrieve results
@@ -450,21 +370,24 @@ public class Searcher {
 		int num_total_hits = Math.toIntExact (result.hits.totalHits);
 
 		
-		System.out.println ("***** drillSideways 1");
+		List <Document> docs = new ArrayList <Document> ();
 		for (int i = 0; i < num_total_hits; ++ i) {
 			Document doc = searcher.doc (hits [i].doc);
-			System.out.println ("doc [" + i + "]:\n" + getLuceneDocumentAsProperties (doc));
+			docs.add (doc);
 		}
 	    
-	    
-	    return facets;
+		DrillSidewaysData search_results = new DrillSidewaysData ();
+		search_results.dsd_hits = docs;
+		search_results.dsd_facets = facets;
+		
+		return search_results;
 	  }
 	
 	  
 	  
-	  /** User drills down on 'Publish Date/2010', and we
-	   *  return facets for 'Author' */
-	  private FacetResult drillDown (Query base_query, String facet_name, String facet_value, String facet_to_return) throws IOException {
+	  /** User drills down on a facet, and we
+	   *  return another facets for  */
+	  public DrillDownData drillDown (Query base_query, String facet_name, String facet_value, String facet_to_return, int facet_result_size) throws IOException {
 	    IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector ();
 
@@ -482,29 +405,39 @@ public class Searcher {
 	    q.add (facet_name, facet_value);
 		
 	    
-	    TopDocs resultDocs = FacetsCollector.search (searcher, q, 10, fc);
+	    TopDocs resultDocs = FacetsCollector.search (searcher, q, facet_result_size, fc);
 
 
-	    // Retrieve results
+	    // Retrieve facets
 	    Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
-	    FacetResult result = facets.getTopChildren (10, facet_to_return);
+	    FacetResult result = facets.getTopChildren (facet_result_size, facet_to_return);
 
 	    
 	    // Retrieve results
 		ScoreDoc [] hits = resultDocs.scoreDocs;
 		int num_total_hits = Math.toIntExact (resultDocs.totalHits);
-
 		
-		System.out.println ("***** drillDown 1");
+		
+		List <Document> docs = new ArrayList <Document> ();
 		for (int i = 0; i < num_total_hits; ++ i) {
 			Document doc = searcher.doc (hits [i].doc);
-			System.out.println ("doc [" + i + "]:\n" + getLuceneDocumentAsProperties (doc));
+			docs.add (doc);
 		}
 	    
-	    return result;
+		DrillDownData search_results = new DrillDownData ();
+		search_results.ddd_hits = docs;
+		search_results.ddd_facet = result;
+	    
+	    return search_results;
 	  }
 	
 	  
+	  
+	private void saveHits (List <Document> hits, PrintStream stm) {
+		for (Document doc : hits) {	
+			stm.println ("{\n" + getLuceneDocumentAsProperties (doc) + "}");				
+		}
+	}
 	  
 	/**
 	 * This demonstrates a typical paging search scenario, where the search engine presents 
@@ -542,10 +475,11 @@ public class Searcher {
 		
 		for (int i = 0; i < num_fields; ++ i) {
 			IndexableField field = fields.get (i);
+			sb.append ("\t");
 			sb.append (field.name ());
 			sb.append (" = ");
 			sb.append (field.stringValue ());	
-			sb.append ('\n');
+			sb.append ("\n");
 		}
 		
 		return sb.toString ();

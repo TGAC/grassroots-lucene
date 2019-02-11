@@ -50,4 +50,15 @@
 		  </classpath>
 		</java>
 	</target>
+
+	
+	<target name="run-standard-searcher" depends="jar">
+		<java classname="uk.ac.earlham.grassroots.app.Searcher">
+		  <arg value="-index ~/Desktop/lucene_test/index -tax ~/Desktop/lucene_test/tax -query ${searcher.query}"/>
+		  <classpath>
+		    <pathelement path="${ant.project.name}-${current-version}.jar" />
+		  	<path refid="class.path" />
+		  </classpath>
+		</java>
+	</target>
 </project>

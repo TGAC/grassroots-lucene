@@ -245,9 +245,9 @@ abstract public class GrassrootsDocument {
 			
 			StringBuilder sb = new StringBuilder ();
 			
-			sb.append (value.substring (0, 3));
-			sb.append (value.substring (5, 6));
-			sb.append (value.substring (8, 9));
+			sb.append (value.substring (0, 4));
+			sb.append (value.substring (5, 7));
+			sb.append (value.substring (8, 10));
 		
 			Field f = new StoredField (key, sb.toString ());
 			gd_document.add (f);
