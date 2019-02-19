@@ -404,6 +404,7 @@ public class Searcher {
 	    // Now user drills down on Publish Date/2010:
 	    q.add (facet_name, facet_value);
 		
+
 	    
 	    TopDocs resultDocs = FacetsCollector.search (searcher, q, facet_result_size, fc);
 
@@ -412,6 +413,12 @@ public class Searcher {
 	    Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
 	    FacetResult result = facets.getTopChildren (facet_result_size, facet_to_return);
 
+	    
+	    List <FacetsCollector.MatchingDocs> matching_docs = fc.getMatchingDocs ();
+	    for (FacetsCollector.MatchingDocs matching_doc : matching_docs) {
+	    	
+	    }
+	    
 	    
 	    // Retrieve results
 		ScoreDoc [] hits = resultDocs.scoreDocs;

@@ -45,19 +45,27 @@ abstract public class GrassrootsDocument {
 	public GrassrootsDocument (JSONObject json_doc) throws IllegalArgumentException {
 		gd_document = new Document ();
 		gd_default_field_buffer = new StringBuilder ();
+		final String PRIVATE_TYPE = "@type";
 		
-		FacetField type_facet = new FacetField (GD_DATATYPE, getUserFriendlyTypename ());
-		gd_document.add (type_facet);
+		String private_typename = (String) json_doc.get (PRIVATE_TYPE);
 		
-		if (!addFields (json_doc)) {
-			System.err.println ("Error adding fields for " + json_doc);
-			throw new IllegalArgumentException (json_doc.toJSONString ());
-		}
+		if (private_typename != null) {
 		
-		if (gd_default_field_buffer.length () > 0) {
-			String s = gd_default_field_buffer.toString ();
-			TextField default_field = new TextField (GD_DEFAULT_SEARCH_KEY, s, Field.Store.YES);
-			gd_document.add (default_field);			
+			gd_document.add (new FacetField (GD_DATATYPE, getUserFriendlyTypename ()));
+			gd_document.add (new StoredField (PRIVATE_TYPE, private_typename));
+			
+			if (!addFields (json_doc)) {
+				System.err.println ("Error adding fields for " + json_doc);
+				throw new IllegalArgumentException (json_doc.toJSONString ());
+			}
+			
+			if (gd_default_field_buffer.length () > 0) {
+				String s = gd_default_field_buffer.toString ();
+				TextField default_field = new TextField (GD_DEFAULT_SEARCH_KEY, s, Field.Store.YES);
+				gd_document.add (default_field);			
+			}
+		} else {
+			
 		}
 	}
 
@@ -89,6 +97,16 @@ abstract public class GrassrootsDocument {
 		return gd_document;
 	}
 
+	
+	public boolean addFacet (String key, String private_value, String public_value) {
+		FacetField facet = new FacetField (key, private_value);
+		gd_document.add (facet);
+		
+		StoredField field = new StoredField (key, public_value);
+		gd_document.add (field);
+		
+		return true;
+	}
 	
 	public boolean addMongoId (JSONObject json_doc, String key) {
 		boolean success_flag = false;
