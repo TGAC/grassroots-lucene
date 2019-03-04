@@ -1,4 +1,4 @@
-<project name="grassroots-luecene" default="main" basedir=".">
+<project name="grassroots-lucene" default="main" basedir=".">
 	<property name="current-version" value="0.1" />
 	<property name="classes.dir" value="classes" />
 	<property name="source.dir" value="src" />
