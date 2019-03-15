@@ -42,6 +42,11 @@ public class GrassrootsDocumentFactory {
 					doc = new AddressDocument (json_doc);					
 					break;
 					
+				case "Grassroots:Service": 
+					doc = new ServiceDocument (json_doc);					
+					break;
+					
+					
 				default:
 					break;
 			}	
