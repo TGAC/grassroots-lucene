@@ -3,7 +3,7 @@ package uk.ac.earlham.grassroots.document;
 
 import org.json.simple.JSONObject;
 
-public class AddressDocument extends GrassrootsDocument {
+public class AddressDocument extends MongoDocument {
 	
 	public AddressDocument (JSONObject json_doc) throws IllegalArgumentException {
 		super (json_doc);

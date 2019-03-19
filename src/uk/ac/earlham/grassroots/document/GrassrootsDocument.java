@@ -25,7 +25,6 @@ import org.json.simple.JSONObject;
  */
 abstract public class GrassrootsDocument {
 	static private String GD_BOOST_SUFFIX = "_boost";
-	static private String GD_MONGO_ID = "_id";
 	static public String GD_DATATYPE = "type";
 	static public String GD_NAME = "name";
 	static public String GD_DESCRIPTION = "description";
@@ -79,9 +78,7 @@ abstract public class GrassrootsDocument {
 		addText (json_doc, "so:description", GD_DESCRIPTION, 3.0f);
 		
 		if (addText (json_doc, getNameKey (), GD_NAME, 5.0f)) {
-			if (addMongoId (json_doc, GD_MONGO_ID)) {
-				success_flag = true;
-			}			
+			success_flag = true;
 		}
 			
 		return success_flag;
