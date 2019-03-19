@@ -29,6 +29,7 @@ abstract public class GrassrootsDocument {
 	static public String GD_NAME = "name";
 	static public String GD_DESCRIPTION = "description";
 	static public String GD_DEFAULT_SEARCH_KEY = "default";
+	static public String GD_PUBLIC_LINK = "so:url";
 
 	
 	
@@ -52,7 +53,7 @@ abstract public class GrassrootsDocument {
 		
 			gd_document.add (new FacetField (GD_DATATYPE, getUserFriendlyTypename ()));
 			gd_document.add (new StoredField (PRIVATE_TYPE, private_typename));
-			
+						
 			if (!addFields (json_doc)) {
 				System.err.println ("Error adding fields for " + json_doc);
 				throw new IllegalArgumentException (json_doc.toJSONString ());
@@ -64,7 +65,8 @@ abstract public class GrassrootsDocument {
 				gd_document.add (default_field);			
 			}
 		} else {
-			
+			System.err.println ("No " + PRIVATE_TYPE + " in " + json_doc);
+			throw new IllegalArgumentException (json_doc.toJSONString ());			
 		}
 	}
 
@@ -78,7 +80,13 @@ abstract public class GrassrootsDocument {
 		addText (json_doc, "so:description", GD_DESCRIPTION, 3.0f);
 		
 		if (addText (json_doc, getNameKey (), GD_NAME, 5.0f)) {
-			success_flag = true;
+			if (addNonIndexedString (json_doc, GD_PUBLIC_LINK)) {
+				success_flag = true;
+			} else {
+				System.err.println ("Failed to add " + GD_PUBLIC_LINK + " from " + json_doc);
+			}			
+		} else {
+			System.err.println ("Failed to add " + GD_NAME + " from " + json_doc);
 		}
 			
 		return success_flag;
