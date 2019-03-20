@@ -31,7 +31,8 @@ abstract public class GrassrootsDocument {
 	static public String GD_DEFAULT_SEARCH_KEY = "default";
 	static public String GD_PUBLIC_LINK = "so:url";
 
-	
+	static public final float GD_NAME_BOOST = 5.0f;
+	static public final float GD_DESCRIPTION_BOOST = 3.0f;
 	
 	protected Document gd_document;
 	protected StringBuilder gd_default_field_buffer;
@@ -77,9 +78,9 @@ abstract public class GrassrootsDocument {
 		/*
 		 * Add the common fields
 		 */
-		addText (json_doc, "so:description", GD_DESCRIPTION, 3.0f);
+		addText (json_doc, "so:description", GD_DESCRIPTION, GD_DESCRIPTION_BOOST);
 		
-		if (addText (json_doc, getNameKey (), GD_NAME, 5.0f)) {
+		if (addText (json_doc, getNameKey (), GD_NAME, GD_NAME_BOOST)) {
 			if (addNonIndexedString (json_doc, GD_PUBLIC_LINK)) {
 				success_flag = true;
 			} else {

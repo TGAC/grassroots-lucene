@@ -12,8 +12,7 @@ public class ServiceDocument extends GrassrootsDocument {
 	protected boolean addFields (JSONObject json_doc) {
 		boolean success_flag = false;
 		
-		if (super.addFields (json_doc)) {
-			
+		if (super.addFields (json_doc)) {			
 			
 			/*
 			 * Add the service-specific fields
@@ -30,10 +29,15 @@ public class ServiceDocument extends GrassrootsDocument {
 							JSONObject item = (JSONObject) o;
 							String input_key = getNameKey ();
 							
-							if (addText (item, input_key, GD_NAME, 5.0f)) {
-								++ num_imported;
+							if (addText (item, input_key, GD_NAME, GD_NAME_BOOST)) {
+								if (addText (item, input_key, GD_DESCRIPTION, GD_DESCRIPTION_BOOST)) {
+									++ num_imported;
+								} else {
+									System.err.println ("Failed to add value for " + GD_DESCRIPTION + " with " + input_key + " from " + item.toString ());
+								}
+								
 							} else {
-								System.err.println ("Failed to add value from " + input_key + " from " + item.toString ());
+								System.err.println ("Failed to add text for " + GD_NAME + " with " + input_key + " from " + item.toString ());
 							}
 						}
 					}			

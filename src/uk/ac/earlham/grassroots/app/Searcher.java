@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -170,7 +171,9 @@ public class Searcher {
 								}
 								
 								if (docs != null) {
+									searcher.startResults (output_stm);
 									searcher.saveHits (docs, output_stm);
+									searcher.endResults (output_stm);
 								}
 							}
 							break;
@@ -179,12 +182,9 @@ public class Searcher {
 								List <FacetResult> results = searcher.facetsOnlySearch (q, facet_name, hits_per_page);
 								
 								if (results != null) {
-									int i = 0;
-									
-									for (FacetResult facet : results) {
-										output_stm.println (i + ": " + facet.toString ());
-										++ i;
-									}
+									searcher.startResults (output_stm);
+									searcher.printFacets (results, output_stm);
+									searcher.endResults (output_stm);
 								}
 							}
 							break;
@@ -200,11 +200,9 @@ public class Searcher {
 								
 							
 								if (results != null) {
-									searcher.saveHits (results.ddd_hits, output_stm);
-									
-									if (results.ddd_facet != null) {										
-										System.out.println ("drill-down facet: " + results.ddd_facet.toString ());
-									}
+									searcher.startResults (output_stm);
+									searcher.saveHits (results.ddd_hits, results.ddd_facet, output_stm);
+									searcher.endResults (output_stm);									
 									
 								}
 							}
@@ -220,18 +218,9 @@ public class Searcher {
 								}
 								
 								if (results != null) {
-									searcher.saveHits (results.dsd_hits, output_stm);
-									
-									if (results.dsd_facets != null) {
-										int i = 0;
-										
-										System.out.println ("drill-sideways facets:");
-										for (FacetResult facet : results.dsd_facets) {
-											System.out.println (i + ": " + facet.toString ());
-											++ i;
-										}
-									}
-									
+									searcher.startResults (output_stm);
+									searcher.saveHits (results.dsd_hits, results.dsd_facets, output_stm);
+									searcher.endResults (output_stm);									
 								}
 								
 							}
@@ -412,7 +401,6 @@ public class Searcher {
 	    // Retrieve facets
 	    Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
 	    FacetResult result = facets.getTopChildren (facet_result_size, facet_to_return);
-
 	    
 	    List <FacetsCollector.MatchingDocs> matching_docs = fc.getMatchingDocs ();
 	    for (FacetsCollector.MatchingDocs matching_doc : matching_docs) {
@@ -438,14 +426,67 @@ public class Searcher {
 	    return search_results;
 	  }
 	
-	  
+
+
 	  
 	private void saveHits (List <Document> hits, PrintStream stm) {
-		for (Document doc : hits) {	
-			stm.println ("{\n" + getLuceneDocumentAsProperties (doc) + "}");				
+		if (hits != null) {
+			stm.println ("\t\"documents\": [\n");
+
+			for (Document doc : hits) {	
+				stm.println ("{\n" + getLuceneDocumentAsProperties (doc) + "}");				
+			}
+
+			stm.println ("\t]\n");
 		}
 	}
+
+	
+	private void startResults (PrintStream stm) {
+		stm.println ("{\n");		
+	}
+	
+
+	private void endResults (PrintStream stm) {
+		stm.println ("}\n");		
+	}
+
+	
+	private void saveHits (List <Document> hits, FacetResult facet, PrintStream stm) {
+		if (facet != null) {
+			stm.println ("\t\"facets\": [\n");			
+			printFacet (facet, stm, "\t\t");						
+			stm.println ("\t]\n");
+		}
+
+		saveHits (hits, stm);
+	}
+
+	
+	private void saveHits (List <Document> hits, List <FacetResult> facets, PrintStream stm) {		
+		printFacets (facets, stm);
+		saveHits (hits, stm);
+	}
+
+
+	private void printFacets (List <FacetResult> facets, PrintStream stm) {		
+		if (facets != null) {
+			stm.println ("\t\"facets\": [\n");
+			
+			for (FacetResult facet : facets) {	
+				printFacet (facet, stm, "\t\t");			
+			}
+			
+			stm.println ("\t]\n");
+		}		
+	}
+
+	
+	private void printFacet (FacetResult facet, PrintStream stm, String prefix ) {
+		stm.println (prefix + "{ " + facet.toString () + " }\n");		
+	}
 	  
+	
 	/**
 	 * This demonstrates a typical paging search scenario, where the search engine presents 
 	 * pages of size n to the user. The user can then go to the next page if interested in
@@ -473,6 +514,55 @@ public class Searcher {
 	}
 	
 	
+	public String getLuceneDocumentAsJSON (Document doc) {
+		StringBuilder sb = new StringBuilder (); 
+		List <IndexableField> fields = doc.getFields ();
+		HashMap <String, List <String> > map = new HashMap <String, List <String>> ();
+		
+		final int num_fields = fields.size ();
+				
+		for (int i = 0; i < num_fields; ++ i) {
+			IndexableField field = fields.get (i);
+			String key = field.name ();
+			String value = field.stringValue ();
+			
+			List <String> values = map.get (key);
+			
+			if (values == null) {
+				values = new ArrayList <String> ();
+				map.put (key, values);
+			}
+
+			values.add (value);
+		}
+		
+		int size = map.entrySet ().size ();
+		int i = 0;
+	    Iterator <Entry <String, List <String> > > itr = map.entrySet ().iterator ();
+	    while (itr.hasNext ()) {
+	        Map.Entry <String, List <String> > pair = itr.next ();
+
+	        List <String> values = pair.getValue ();
+	        
+	        if (values.size () > 0) {
+	        	
+	        } else {
+	        	
+	        }
+	       	        
+	        ++ i;
+	       
+	        if (i != size) {
+	        	sb.append (",\n");
+	        } else {
+	        	sb.append ("\n");
+	        }
+	        
+	    }
+		
+		return sb.toString ();
+	}
+
 	
 
 	public String getLuceneDocumentAsProperties (Document doc) {
