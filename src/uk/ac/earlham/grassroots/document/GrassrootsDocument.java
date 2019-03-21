@@ -29,7 +29,17 @@ abstract public class GrassrootsDocument {
 	static public String GD_NAME = "name";
 	static public String GD_DESCRIPTION = "description";
 	static public String GD_DEFAULT_SEARCH_KEY = "default";
+	
+	/** 
+	 * The key for the url to use  the web-based client. 
+	 */
 	static public String GD_PUBLIC_LINK = "so:url";
+	
+	/** 
+	 * The key to for the url to use for an app accessing
+	 * the Grassroots backend directly.
+	 */
+	static public String GD_INTERNAL_LINK = "internal_url";
 
 	static public final float GD_NAME_BOOST = 5.0f;
 	static public final float GD_DESCRIPTION_BOOST = 3.0f;
@@ -81,11 +91,13 @@ abstract public class GrassrootsDocument {
 		addText (json_doc, "so:description", GD_DESCRIPTION, GD_DESCRIPTION_BOOST);
 		
 		if (addText (json_doc, getNameKey (), GD_NAME, GD_NAME_BOOST)) {
-			if (addNonIndexedString (json_doc, GD_PUBLIC_LINK)) {
+			boolean added_link = (addNonIndexedString (json_doc, GD_PUBLIC_LINK) || (addNonIndexedString (json_doc, GD_INTERNAL_LINK)));
+			
+			if (added_link) {
 				success_flag = true;
 			} else {
-				System.err.println ("Failed to add " + GD_PUBLIC_LINK + " from " + json_doc);
-			}			
+				System.err.println ("Failed to add link from " + json_doc);
+			}
 		} else {
 			System.err.println ("Failed to add " + GD_NAME + " from " + json_doc);
 		}

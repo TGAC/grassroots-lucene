@@ -438,6 +438,8 @@ public class Searcher {
 	    
 	    return search_results;
 	  }
+	
+
 
 	private void addFacetResults (List <FacetResult> facets, JSONObject res) {		
 		if (facets != null) {
