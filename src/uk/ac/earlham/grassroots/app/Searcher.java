@@ -27,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
@@ -160,6 +162,8 @@ public class Searcher {
 					Query q = searcher.buildGrassrootsQuery (query_str);
 					
 					if (q != null) {
+						JSONObject json_res = new JSONObject ();
+
 						switch (search_type) {
 							case "default": {
 								List <Document> docs = null;
@@ -171,20 +175,16 @@ public class Searcher {
 								}
 								
 								if (docs != null) {
-									searcher.startResults (output_stm);
-									searcher.saveHits (docs, output_stm);
-									searcher.endResults (output_stm);
+									searcher.addHitsToJSON (docs, json_res);
 								}
 							}
 							break;
 							
 							case "facets-only": {
-								List <FacetResult> results = searcher.facetsOnlySearch (q, facet_name, hits_per_page);
+								List <FacetResult> facets = searcher.facetsOnlySearch (q, facet_name, hits_per_page);
 								
-								if (results != null) {
-									searcher.startResults (output_stm);
-									searcher.printFacets (results, output_stm);
-									searcher.endResults (output_stm);
+								if (facets != null) {
+									searcher.addFacetResults (facets, json_res);
 								}
 							}
 							break;
@@ -200,10 +200,8 @@ public class Searcher {
 								
 							
 								if (results != null) {
-									searcher.startResults (output_stm);
-									searcher.saveHits (results.ddd_hits, results.ddd_facet, output_stm);
-									searcher.endResults (output_stm);									
-									
+									searcher.addHitsToJSON (results.ddd_hits, json_res);
+									searcher.addFacetResult (results.ddd_facet, json_res);
 								}
 							}
 							break;
@@ -218,15 +216,17 @@ public class Searcher {
 								}
 								
 								if (results != null) {
-									searcher.startResults (output_stm);
-									searcher.saveHits (results.dsd_hits, results.dsd_facets, output_stm);
-									searcher.endResults (output_stm);									
+									searcher.addHitsToJSON (results.dsd_hits, json_res);
+									searcher.addFacetResults (results.dsd_facets, json_res);
 								}
 								
 							}
 							
 							break;
 						}
+						
+						
+						output_stm.println (json_res.toJSONString ());
 					}
 					
 				}				
@@ -242,6 +242,19 @@ public class Searcher {
 	}
 
 	
+	private void addHitsToJSON (List<Document> docs, JSONObject results) {
+		if (docs != null) {
+			JSONArray docs_array = new JSONArray ();
+
+			for (Document doc : docs) {	
+				JSONObject doc_json = getLuceneDocumentAsJSON (doc);
+				docs_array.add (doc_json);			
+			}
+
+			results.put ("documents", docs_array);
+		}
+	}
+
 	private void buildQuery (StringBuilder sb, String key, String value, float boost) {
 		if (sb.length () > 0) {
 			sb.append (' ');
@@ -425,67 +438,68 @@ public class Searcher {
 	    
 	    return search_results;
 	  }
-	
 
-
-	  
-	private void saveHits (List <Document> hits, PrintStream stm) {
-		if (hits != null) {
-			stm.println ("\t\"documents\": [\n");
-
-			for (Document doc : hits) {	
-				stm.println ("{\n" + getLuceneDocumentAsProperties (doc) + "}");				
-			}
-
-			stm.println ("\t]\n");
-		}
-	}
-
-	
-	private void startResults (PrintStream stm) {
-		stm.println ("{\n");		
-	}
-	
-
-	private void endResults (PrintStream stm) {
-		stm.println ("}\n");		
-	}
-
-	
-	private void saveHits (List <Document> hits, FacetResult facet, PrintStream stm) {
-		if (facet != null) {
-			stm.println ("\t\"facets\": [\n");			
-			printFacet (facet, stm, "\t\t");						
-			stm.println ("\t]\n");
-		}
-
-		saveHits (hits, stm);
-	}
-
-	
-	private void saveHits (List <Document> hits, List <FacetResult> facets, PrintStream stm) {		
-		printFacets (facets, stm);
-		saveHits (hits, stm);
-	}
-
-
-	private void printFacets (List <FacetResult> facets, PrintStream stm) {		
+	private void addFacetResults (List <FacetResult> facets, JSONObject res) {		
 		if (facets != null) {
-			stm.println ("\t\"facets\": [\n");
-			
+			JSONArray facets_array = new JSONArray ();
+
 			for (FacetResult facet : facets) {	
-				printFacet (facet, stm, "\t\t");			
+				JSONObject facet_json = getFacetResultAsJSON (facet);
+				facets_array.add (facet_json);			
 			}
-			
-			stm.println ("\t]\n");
-		}		
+
+			res.put ("facets", facets_array);
+		}
 	}
 
 	
-	private void printFacet (FacetResult facet, PrintStream stm, String prefix ) {
-		stm.println (prefix + "{ " + facet.toString () + " }\n");		
+	private void addFacetResult (FacetResult facet, JSONObject res) {
+		JSONArray facets_array = new JSONArray ();
+		JSONObject facet_json = getFacetResultAsJSON (facet);
+		facets_array.add (facet_json);			
+
+		res.put ("facets", facets_array);
 	}
 	  
+	
+	private JSONObject getFacetResultAsJSON (FacetResult facet) {
+		JSONObject facet_json = new JSONObject ();
+		
+		facet_json.put ("childCount", facet.childCount);
+		facet_json.put ("dim", facet.dim);
+
+		if ((facet.path != null) && (facet.path.length > 0)) {
+			JSONArray path_json = new JSONArray (); 
+			
+			for (int i = 0; i < facet.path.length; ++ i) {
+				path_json.add (facet.path [i]);
+			}
+			
+			facet_json.put ("path", path_json);	
+		}
+
+
+		if ((facet.labelValues != null) && (facet.labelValues.length > 0)) {
+			JSONArray label_values = new JSONArray (); 
+			
+			for (int i = 0; i < facet.labelValues.length; ++ i) {
+				JSONObject label_value = new JSONObject ();
+				
+				label_value.put ("label", facet.labelValues [i].label);
+				label_value.put ("value", facet.labelValues [i].value);
+
+				label_values.add (label_value);
+			}
+			
+			facet_json.put ("labelValues", label_values);	
+		}
+
+		
+		facet_json.put ("value", facet.value);
+				
+		return facet_json;
+	}
+	
 	
 	/**
 	 * This demonstrates a typical paging search scenario, where the search engine presents 
@@ -514,8 +528,8 @@ public class Searcher {
 	}
 	
 	
-	public String getLuceneDocumentAsJSON (Document doc) {
-		StringBuilder sb = new StringBuilder (); 
+	public JSONObject getLuceneDocumentAsJSON (Document doc) {
+		JSONObject res = new JSONObject ();
 		List <IndexableField> fields = doc.getFields ();
 		HashMap <String, List <String> > map = new HashMap <String, List <String>> ();
 		
@@ -536,35 +550,28 @@ public class Searcher {
 			values.add (value);
 		}
 		
-		int size = map.entrySet ().size ();
-		int i = 0;
 	    Iterator <Entry <String, List <String> > > itr = map.entrySet ().iterator ();
 	    while (itr.hasNext ()) {
 	        Map.Entry <String, List <String> > pair = itr.next ();
-
+	        String key = pair.getKey ();
 	        List <String> values = pair.getValue ();
 	        
-	        if (values.size () > 0) {
+	        if (values.size () > 1) {
+	        	JSONArray arr = new JSONArray ();
 	        	
+	        	arr.addAll (values);
+
+	        	res.put (key, arr);
 	        } else {
-	        	
+	        	res.put (key, values.get (0));
 	        }
-	       	        
-	        ++ i;
-	       
-	        if (i != size) {
-	        	sb.append (",\n");
-	        } else {
-	        	sb.append ("\n");
-	        }
-	        
+	       	     	        
 	    }
 		
-		return sb.toString ();
+		return res;
 	}
 
 	
-
 	public String getLuceneDocumentAsProperties (Document doc) {
 		StringBuilder sb = new StringBuilder (); 
 		List <IndexableField> fields = doc.getFields ();
