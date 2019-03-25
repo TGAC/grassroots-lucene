@@ -25,9 +25,9 @@ import org.json.simple.JSONObject;
  */
 abstract public class GrassrootsDocument {
 	static private String GD_BOOST_SUFFIX = "_boost";
-	static public String GD_DATATYPE = "type";
-	static public String GD_NAME = "name";
-	static public String GD_DESCRIPTION = "description";
+	static public String GD_DATATYPE = "facet_type";
+	static public String GD_NAME = "so:name";
+	static public String GD_DESCRIPTION = "so:description";
 	static public String GD_DEFAULT_SEARCH_KEY = "default";
 	
 	/** 

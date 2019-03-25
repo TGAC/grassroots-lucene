@@ -46,6 +46,9 @@ public class GrassrootsDocumentFactory {
 					doc = new ServiceDocument (json_doc);					
 					break;
 					
+				case "Grassroots:BlastService": 
+					doc = new BlastServiceDocument (json_doc);					
+					break;
 					
 				default:
 					break;
