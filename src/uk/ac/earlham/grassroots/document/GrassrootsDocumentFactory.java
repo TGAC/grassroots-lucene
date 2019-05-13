@@ -37,6 +37,10 @@ public class GrassrootsDocumentFactory {
 				case "Grassroots:Study": 
 					doc = new StudyDocument (json_doc);					
 					break;
+
+				case "Grassroots:Phenotype": 
+					doc = new TreatmentDocument (json_doc);					
+					break;
 					
 				case "Grassroots:Address": 
 					doc = new AddressDocument (json_doc);					
