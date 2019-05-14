@@ -416,7 +416,8 @@ public class Searcher {
 	    
 	    TopDocs resultDocs = FacetsCollector.search (searcher, q, hits_per_page, fc);
 
-
+	    List <FacetsCollector.MatchingDocs> matching_docs = fc.getMatchingDocs ();
+	    
 	    // Retrieve facets
 	    Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
 
@@ -426,9 +427,9 @@ public class Searcher {
 	    	result = facets.getTopChildren (hits_per_page, facet_to_return);
 	    }
 	    
-	    List <FacetsCollector.MatchingDocs> matching_docs = fc.getMatchingDocs ();
+
 	    for (FacetsCollector.MatchingDocs matching_doc : matching_docs) {
-	    	
+	    
 	    }
 	    
 	    
@@ -436,9 +437,11 @@ public class Searcher {
 		ScoreDoc [] hits = resultDocs.scoreDocs;
 		int num_total_hits = Math.toIntExact (resultDocs.totalHits);
 		
+		int limit = num_total_hits < hits_per_page ? num_total_hits : hits_per_page;
+		
 		
 		List <Document> docs = new ArrayList <Document> ();
-		for (int i = 0; i < hits_per_page; ++ i) {
+		for (int i = 0; i < limit; ++ i) {
 			Document doc = searcher.doc (hits [i].doc);
 			docs.add (doc);
 		}
