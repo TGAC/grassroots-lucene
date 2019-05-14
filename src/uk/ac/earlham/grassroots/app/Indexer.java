@@ -33,6 +33,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -192,7 +193,7 @@ public class Indexer {
 			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					if (!indexDoc (index_writer, tax_writer, file.toString (), attrs.lastModifiedTime().toMillis ())) {
+					if (indexDoc (index_writer, tax_writer, file.toString (), attrs.lastModifiedTime().toMillis ()) == 0) {
 						System.err.println ("Failed to index " + file.toString ());
 					}
 
@@ -205,8 +206,8 @@ public class Indexer {
 	}
 
 	/** Indexes a single document */
-	public boolean indexDoc (IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, long lastModified) {
-		boolean success_flag = false;
+	public int indexDoc (IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, long lastModified) {
+		int records_imported = 0;
 		FileReader reader = null;
 		
 		/*
@@ -216,66 +217,96 @@ public class Indexer {
 			reader = new FileReader (filename);
 		} catch (FileNotFoundException e) {
 			System.err.println ("File " + filename + "not found, exception: " + e.getMessage ());
-			return false;
 		}
+
 		
-		JSONParser parser = new JSONParser ();
-		Object obj = null;
-		
-		try {
-			obj = parser.parse (reader);
-		} catch (IOException ioe) {
-			System.err.println ("Failed to load JSON from " + filename + " exception: " + ioe.getMessage ());
-		} catch (ParseException pe) {
-			System.err.println ("Failed to parse JSON from " + filename + " exception: " + pe.getMessage ());			
-		}
-		
-		if (obj != null) {
-			JSONObject json_obj = (JSONObject) obj;
-			GrassrootsDocument grassroots_doc = GrassrootsDocumentFactory.createDocument (json_obj);
+		if (reader != null) {
+			JSONParser parser = new JSONParser ();
+			Object obj = null;
 			
-			if (grassroots_doc != null) {
-				Document doc = grassroots_doc.getDocument ();
-				
-				System.out.println ("initial:\n" + doc);
-				
-				
-				try {
-					doc = in_facets_config.build (tax_writer, doc);	
-				} catch (IOException ioe) {
-					System.err.println ("Building faceted document failed for " + filename + " exception: " + ioe.getMessage ());
-				}
-
-				if (index_writer.getConfig ().getOpenMode () == OpenMode.CREATE) {
-					// New index, so we just add the document (no old document can be there):
-					System.out.println("adding " + filename);
-
-					
-					System.out.println ("after facets:\n" + doc);
-
-					try {
-						index_writer.addDocument (doc);
-						success_flag = true;
-					} catch (IOException ioe) {
-						System.err.println ("writer.addDocument () failed for " + filename + " exception: " + ioe.getMessage ());
-					}
-					
-				} else {
-					// Existing index (an old copy of this document may have been indexed) so
-					// we use updateDocument instead to replace the old one matching the exact
-					// path, if present:
-					System.out.println("updating " + filename);
-					
-					try {
-						index_writer.updateDocument (new Term ("path", filename), doc);
-						success_flag = true;
-					} catch (IOException ioe) {
-						System.err.println ("writer.updateDocument () failed for " + filename + " exception: " + ioe.getMessage ());
-					}
-				}
-				
+			try {
+				obj = parser.parse (reader);
+			} catch (IOException ioe) {
+				System.err.println ("Failed to load JSON from " + filename + " exception: " + ioe.getMessage ());
+			} catch (ParseException pe) {
+				System.err.println ("Failed to parse JSON from " + filename + " exception: " + pe.getMessage ());			
 			}
 			
+			if (obj != null) {
+				
+				if (obj instanceof JSONObject) {
+					if (indexObj ((JSONObject) obj, 0, index_writer, tax_writer, filename)) {
+						++ records_imported;
+					}
+				} else if (obj instanceof JSONArray) {
+					JSONArray json_array = (JSONArray) obj;
+					
+					final int size = json_array.size ();
+					
+					for (int i = 0; i < size; ++ i) {
+						obj = json_array.get (i);
+						
+						if (obj instanceof JSONObject) {
+							JSONObject json_obj = (JSONObject) obj;
+							
+							if (indexObj (json_obj, i, index_writer, tax_writer, filename)) {
+								++ records_imported;
+							} else {
+								System.err.println ("Failed to import \"" + json_obj.toJSONString () + "\"");
+							}
+						}
+					}
+				}
+			}								
+		}
+	
+		return records_imported;
+	}
+
+
+	private boolean indexObj (JSONObject json_obj, int obj_index, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename) {
+		boolean success_flag = false;
+		GrassrootsDocument grassroots_doc = GrassrootsDocumentFactory.createDocument (json_obj);
+		
+		if (grassroots_doc != null) {
+			Document doc = grassroots_doc.getDocument ();
+			
+			System.out.println ("initial:\n" + doc);
+			
+			
+			try {
+				doc = in_facets_config.build (tax_writer, doc);	
+			} catch (IOException ioe) {
+				System.err.println ("Building faceted document failed for " + filename + " exception: " + ioe.getMessage ());
+			}
+	
+			if (index_writer.getConfig ().getOpenMode () == OpenMode.CREATE) {
+				// New index, so we just add the document (no old document can be there):
+				System.out.println("adding " + filename);
+	
+				
+				System.out.println ("after facets:\n" + doc);
+	
+				try {
+					index_writer.addDocument (doc);
+					success_flag = true;
+				} catch (IOException ioe) {
+					System.err.println ("writer.addDocument () failed for " + filename + " exception: " + ioe.getMessage ());
+				}
+				
+			} else {
+				// Existing index (an old copy of this document may have been indexed) so
+				// we use updateDocument instead to replace the old one matching the exact
+				// path, if present:
+				System.out.println("updating " + filename);
+				
+				try {
+					index_writer.updateDocument (new Term ("path", filename), doc);
+					success_flag = true;
+				} catch (IOException ioe) {
+					System.err.println ("writer.updateDocument () failed for " + filename + " exception: " + ioe.getMessage ());
+				}
+			}
 			
 		}
 	

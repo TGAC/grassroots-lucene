@@ -93,9 +93,9 @@ abstract public class GrassrootsDocument {
 		if (addText (json_doc, getNameKey (), GD_NAME, GD_NAME_BOOST)) {
 			boolean added_link = (addNonIndexedString (json_doc, GD_PUBLIC_LINK) || (addNonIndexedString (json_doc, GD_INTERNAL_LINK)));
 			
-			if (added_link) {
-				success_flag = true;
-			} else {
+			success_flag = true;
+			
+			if (!added_link) {
 				System.err.println ("Failed to add link from " + json_doc);
 			}
 		} else {
@@ -241,7 +241,7 @@ abstract public class GrassrootsDocument {
 	 */
 	protected void addField (IndexableField field, float boost) {
 		gd_document.add (field);
-		gd_document.add (new FloatDocValuesField (field.name() + GD_BOOST_SUFFIX, boost));
+		//gd_document.add (new FloatDocValuesField (field.name() + GD_BOOST_SUFFIX, boost));
 	}
 
 

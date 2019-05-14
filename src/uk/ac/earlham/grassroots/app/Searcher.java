@@ -201,7 +201,10 @@ public class Searcher {
 							
 								if (results != null) {
 									searcher.addHitsToJSON (results.ddd_hits, json_res);
-									searcher.addFacetResult (results.ddd_facet, json_res);
+									
+									if (results.ddd_facet != null) {
+										searcher.addFacetResult (results.ddd_facet, json_res);
+									}
 								}
 							}
 							break;
@@ -260,8 +263,10 @@ public class Searcher {
 			sb.append (' ');
 		}
 
+		String escaped_key = key.replace (":", "\\:");
+		
 		sb.append ("(");
-		sb.append (key);
+		sb.append (escaped_key);
 		sb.append (": \"");
 		sb.append (value);
 		sb.append ("\")^");
@@ -389,7 +394,7 @@ public class Searcher {
 	  
 	  /** User drills down on a facet, and we
 	   *  return another facets for  */
-	  public DrillDownData drillDown (Query base_query, String facet_name, String facet_value, String facet_to_return, int facet_result_size) throws IOException {
+	  public DrillDownData drillDown (Query base_query, String facet_name, String facet_value, String facet_to_return, int hits_per_page) throws IOException {
 	    IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector ();
 
@@ -404,16 +409,22 @@ public class Searcher {
 	    }
 	    
 	    // Now user drills down on Publish Date/2010:
-	    q.add (facet_name, facet_value);
-		
+	    if ((facet_name != null) && (facet_value != null)) {
+	    	q.add (facet_name, facet_value);
+	    }
 
 	    
-	    TopDocs resultDocs = FacetsCollector.search (searcher, q, facet_result_size, fc);
+	    TopDocs resultDocs = FacetsCollector.search (searcher, q, hits_per_page, fc);
 
 
 	    // Retrieve facets
 	    Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
-	    FacetResult result = facets.getTopChildren (facet_result_size, facet_to_return);
+
+	    FacetResult result = null;
+
+	    if (facet_to_return != null) {
+	    	result = facets.getTopChildren (hits_per_page, facet_to_return);
+	    }
 	    
 	    List <FacetsCollector.MatchingDocs> matching_docs = fc.getMatchingDocs ();
 	    for (FacetsCollector.MatchingDocs matching_doc : matching_docs) {
@@ -427,7 +438,7 @@ public class Searcher {
 		
 		
 		List <Document> docs = new ArrayList <Document> ();
-		for (int i = 0; i < num_total_hits; ++ i) {
+		for (int i = 0; i < hits_per_page; ++ i) {
 			Document doc = searcher.doc (hits [i].doc);
 			docs.add (doc);
 		}
