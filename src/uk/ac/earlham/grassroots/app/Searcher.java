@@ -108,6 +108,7 @@ public class Searcher {
 		String tax_dirname = null;
 		String query_str = null;
 		int hits_per_page = 10;
+		int page = 0;
 		String facet_name = null;
 		String facet_value = null;
 		String search_type = "default";
@@ -143,6 +144,13 @@ public class Searcher {
 					System.err.println("There must be at least 1 hit per page.");
 					System.exit(1);
 				}
+			} else if ("-page".equals (args [i])) {
+				page = Integer.parseInt (args [++ i]);
+
+				if (page <= 0) {
+					System.err.println("Invalid page.");
+					System.exit(1);
+				}
 			}
 		}
 
@@ -157,83 +165,93 @@ public class Searcher {
 			}			
 
 			if (searcher != null) {
-				if (query_str != null) {
-					
-					Query q = searcher.buildGrassrootsQuery (query_str);
-					
-					if (q != null) {
-						JSONObject json_res = new JSONObject ();
+				Query q = null;
 
-						switch (search_type) {
-							case "default": {
-								List <Document> docs = null;
+				if (query_str != null) {					
+					q = searcher.buildGrassrootsQuery (query_str);
+				} else {
+					q = new MatchAllDocsQuery ();					
+				}
+				if (q != null) {
+					JSONObject json_res = new JSONObject ();
 
-								try {
-									docs = searcher.standardSearch (q, hits_per_page);
-								} catch (IOException e) {
-									System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
-								}
-								
-								if (docs != null) {
-									searcher.addHitsToJSON (docs, json_res);
-								}
-							}
-							break;
-							
-							case "facets-only": {
-								List <FacetResult> facets = searcher.facetsOnlySearch (q, facet_name, hits_per_page);
-								
-								if (facets != null) {
-									searcher.addFacetResults (facets, json_res);
-								}
-							}
-							break;
+					switch (search_type) {
+						case "default": {
+							List <Document> docs = null;
 
-							case "drill-down": {
-								DrillDownData results = null;
-								
-								try {
-									results = searcher.drillDown (q, facet_name, facet_value, facet_name, hits_per_page);
-								} catch (IOException e) {
-									System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
-								}
-								
-							
-								if (results != null) {
-									searcher.addHitsToJSON (results.ddd_hits, json_res);
-									
-									if (results.ddd_facet != null) {
-										searcher.addFacetResult (results.ddd_facet, json_res);
-									}
-								}
-							}
-							break;
-
-							case "drill-sideways": {
-								DrillSidewaysData results = null;
-
-								try {
-									results = searcher.drillSideways (q, facet_name, facet_value, hits_per_page);
-								} catch (IOException e) {
-									System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
-								}
-								
-								if (results != null) {
-									searcher.addHitsToJSON (results.dsd_hits, json_res);
-									searcher.addFacetResults (results.dsd_facets, json_res);
-								}
-								
+							try {
+								docs = searcher.standardSearch (q, hits_per_page);
+							} catch (IOException e) {
+								System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
 							}
 							
-							break;
+							if (docs != null) {
+								searcher.addHitsToJSON (docs, json_res);
+							}
+						}
+						break;
+						
+						case "all-facets": {
+							List <FacetResult> facets = searcher.getAllFacets (q, hits_per_page);
+							
+							if (facets != null) {
+								searcher.addFacetResults (facets, json_res);
+							}							
+						}
+						break;
+						
+						case "facets-only": {
+							List <FacetResult> facets = searcher.facetsOnlySearch (q, facet_name, hits_per_page);
+							
+							if (facets != null) {
+								searcher.addFacetResults (facets, json_res);
+							}
+						}
+						break;
+
+						case "drill-down": {
+							DrillDownData results = null;
+							
+							try {
+								results = searcher.drillDown (q, facet_name, facet_value, facet_name, hits_per_page, page);
+							} catch (IOException e) {
+								System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
+							}
+							
+						
+							if (results != null) {
+								searcher.addHitsToJSON (results.ddd_hits, json_res);
+								
+								if (results.ddd_facet != null) {
+									searcher.addFacetResult (results.ddd_facet, json_res);
+								}
+							}
+						}
+						break;
+
+						case "drill-sideways": {
+							DrillSidewaysData results = null;
+
+							try {
+								results = searcher.drillSideways (q, facet_name, facet_value, hits_per_page);
+							} catch (IOException e) {
+								System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
+							}
+							
+							if (results != null) {
+								searcher.addHitsToJSON (results.dsd_hits, json_res);
+								searcher.addFacetResults (results.dsd_facets, json_res);
+							}
+							
 						}
 						
-						
-						output_stm.println (json_res.toJSONString ());
+						break;
 					}
 					
-				}				
-				
+					
+					output_stm.println (json_res.toJSONString ());
+				}
+									
 			}
 
 		}
@@ -264,12 +282,23 @@ public class Searcher {
 		}
 
 		String escaped_key = key.replace (":", "\\:");
-		
+		final boolean wild_flag = value.contains ("*");
+	
 		sb.append ("(");
 		sb.append (escaped_key);
-		sb.append (": \"");
+		sb.append (':');
+		
+		if (!wild_flag) {
+			sb.append ('"');			
+		}
+		
 		sb.append (value);
-		sb.append ("\")^");
+
+		if (!wild_flag) {
+			sb.append ('"');			
+		}
+
+		sb.append (")^");
 		sb.append (boost);		
 	}
 	
@@ -314,7 +343,41 @@ public class Searcher {
 		
 		return q;
 	}
+
 	
+	
+	/** User runs a query and counts facets only without collecting the matching documents.*/
+	public List <FacetResult> getAllFacets (Query q, int max_num_facets) {
+		IndexSearcher searcher = new IndexSearcher (se_index_reader);
+		FacetsCollector fc = new FacetsCollector();
+
+		// MatchAllDocsQuery is for "browsing" (counts facets
+		// for all non-deleted docs in the index); normally
+		// you'd use a "normal" query:
+		
+		if (q == null) {
+			q = new MatchAllDocsQuery ();
+		}
+
+		// Retrieve results
+		List <FacetResult> results = new ArrayList <FacetResult> ();
+
+		try {
+			FacetsCollector.search (searcher, q, max_num_facets, fc);
+			// Count both "Publish Date" and "Author" dimensions
+			Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
+			
+			results = facets.getAllDims (max_num_facets);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+
+		return results;
+	}
+
 		  
 	/** User runs a query and counts facets only without collecting the matching documents.*/
 	public List <FacetResult> facetsOnlySearch (Query q, String facet_name, int max_num_facets) {
@@ -394,10 +457,10 @@ public class Searcher {
 	  
 	  /** User drills down on a facet, and we
 	   *  return another facets for  */
-	  public DrillDownData drillDown (Query base_query, String facet_name, String facet_value, String facet_to_return, int hits_per_page) throws IOException {
+	  public DrillDownData drillDown (Query base_query, String facet_name, String facet_value, String facet_to_return, int hits_per_page, int page_number) throws IOException {
 	    IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector ();
-
+		final int MAX_NUM_RESULTS = 1024;
 		
 	    // Passing no baseQuery means we drill down on all
 	    // documents ("browse only"):
@@ -408,13 +471,15 @@ public class Searcher {
 	    	q = new DrillDownQuery (se_config);    	
 	    }
 	    
-	    // Now user drills down on Publish Date/2010:
+	    /*
+	     * Are we drilling down on a specific facet?
+	     */
 	    if ((facet_name != null) && (facet_value != null)) {
 	    	q.add (facet_name, facet_value);
 	    }
 
 	    
-	    TopDocs resultDocs = FacetsCollector.search (searcher, q, hits_per_page, fc);
+	    TopDocs resultDocs = FacetsCollector.search (searcher, q, MAX_NUM_RESULTS, fc);
 
 	    List <FacetsCollector.MatchingDocs> matching_docs = fc.getMatchingDocs ();
 	    
@@ -437,14 +502,24 @@ public class Searcher {
 		ScoreDoc [] hits = resultDocs.scoreDocs;
 		int num_total_hits = Math.toIntExact (resultDocs.totalHits);
 		
-		int limit = num_total_hits < hits_per_page ? num_total_hits : hits_per_page;
 		
 		
 		List <Document> docs = new ArrayList <Document> ();
-		for (int i = 0; i < limit; ++ i) {
-			Document doc = searcher.doc (hits [i].doc);
-			docs.add (doc);
+		int start = hits_per_page * page_number;
+
+		if (start < num_total_hits) {
+			int end = start + hits_per_page;
+
+			if (end > num_total_hits) {
+				end = num_total_hits;
+			}
+			
+			for (int i = start; i < end; ++ i) {
+				Document doc = searcher.doc (hits [i].doc);
+				docs.add (doc);
+			}
 		}
+
 	    
 		DrillDownData search_results = new DrillDownData ();
 		search_results.ddd_hits = docs;

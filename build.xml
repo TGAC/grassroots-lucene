@@ -3,6 +3,8 @@
 	<property name="classes.dir" value="classes" />
 	<property name="source.dir" value="src" />
 
+	<loadproperties srcFile="grassroots-lucene.properties"/>
+
   <path id="class.path">
     <fileset dir="lib">
       <include name="**/*.jar" />
@@ -39,7 +41,10 @@
 			</manifest>
 		</jar>
 	</target>
-	
+
+	<target name="install" depends="jar">
+		<copy file="${ant.project.name}-${current-version}.jar" tofile="${install.dir}/${ant.project.name}-${current-version}.jar" overwrite="true" />
+	</target>	
 	
 	<target name="run-indexer" depends="jar">
 		<java classname="uk.ac.earlham.grassroots.app.Indexer">

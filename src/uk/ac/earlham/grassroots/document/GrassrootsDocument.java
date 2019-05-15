@@ -90,16 +90,21 @@ abstract public class GrassrootsDocument {
 		 */
 		addText (json_doc, "so:description", GD_DESCRIPTION, GD_DESCRIPTION_BOOST);
 		
-		if (addText (json_doc, getNameKey (), GD_NAME, GD_NAME_BOOST)) {
-			boolean added_link = (addNonIndexedString (json_doc, GD_PUBLIC_LINK) || (addNonIndexedString (json_doc, GD_INTERNAL_LINK)));
-			
-			success_flag = true;
-			
-			if (!added_link) {
-				System.err.println ("Failed to add link from " + json_doc);
+		String name_key = getNameKey ();
+		
+		if (name_key != null) {
+			if (!addText (json_doc, name_key, GD_NAME, GD_NAME_BOOST)) {
+				System.err.println ("Failed to add " + GD_NAME + " using " + name_key + " from " + json_doc);				
+				return false;
 			}
-		} else {
-			System.err.println ("Failed to add " + GD_NAME + " from " + json_doc);
+		}
+		
+		boolean added_link = (addNonIndexedString (json_doc, GD_PUBLIC_LINK) || (addNonIndexedString (json_doc, GD_INTERNAL_LINK)));
+		
+		success_flag = true;
+		
+		if (!added_link) {
+			System.err.println ("Failed to add link from " + json_doc);
 		}
 			
 		return success_flag;

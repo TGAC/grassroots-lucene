@@ -2,7 +2,7 @@ package uk.ac.earlham.grassroots.document;
 
 import org.json.simple.JSONObject;
 
-public class TreatmentDocument extends GrassrootsDocument {
+public class TreatmentDocument extends MongoDocument {
 
 	
 	public TreatmentDocument (JSONObject json_doc) throws IllegalArgumentException {
@@ -36,16 +36,17 @@ public class TreatmentDocument extends GrassrootsDocument {
 		}
 		 */
 		
+		if (super.addFields (json_doc)) {
+			/*
+			 * Add the treatment-specific fields
+			 */
+			addData (json_doc, "trait");
+			addData (json_doc, "measurement");
+			addData (json_doc, "unit");
+			
+			success_flag = true;
+		}
 		
-		/*
-		 * Add the treatment-specific fields
-		 */
-		addData (json_doc, "trait");
-		addData (json_doc, "measurement");
-		addData (json_doc, "unit");
-		
-		success_flag = true;
-
 		return success_flag;
 	}
 	
@@ -55,6 +56,10 @@ public class TreatmentDocument extends GrassrootsDocument {
 		return "Treatment";
 	}
 
+	
+	public String getNameKey () {
+		return null;
+	}
 	
 	private void addData (JSONObject json_doc, String child_name) {
 		JSONObject child = (JSONObject) json_doc.get (child_name);
