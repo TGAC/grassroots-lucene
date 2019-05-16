@@ -67,6 +67,9 @@ import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 
 
 class DrillDownData {
+	int ddd_total_num_hits;
+	int ddd_from_index;
+	int ddd_to_index;
 	List <Document> ddd_hits;
 	FacetResult ddd_facet;
 }
@@ -225,6 +228,8 @@ public class Searcher {
 								if (results.ddd_facet != null) {
 									searcher.addFacetResult (results.ddd_facet, json_res);
 								}
+								
+								searcher.addSearchStats (results.ddd_from_index, results.ddd_to_index, results.ddd_total_num_hits, json_res);
 							}
 						}
 						break;
@@ -500,30 +505,39 @@ public class Searcher {
 	    
 	    // Retrieve results
 		ScoreDoc [] hits = resultDocs.scoreDocs;
-		int num_total_hits = Math.toIntExact (resultDocs.totalHits);
+		int total_hits = Math.toIntExact (resultDocs.totalHits);
+		
+		
 		
 		
 		
 		List <Document> docs = new ArrayList <Document> ();
 		int start = hits_per_page * page_number;
+		int end = 0;
 
-		if (start < num_total_hits) {
-			int end = start + hits_per_page;
+		if (start < total_hits) {
+			end = start + hits_per_page;
 
-			if (end > num_total_hits) {
-				end = num_total_hits;
+			if (end > total_hits) {
+				end = total_hits;
 			}
 			
 			for (int i = start; i < end; ++ i) {
 				Document doc = searcher.doc (hits [i].doc);
 				docs.add (doc);
 			}
+		} else {
+			start = 0;
 		}
 
 	    
 		DrillDownData search_results = new DrillDownData ();
+		search_results.ddd_total_num_hits = total_hits;
+		search_results.ddd_from_index = start;
+		search_results.ddd_to_index = end;
 		search_results.ddd_hits = docs;
 		search_results.ddd_facet = result;
+		
 	    
 	    return search_results;
 	  }
@@ -552,6 +566,12 @@ public class Searcher {
 		res.put ("facets", facets_array);
 	}
 	  
+
+	private void addSearchStats (int from, int to, int total_hits, JSONObject res) {
+		res.put ("from", from);
+		res.put ("to", to);
+		res.put ("total_hits", total_hits);
+	}
 	
 	private JSONObject getFacetResultAsJSON (FacetResult facet) {
 		JSONObject facet_json = new JSONObject ();
