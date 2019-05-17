@@ -140,7 +140,7 @@ public class Searcher {
 				
 			} else if ("-search_type".equals (args [i])) {
 				search_type = args [++ i];
-			} else if ("-paging".equals(args[i])) {
+			} else if ("-page_size".equals(args[i])) {
 				hits_per_page = Integer.parseInt (args [++ i]);
 
 				if (hits_per_page <= 0) {
@@ -516,13 +516,13 @@ public class Searcher {
 		int end = 0;
 
 		if (start < total_hits) {
-			end = start + hits_per_page;
+			end = start + hits_per_page - 1;
 
-			if (end > total_hits) {
-				end = total_hits;
+			if (end >= total_hits) {
+				end = total_hits - 1;
 			}
 			
-			for (int i = start; i < end; ++ i) {
+			for (int i = start; i <= end; ++ i) {
 				Document doc = searcher.doc (hits [i].doc);
 				docs.add (doc);
 			}
