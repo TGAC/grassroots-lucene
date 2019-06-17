@@ -43,6 +43,7 @@ public class TreatmentDocument extends MongoDocument {
 			addData (json_doc, "trait");
 			addData (json_doc, "measurement");
 			addData (json_doc, "unit");
+			addData (json_doc, "variable");
 			
 			success_flag = true;
 		}
