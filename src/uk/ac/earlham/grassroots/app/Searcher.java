@@ -30,6 +30,8 @@ import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -109,7 +111,7 @@ public class Searcher {
 
 		String index = null;
 		String tax_dirname = null;
-		String query_str = null;
+		List <String> queries = new ArrayList <String> ();
 		int hits_per_page = 10;
 		int page = 0;
 		String facet_name = null;
@@ -124,7 +126,11 @@ public class Searcher {
 			} else if ("-tax".equals (args [i])) {
 				tax_dirname = args [++ i];
 			} else if ("-query".equals (args [i])) {
-				query_str = args [++ i];
+				
+				while (++ i < args.length) {
+					queries.add (args [i]);
+				}
+
 			} else if ("-facet_name".equals (args [i])) {
 				facet_name = args [++ i];
 			} else if ("-facet_value".equals (args [i])) {
@@ -170,8 +176,8 @@ public class Searcher {
 			if (searcher != null) {
 				Query q = null;
 
-				if (query_str != null) {					
-					q = searcher.buildGrassrootsQuery (query_str);
+				if (queries != null) {					
+					q = searcher.buildGrassrootsQuery (queries);
 				} else {
 					q = new MatchAllDocsQuery ();					
 				}
@@ -307,8 +313,8 @@ public class Searcher {
 		sb.append (boost);		
 	}
 	
-
-	public Query buildGrassrootsQuery (String query_str) {
+	
+	public Query buildGrassrootsQuery (List <String> queries) {
 		final float NAME_BOOST = 5.0f;
 		final float DESCRIPTION_BOOST = 3.0f;
 		Query q = null;		
@@ -316,39 +322,8 @@ public class Searcher {
 		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, analyzer);
 		
 		StringBuilder sb = new StringBuilder ();
-		
-		/*
-		 * Check if is the query an exact phrase e.g. in quotes
-		 */
-		int index = query_str.indexOf ('\"');
-		
-		if (index != -1) {
-
-		} else {
-			String [] query_parts = query_str.split ("\\s");		
 			
-			for (int i = 0; i < query_parts.length; ++ i) {
-				
-				if (sb.length () != 0) {
-					sb.append (' ');
-				}
-
-				if (query_parts [i].contains (":")) {
-					sb.append (" AND ");
-					sb.append (query_parts [i]);
-				} else {	
-					sb.append ("(");				
-					buildQuery (sb, GrassrootsDocument.GD_NAME, query_parts [i], NAME_BOOST);
-					buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, query_parts [i], DESCRIPTION_BOOST);
-					sb.append (" \"");
-					sb.append (query_parts [i]);
-					sb.append ("\")");				
-				}
-			}			
-		}
-			
-		
-		
+		AddStringsToQuery (sb, queries, false);
 		
 		System.out.println ("query: " + sb.toString ());		
 		
@@ -362,59 +337,30 @@ public class Searcher {
 	}
 
 	
-	public Query buildGrassrootsQueryUsingParser (String query_str) {
+	private void AddStringsToQuery (StringBuilder sb, List <String> terms, boolean quote_flag) {
 		final float NAME_BOOST = 5.0f;
 		final float DESCRIPTION_BOOST = 3.0f;
-		Query q = null;		
-		StandardAnalyzer analyzer = new StandardAnalyzer ();
-		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, analyzer);
-		
-		StringBuilder sb = new StringBuilder ();
-		
-		/*
-		 * Check if is the query an exact phrase e.g. in quotes
-		 */
-		int index = query_str.indexOf ('\"');
-		
-		if (index != -1) {
 
-		} else {
-			String [] query_parts = query_str.split ("\\s");		
-			
-			for (int i = 0; i < query_parts.length; ++ i) {
-				
-				if (sb.length () != 0) {
-					sb.append (' ');
-				}
+		for (String s : terms) {
+			if (sb.length () != 0) {
+				sb.append (' ');
+			}
 
-				if (query_parts [i].contains (":")) {
-					sb.append (" AND ");
-					sb.append (query_parts [i]);
-				} else {	
-					sb.append ("(");				
-					buildQuery (sb, GrassrootsDocument.GD_NAME, query_parts [i], NAME_BOOST);
-					buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, query_parts [i], DESCRIPTION_BOOST);
-					sb.append (" \"");
-					sb.append (query_parts [i]);
-					sb.append ("\")");				
-				}
-			}			
-		}
+			if (s.contains (":")) {
+				sb.append (" AND ");
+				sb.append (s);
+			} else {	
+				sb.append ("(");				
+				buildQuery (sb, GrassrootsDocument.GD_NAME, s, NAME_BOOST);
+				buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, s, DESCRIPTION_BOOST);
+				sb.append (" \"");
+				sb.append (s);
+				sb.append ("\")");				
+			}
 			
-		
-		
-		
-		System.out.println ("query: " + sb.toString ());		
-		
-		try {				
-			q = parser.parse (sb.toString ());
-		} catch (ParseException e) {
-			System.err.println ("Failed to parse query \"" + q + "\", exception: "+ e);
 		}
-		
-		return q;
+	
 	}
-
 	
 	
 	/** User runs a query and counts facets only without collecting the matching documents.*/
@@ -695,8 +641,9 @@ public class Searcher {
 		ScoreDoc [] hits = results.scoreDocs;
 
 		int num_total_hits = Math.toIntExact (results.totalHits);
-
-		for (int i = 0; i < num_total_hits; ++ i) {
+		int limit = Math.min (num_total_hits, hits.length);
+		
+		for (int i = 0; i < limit; ++ i) {
 			Document doc = searcher.doc (hits [i].doc);
 			docs.add (doc);
 		}
