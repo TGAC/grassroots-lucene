@@ -307,7 +307,7 @@ public class Searcher {
 		sb.append (boost);		
 	}
 	
-	
+
 	public Query buildGrassrootsQuery (String query_str) {
 		final float NAME_BOOST = 5.0f;
 		final float DESCRIPTION_BOOST = 3.0f;
@@ -316,26 +316,92 @@ public class Searcher {
 		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, analyzer);
 		
 		StringBuilder sb = new StringBuilder ();
-		String [] query_parts = query_str.split ("\\s");
 		
-		for (int i = 0; i < query_parts.length; ++ i) {
-			
-			if (sb.length () != 0) {
-				sb.append (' ');
-			}
+		/*
+		 * Check if is the query an exact phrase e.g. in quotes
+		 */
+		int index = query_str.indexOf ('\"');
+		
+		if (index != -1) {
 
-			if (query_parts [i].contains (":")) {
-				sb.append (" AND ");
-				sb.append (query_parts [i]);
-			} else {	
-				sb.append ("(");				
-				buildQuery (sb, GrassrootsDocument.GD_NAME, query_parts [i], NAME_BOOST);
-				buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, query_parts [i], DESCRIPTION_BOOST);
-				sb.append (" \"");
-				sb.append (query_parts [i]);
-				sb.append ("\")");				
-			}
+		} else {
+			String [] query_parts = query_str.split ("\\s");		
+			
+			for (int i = 0; i < query_parts.length; ++ i) {
+				
+				if (sb.length () != 0) {
+					sb.append (' ');
+				}
+
+				if (query_parts [i].contains (":")) {
+					sb.append (" AND ");
+					sb.append (query_parts [i]);
+				} else {	
+					sb.append ("(");				
+					buildQuery (sb, GrassrootsDocument.GD_NAME, query_parts [i], NAME_BOOST);
+					buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, query_parts [i], DESCRIPTION_BOOST);
+					sb.append (" \"");
+					sb.append (query_parts [i]);
+					sb.append ("\")");				
+				}
+			}			
 		}
+			
+		
+		
+		
+		System.out.println ("query: " + sb.toString ());		
+		
+		try {				
+			q = parser.parse (sb.toString ());
+		} catch (ParseException e) {
+			System.err.println ("Failed to parse query \"" + q + "\", exception: "+ e);
+		}
+		
+		return q;
+	}
+
+	
+	public Query buildGrassrootsQueryUsingParser (String query_str) {
+		final float NAME_BOOST = 5.0f;
+		final float DESCRIPTION_BOOST = 3.0f;
+		Query q = null;		
+		StandardAnalyzer analyzer = new StandardAnalyzer ();
+		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, analyzer);
+		
+		StringBuilder sb = new StringBuilder ();
+		
+		/*
+		 * Check if is the query an exact phrase e.g. in quotes
+		 */
+		int index = query_str.indexOf ('\"');
+		
+		if (index != -1) {
+
+		} else {
+			String [] query_parts = query_str.split ("\\s");		
+			
+			for (int i = 0; i < query_parts.length; ++ i) {
+				
+				if (sb.length () != 0) {
+					sb.append (' ');
+				}
+
+				if (query_parts [i].contains (":")) {
+					sb.append (" AND ");
+					sb.append (query_parts [i]);
+				} else {	
+					sb.append ("(");				
+					buildQuery (sb, GrassrootsDocument.GD_NAME, query_parts [i], NAME_BOOST);
+					buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, query_parts [i], DESCRIPTION_BOOST);
+					sb.append (" \"");
+					sb.append (query_parts [i]);
+					sb.append ("\")");				
+				}
+			}			
+		}
+			
+		
 		
 		
 		System.out.println ("query: " + sb.toString ());		
