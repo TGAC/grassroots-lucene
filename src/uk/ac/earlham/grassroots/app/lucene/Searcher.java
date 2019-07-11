@@ -20,7 +20,7 @@
  * 
  * https://lucene.apache.org/core/7_6_0/demo/src-html/org/apache/lucene/demo/SearchFiles.html
  */
-package uk.ac.earlham.grassroots.app;
+package uk.ac.earlham.grassroots.app.lucene;
 
 
 import java.io.FileNotFoundException;
