@@ -13,6 +13,7 @@
 	<!-- shared libs -->
 	<path id="shared.class.path">
   	<filelist dir="lib" files="json-simple-1.1.1.jar" />
+  	<filelist dir="${solr.dir}/dist/solrj-lib" files="slf4j-api-1.7.24.jar" />
 	</path>
 	
 	<!-- solr libs -->
