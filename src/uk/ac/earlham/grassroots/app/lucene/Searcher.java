@@ -27,11 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -176,7 +173,7 @@ public class Searcher {
 			if (searcher != null) {
 				Query q = null;
 
-				if (queries != null) {					
+				if (!queries.isEmpty ()) {					
 					q = searcher.buildGrassrootsQuery (queries);
 				} else {
 					q = new MatchAllDocsQuery ();					
@@ -454,11 +451,11 @@ public class Searcher {
 	    
 	    // Retrieve results
 		ScoreDoc [] hits = result.hits.scoreDocs;
-		int num_total_hits = Math.toIntExact (result.hits.totalHits);
-
+		int num_total_hits = Searcher.CastLongToInt (result.hits.totalHits.value);
+		int limit = Math.min (num_total_hits, hits.length);
 		
 		List <Document> docs = new ArrayList <Document> ();
-		for (int i = 0; i < num_total_hits; ++ i) {
+		for (int i = 0; i < limit; ++ i) {
 			Document doc = searcher.doc (hits [i].doc);
 			docs.add (doc);
 		}
@@ -517,10 +514,7 @@ public class Searcher {
 	    
 	    // Retrieve results
 		ScoreDoc [] hits = resultDocs.scoreDocs;
-		int total_hits = Math.toIntExact (resultDocs.totalHits);
-		
-		
-		
+		int total_hits = Searcher.CastLongToInt (resultDocs.totalHits.value);
 		
 		
 		List <Document> docs = new ArrayList <Document> ();
@@ -624,6 +618,14 @@ public class Searcher {
 	}
 	
 	
+	public static int CastLongToInt (long l) {
+	    if ((l >= Integer.MIN_VALUE) && (l <= Integer.MAX_VALUE)) {
+	    	return ((int) l);
+	    } else {
+	        throw new IllegalArgumentException (l + " is outside the integer range.");
+	    }
+	}
+	
 	/**
 	 * This demonstrates a typical paging search scenario, where the search engine presents 
 	 * pages of size n to the user. The user can then go to the next page if interested in
@@ -640,7 +642,7 @@ public class Searcher {
 		TopDocs results = searcher.search (query, max_num_hits);
 		ScoreDoc [] hits = results.scoreDocs;
 
-		int num_total_hits = Math.toIntExact (results.totalHits);
+		int num_total_hits = Searcher.CastLongToInt (results.totalHits.value);
 		int limit = Math.min (num_total_hits, hits.length);
 		
 		for (int i = 0; i < limit; ++ i) {

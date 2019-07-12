@@ -1,7 +1,6 @@
 package uk.ac.earlham.grassroots.document;
 
 import org.json.simple.JSONObject;
-import org.json.simple.JSONArray;
 
 /**
  * The base class for importing Grassroots Service config documents

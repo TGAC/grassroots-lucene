@@ -1,31 +1,35 @@
-<project name="grassroots-lucene" default="main" basedir=".">
-	<property name="current-version" value="0.1" />
+<project name="grassroots-search" default="jars" basedir=".">
+	<property name="current.version" value="0.1" />
 	<property name="classes.dir" value="classes" />
 	<property name="source.dir" value="src" />
 
+	<property name="core.jar" value="${ant.project.name}-core-${current.version}.jar" />
+	<property name="lucene.jar" value="${ant.project.name}-lucene-app-${current.version}.jar" />
+	<property name="solr.jar" value="${ant.project.name}-solr-app-${current.version}.jar" />
+	
+	
 	<loadproperties srcFile="grassroots-lucene.properties"/>
 
-  <path id="shared.class.path">
-    <fileset dir="lib">
-      <include name="*.jar" />
-    </fileset>
-  </path>
-
-  <path id="lucene.class.path">
-    <fileset dir="lib/lucene">
-      <include name="**/*.jar" />
-    </fileset>
-  </path>
-
-      	
-  <path id="solr.class.path">
-    <fileset dir="lib/solr">
-      <include name="**/*.jar" />
-    </fileset>
-  </path>
-
+	<!-- shared libs -->
+	<path id="shared.class.path">
+  	<filelist dir="lib" files="json-simple-1.1.1.jar" />
+	</path>
 	
-	<target name="main" depends="jar"></target>
+	<!-- solr libs -->
+	<path id="solr.class.path">
+  	<filelist dir="${solr.dir}/dist" files="solr-core-${lucene.version}.jar, solr-solrj-${lucene.version}.jar" />
+	</path>
+
+	<!-- lucene libs -->
+  <path id="lucene.class.path">
+    <pathelement path="${lucene.dir}/analysis/common/lucene-analyzers-common-${lucene.version}.jar" />
+    <pathelement path="${lucene.dir}/core/lucene-core-${lucene.version}.jar" />
+    <pathelement path="${lucene.dir}/queryparser/lucene-queryparser-${lucene.version}.jar" />
+    <pathelement path="${lucene.dir}/facet/lucene-facet-${lucene.version}.jar" />
+  </path>	
+	
+
+	<target name="jars" depends="core-jar,lucene-app-jar,solr-app-jar"></target>
 	
 	<target name="clean">
 		<delete includeemptydirs="true">
@@ -34,50 +38,97 @@
 	</target>
 	
 	<target name="init">
-	    <mkdir dir="${classes.dir}"/>
+		<mkdir dir="${classes.dir}"/>
+		<!--
+		<echo message="lucene.dir ${lucene.dir}" />
+		<echo message="shared.class.path ${shared_path_prop}" />
+		<pathconvert property="lucene_path_prop" refid="lucene.class.path"/>
+		<echo message="lucene.class.path ${lucene_path_prop}" />
+		<pathconvert property="solr_path_prop" refid="solr.class.path"/>
+		<echo message="solr.class.path ${solr_path_prop}" />
+		-->	
 	</target>
 	
 	<target name="compile" depends="init">
+		<pathconvert property="shared.path" refid="shared.class.path"/>
+		<pathconvert property="lucene.path" refid="lucene.class.path"/>
+		<pathconvert property="solr.path" refid="solr.class.path"/>
+
 		<javac srcdir="${source.dir}" destdir="${classes.dir}" includes="**/*.java">
-      <classpath refid="class.path" />
+      <classpath>
+      	<pathelement path="${shared.path}" />
+      	<pathelement path="${lucene.path}" />
+      	<pathelement path="${solr.path}" />
+			</classpath>
     </javac>
 	</target>
 	
-	<target name="jar" depends="compile">
-		<jar destfile="${ant.project.name}-${current-version}.jar"
+	<target name="core-jar" depends="compile">
+		<jar destfile="${core.jar}"
 				basedir="${classes.dir}"
-				includes="**/*.class">
+				includes="uk/ac/earlham/grassroots/document/**/*.class">
 			<manifest>
 				<attribute name="Bundle-Name" value="Grassroots.Lucene"/>
-				<attribute name="Bundle-Version" value="${current-version}"/>
+				<attribute name="Bundle-Version" value="${current.version}"/>
 				<attribute name="Bundle-License" value="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
-				<attribute name="Bundle-Description" value="A simple Java toolkit for JSON"/>
+				<attribute name="Bundle-Description" value="The Grassroots toolkit for indexing and searching data"/>
 			</manifest>
 		</jar>
 	</target>
 
-	<target name="install" depends="jar">
-		<copy file="${ant.project.name}-${current-version}.jar" tofile="${install.dir}/${ant.project.name}-${current-version}.jar" overwrite="true" />
+	
+	<target name="lucene-app-jar" depends="compile">
+		<jar destfile="${lucene.jar}"
+				basedir="${classes.dir}"
+				includes="uk/ac/earlham/grassroots/app/lucene/**/*.class">
+			<manifest>
+				<attribute name="Bundle-Name" value="Grassroots.Lucene"/>
+				<attribute name="Bundle-Version" value="${current.version}"/>
+				<attribute name="Bundle-License" value="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<attribute name="Bundle-Description" value="The Grassroots app for indexing and searching data using Lucene"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="solr-app-jar" depends="compile">
+		<jar destfile="${solr.jar}"
+				basedir="${classes.dir}"
+				includes="uk/ac/earlham/grassroots/app/solr/**/*.class">
+			<manifest>
+				<attribute name="Bundle-Name" value="Grassroots.Lucene"/>
+				<attribute name="Bundle-Version" value="${current.version}"/>
+				<attribute name="Bundle-License" value="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<attribute name="Bundle-Description" value="The Grassroots app for indexing and searching data using Solr"/>
+			</manifest>
+		</jar>
+	</target>
+
+	
+	<target name="install" depends="jars">
+		<copy file="${core.jar}" tofile="${install.dir}/${core.jar}" overwrite="true" />
+		<copy file="${lucene.jar}" tofile="${install.dir}/${lucene.jar}" overwrite="true" />
+		<copy file="${solr.jar}" tofile="${install.dir}/${solr.jar}" overwrite="true" />
 	</target>	
 	
-	<target name="run-indexer" depends="jar">
+	<target name="run-lucene-indexer" depends="jars">
 		<java classname="uk.ac.earlham.grassroots.app.Indexer">
 		  <arg value="-index ~/Desktop/lucene_test/index -data ~/Desktop/lucene_test/docs"/>
 		  <classpath>
-		    <pathelement path="${ant.project.name}-${current-version}.jar" />
+		    <pathelement path="${ant.project.name}-${current.version}.jar" />
 		  	<pathelement refid="class.path" />
 		  </classpath>
 		</java>
 	</target>
 
 	
-	<target name="run-standard-searcher" depends="jar">
+	<target name="run-lucence-searcher" depends="jars">
 		<java classname="uk.ac.earlham.grassroots.app.Searcher">
 		  <arg value="-index ~/Desktop/lucene_test/index -tax ~/Desktop/lucene_test/tax -query ${searcher.query}"/>
 		  <classpath>
-		    <pathelement path="${ant.project.name}-${current-version}.jar" />
+		    <pathelement path="${ant.project.name}-${current.version}.jar" />
 		  	<path refid="class.path" />
 		  </classpath>
 		</java>
 	</target>
 </project>
+
