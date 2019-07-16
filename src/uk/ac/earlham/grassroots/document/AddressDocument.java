@@ -3,10 +3,12 @@ package uk.ac.earlham.grassroots.document;
 
 import org.json.simple.JSONObject;
 
+import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+
 public class AddressDocument extends MongoDocument {
 	
-	public AddressDocument (JSONObject json_doc) throws IllegalArgumentException {
-		super (json_doc);
+	public AddressDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
+		super (json_doc, wrapper);
 	}
 	
 	
@@ -18,11 +20,11 @@ public class AddressDocument extends MongoDocument {
 			/*
 			 * Add the address-specific fields
 			 */
-			if (addText (json_doc, "streetAddress", 1.0f)) {
-				if (addText (json_doc, "addressLocality", 1.0f)) {
-					if (addText (json_doc, "addressRegion", 1.0f)) {
-						if (addText (json_doc, "addressCountry", 1.0f)) {
-							if (addText (json_doc, "postalCode", 1.0f)) {
+			if (addText (json_doc, "streetAddress")) {
+				if (addText (json_doc, "addressLocality")) {
+					if (addText (json_doc, "addressRegion")) {
+						if (addText (json_doc, "addressCountry")) {
+							if (addText (json_doc, "postalCode")) {
 								success_flag = true;
 							}
 						}

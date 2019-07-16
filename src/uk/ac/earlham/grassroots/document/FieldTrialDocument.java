@@ -2,10 +2,12 @@ package uk.ac.earlham.grassroots.document;
 
 import org.json.simple.JSONObject;
 
+import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+
 public class FieldTrialDocument extends MongoDocument {
 
-	public FieldTrialDocument (JSONObject json_doc) throws IllegalArgumentException {
-		super (json_doc);
+	public FieldTrialDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
+		super (json_doc, wrapper);
 	}
 
 	
@@ -17,7 +19,7 @@ public class FieldTrialDocument extends MongoDocument {
 			/*
 			 * Add the field trial-specific fields
 			 */
-			if (addText (json_doc, "team", 3.0f)) {
+			if (addText (json_doc, "team")) {
 				success_flag = true;
 			}
 		}

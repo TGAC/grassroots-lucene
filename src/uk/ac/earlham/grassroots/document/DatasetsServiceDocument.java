@@ -4,11 +4,13 @@ package uk.ac.earlham.grassroots.document;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+
 
 abstract public class DatasetsServiceDocument extends ServiceDocument {
 	
-	public DatasetsServiceDocument (JSONObject json_doc) throws IllegalArgumentException {
-		super (json_doc);
+	public DatasetsServiceDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
+		super (json_doc, wrapper);
 	}
 	
 	protected boolean addFields (JSONObject json_doc) {
@@ -28,8 +30,8 @@ abstract public class DatasetsServiceDocument extends ServiceDocument {
 							final String name_key = getDatasetNameKey ();
 							final String description_key = getDatasetDescriptionKey ();
 							
-							if (addText (item, name_key, GD_NAME, GD_NAME_BOOST)) {
-								if (addText (item, description_key, GD_DESCRIPTION, GD_DESCRIPTION_BOOST)) {
+							if (addText (item, name_key, GD_NAME)) {
+								if (addText (item, description_key, GD_DESCRIPTION)) {
 									++ num_imported;
 								} else {
 									System.err.println ("Failed to add value for " + GD_DESCRIPTION + " with " + description_key + " from " + item.toString ());

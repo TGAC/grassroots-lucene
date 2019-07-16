@@ -2,10 +2,12 @@ package uk.ac.earlham.grassroots.document;
 
 import org.json.simple.JSONObject;
 
+import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+
 public class StudyDocument extends MongoDocument {
 	
-	public StudyDocument (JSONObject json_doc) throws IllegalArgumentException {
-		super (json_doc);
+	public StudyDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
+		super (json_doc, wrapper);
 	}
 	
 	
@@ -17,7 +19,7 @@ public class StudyDocument extends MongoDocument {
 			/*
 			 * Add the study-specific fields
 			 */
-			addText (json_doc, "soil", 1.0f);
+			addText (json_doc, "soil");
 			
 			if (addMongoId (json_doc, "parent_field_trial_id")) { 
 				if (addDateString (json_doc, "sowing_date")) {

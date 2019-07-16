@@ -2,11 +2,13 @@ package uk.ac.earlham.grassroots.document;
 
 import org.json.simple.JSONObject;
 
+import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+
 public class TreatmentDocument extends MongoDocument {
 
 	
-	public TreatmentDocument (JSONObject json_doc) throws IllegalArgumentException {
-		super (json_doc);
+	public TreatmentDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
+		super (json_doc, wrapper);
 	}
 	
 	
@@ -66,10 +68,10 @@ public class TreatmentDocument extends MongoDocument {
 		JSONObject child = (JSONObject) json_doc.get (child_name);
 		
 		if (child != null) {
-			addText (child, "so:name", GD_NAME_BOOST);
-			addText (child, "so:description", GD_NAME_BOOST);
-			addString (child, "so:sameAs", GD_NAME_BOOST);
-			addText (child, "abbreviation", 1.0f);
+			addText (child, "so:name");
+			addText (child, "so:description");
+			addString (child, "so:sameAs");
+			addText (child, "abbreviation");
 		}			
 	}
 }

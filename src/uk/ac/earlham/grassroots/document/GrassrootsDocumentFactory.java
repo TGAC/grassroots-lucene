@@ -4,6 +4,7 @@ package uk.ac.earlham.grassroots.document;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
+import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 
 /**
@@ -22,7 +23,7 @@ public class GrassrootsDocumentFactory {
 	 * @return The appropriate GrassrootsDocument or <code>null<code> upon
 	 * error
 	 */
-	static public GrassrootsDocument createDocument (JSONObject json_doc) {
+	static public GrassrootsDocument createDocument (JSONObject json_doc, DocumentWrapper wrapper) {
 		GrassrootsDocument doc = null;
 		Object obj_type = json_doc.get ("@type");
 		
@@ -31,19 +32,19 @@ public class GrassrootsDocumentFactory {
 			
 			switch (datatype) {
 				case "Grassroots:FieldTrial":
-					doc = new FieldTrialDocument (json_doc);
+					doc = new FieldTrialDocument (json_doc, wrapper);
 					break;
 					
 				case "Grassroots:Study": 
-					doc = new StudyDocument (json_doc);					
+					doc = new StudyDocument (json_doc, wrapper);					
 					break;
 
 				case "Grassroots:Phenotype": 
-					doc = new TreatmentDocument (json_doc);					
+					doc = new TreatmentDocument (json_doc, wrapper);					
 					break;
 					
 				case "Grassroots:Address": 
-					doc = new AddressDocument (json_doc);					
+					doc = new AddressDocument (json_doc, wrapper);					
 					break;
 					
 				case "Grassroots:Service": {
@@ -56,11 +57,11 @@ public class GrassrootsDocumentFactory {
 							case "BlastN":
 							case "BlastP":
 							case "BlastX":
-								doc = new BlastServiceDocument (json_doc);	
+								doc = new BlastServiceDocument (json_doc, wrapper);	
 								break;
 
 							case "Scaffold":
-								doc = new SamtoolsServiceDocument (json_doc);	
+								doc = new SamtoolsServiceDocument (json_doc, wrapper);	
 								break;
 								
 							default:

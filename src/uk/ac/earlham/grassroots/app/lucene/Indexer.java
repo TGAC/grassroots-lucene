@@ -40,6 +40,7 @@ import org.json.simple.parser.ParseException;
 
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 import uk.ac.earlham.grassroots.document.GrassrootsDocumentFactory;
+import uk.ac.earlham.grassroots.document.util.LuceneDocumentWrapper;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -189,11 +190,13 @@ public class Indexer {
 	 * @throws IOException If there is a low-level I/O error
 	 */
 	public void indexDocs (final IndexWriter index_writer, TaxonomyWriter tax_writer, Path path) throws IOException {
+		LuceneDocumentWrapper wrapper = new LuceneDocumentWrapper ();
+		
 		if (Files.isDirectory(path)) {
 			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					if (indexDoc (index_writer, tax_writer, file.toString (), attrs.lastModifiedTime().toMillis ()) == 0) {
+					if (indexDoc (wrapper, index_writer, tax_writer, file.toString (), attrs.lastModifiedTime().toMillis ()) == 0) {
 						System.err.println ("Failed to index " + file.toString ());
 					}
 
@@ -201,12 +204,12 @@ public class Indexer {
 				}
 			});
 		} else {
-			indexDoc (index_writer, tax_writer, path.toString(), Files.getLastModifiedTime(path).toMillis());
+			indexDoc (wrapper, index_writer, tax_writer, path.toString(), Files.getLastModifiedTime(path).toMillis());
 		}
 	}
 
 	/** Indexes a single document */
-	public int indexDoc (IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, long lastModified) {
+	public int indexDoc (LuceneDocumentWrapper wrapper, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, long lastModified) {
 		int records_imported = 0;
 		FileReader reader = null;
 		
@@ -235,7 +238,7 @@ public class Indexer {
 			if (obj != null) {
 				
 				if (obj instanceof JSONObject) {
-					if (indexObj ((JSONObject) obj, 0, index_writer, tax_writer, filename)) {
+					if (indexObj ((JSONObject) obj, 0, index_writer, tax_writer, filename, wrapper)) {
 						++ records_imported;
 					}
 				} else if (obj instanceof JSONArray) {
@@ -249,7 +252,7 @@ public class Indexer {
 						if (obj instanceof JSONObject) {
 							JSONObject json_obj = (JSONObject) obj;
 							
-							if (indexObj (json_obj, i, index_writer, tax_writer, filename)) {
+							if (indexObj (json_obj, i, index_writer, tax_writer, filename, wrapper)) {
 								++ records_imported;
 							} else {
 								System.err.println ("Failed to import \"" + json_obj.toJSONString () + "\"");
@@ -264,12 +267,12 @@ public class Indexer {
 	}
 
 
-	private boolean indexObj (JSONObject json_obj, int obj_index, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename) {
+	private boolean indexObj (JSONObject json_obj, int obj_index, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, LuceneDocumentWrapper wrapper) {
 		boolean success_flag = false;
-		GrassrootsDocument grassroots_doc = GrassrootsDocumentFactory.createDocument (json_obj);
+		GrassrootsDocument grassroots_doc = GrassrootsDocumentFactory.createDocument (json_obj, wrapper);
 		
 		if (grassroots_doc != null) {
-			Document doc = grassroots_doc.getDocument ();
+			Document doc = wrapper.getDocument ();
 			
 			System.out.println ("initial:\n" + doc);
 			

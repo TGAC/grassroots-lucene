@@ -4,17 +4,9 @@ package uk.ac.earlham.grassroots.document;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
-
-import org.apache.lucene.facet.FacetField;
-
-import org.apache.lucene.index.IndexableField;
-
 import org.json.simple.JSONObject;
+
+import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 
 /**
@@ -43,8 +35,7 @@ abstract public class GrassrootsDocument {
 	static public final float GD_NAME_BOOST = 5.0f;
 	static public final float GD_DESCRIPTION_BOOST = 3.0f;
 	
-	protected Document gd_document;
-	protected StringBuilder gd_default_field_buffer;
+	protected DocumentWrapper gd_wrapper;
 	
 	/**
 	 * Create a new GrassrootsDocument
@@ -52,28 +43,24 @@ abstract public class GrassrootsDocument {
 	 * @param json_doc The Grassroots JSON document to pull the data from.
 	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the required keys.
 	 */
-	public GrassrootsDocument (JSONObject json_doc) throws IllegalArgumentException {
-		gd_document = new Document ();
-		gd_default_field_buffer = new StringBuilder ();
+	public GrassrootsDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
+		gd_wrapper = wrapper;
+		
 		final String PRIVATE_TYPE = "@type";
 		
 		String private_typename = (String) json_doc.get (PRIVATE_TYPE);
 		
 		if (private_typename != null) {
 		
-			gd_document.add (new FacetField (GD_DATATYPE, getUserFriendlyTypename ()));
-			gd_document.add (new StoredField (PRIVATE_TYPE, private_typename));
+			wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
+			wrapper.addNonIndexedString (PRIVATE_TYPE, private_typename);
 						
 			if (!addFields (json_doc)) {
 				System.err.println ("Error adding fields for " + json_doc);
 				throw new IllegalArgumentException (json_doc.toJSONString ());
 			}
 			
-			if (gd_default_field_buffer.length () > 0) {
-				String s = gd_default_field_buffer.toString ();
-				TextField default_field = new TextField (GD_DEFAULT_SEARCH_KEY, s, Field.Store.YES);
-				gd_document.add (default_field);			
-			}
+
 		} else {
 			System.err.println ("No " + PRIVATE_TYPE + " in " + json_doc);
 			throw new IllegalArgumentException (json_doc.toJSONString ());			
@@ -87,12 +74,12 @@ abstract public class GrassrootsDocument {
 		/*
 		 * Add the common fields
 		 */
-		addText (json_doc, "so:description", GD_DESCRIPTION, GD_DESCRIPTION_BOOST);
+		addText (json_doc, "so:description", GD_DESCRIPTION);
 		
 		String name_key = getNameKey ();
 		
 		if (name_key != null) {
-			if (!addText (json_doc, name_key, GD_NAME, GD_NAME_BOOST)) {
+			if (!addText (json_doc, name_key, GD_NAME)) {
 				System.err.println ("Failed to add " + GD_NAME + " using " + name_key + " from " + json_doc);				
 				return false;
 			}
@@ -110,23 +97,11 @@ abstract public class GrassrootsDocument {
 	}
 
 	
-	/**
-	 * Get the underlying Lucene document.
-	 * 
-	 * @return The Lucene document
-	 */
-	public Document getDocument () {
-		return gd_document;
-	}
-
 	
 	public boolean addFacet (String key, String private_value, String public_value) {
-		FacetField facet = new FacetField (key, private_value);
-		gd_document.add (facet);
-		
-		StoredField field = new StoredField (key, public_value);
-		gd_document.add (field);
-		
+		gd_wrapper.addFacet (key, private_value);
+		gd_wrapper.addNonIndexedString (key, public_value);
+	
 		return true;
 	}
 	
@@ -137,8 +112,7 @@ abstract public class GrassrootsDocument {
 		String oid = (String) id_obj.get ("$oid");
 		
 		if (oid != null) {
-			Field f = new StoredField (key, oid);
-			gd_document.add (f);
+			gd_wrapper.addNonIndexedString (key, oid);
 			
 			success_flag = true;
 		}
@@ -157,8 +131,8 @@ abstract public class GrassrootsDocument {
 	 * found in the given JSON document.
 	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the given key.
 	 */
-	public boolean addText (JSONObject json_doc, String key, float boost) throws IllegalArgumentException {
-		return addText (json_doc, key, key, boost);
+	public boolean addText (JSONObject json_doc, String key) throws IllegalArgumentException {
+		return addText (json_doc, key, key);
 	}
 
 	
@@ -172,15 +146,13 @@ abstract public class GrassrootsDocument {
 	 * found in the given JSON document.
 	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the given key.
 	 */
-	public boolean addText (JSONObject json_doc, String input_key, String output_key, float boost) throws IllegalArgumentException {
+	public boolean addText (JSONObject json_doc, String input_key, String output_key) throws IllegalArgumentException {
 		boolean success_flag = false;
 		String value = (String) json_doc.get (input_key);
 		
 		if (value != null) {
-			Field f = new TextField (output_key, value, Field.Store.YES);
-			addField (f, boost);
+			gd_wrapper.addText (output_key, value);
 			
-			addToDefaultBuffer (value);
 			success_flag = true;
 		} 
 
@@ -199,14 +171,13 @@ abstract public class GrassrootsDocument {
 	 * <code>false</code> otherwise.
 	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the given key.
 	 */
-	public boolean addString (JSONObject json_doc, String key, float boost) throws IllegalArgumentException {
+	public boolean addString (JSONObject json_doc, String key) throws IllegalArgumentException {
 		boolean success_flag = false;
 		String value = (String) json_doc.get (key);
 		
 		if (value != null) {
-			Field f = new StringField (key, value, Field.Store.YES);
-			addField (f, boost);
-			
+			gd_wrapper.addString (key, value);
+
 			success_flag = true;
 		} 
 
@@ -227,9 +198,8 @@ abstract public class GrassrootsDocument {
 		String value = (String) json_doc.get (key);
 		
 		if (value != null) {
-			Field f = new StoredField (key, value);
-			gd_document.add (f);
-			
+			gd_wrapper.addNonIndexedString (key, value);
+
 			success_flag = true;
 		} 
 		
@@ -237,25 +207,8 @@ abstract public class GrassrootsDocument {
 	}
 	
 	
-	/**
-	 * Add a field to the underlying Lucene document.
-	 * 
-	 * @param field The field to add.
-	 * @param boost The boost value that will be used for this field when searching.
-	 */
-	protected void addField (IndexableField field, float boost) {
-		gd_document.add (field);
-		//gd_document.add (new FloatDocValuesField (field.name() + GD_BOOST_SUFFIX, boost));
-	}
 
 
-	protected void addToDefaultBuffer (String value) {
-		if (gd_default_field_buffer.length () > 0) {
-			gd_default_field_buffer.append (" ");				
-		}
-		
-		gd_default_field_buffer.append (value);
-	}
 
 	
 	/**
@@ -289,8 +242,7 @@ abstract public class GrassrootsDocument {
 			sb.append (value.substring (5, 7));
 			sb.append (value.substring (8, 10));
 		
-			Field f = new StoredField (key, sb.toString ());
-			gd_document.add (f);
+			gd_wrapper.addNonIndexedString (key, sb.toString ());
 			
 			success_flag = true;
 		} 
