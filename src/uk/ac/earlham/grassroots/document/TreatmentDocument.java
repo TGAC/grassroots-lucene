@@ -5,7 +5,11 @@ import org.json.simple.JSONObject;
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 public class TreatmentDocument extends MongoDocument {
-
+	static private String TD_TRAIT = "trait";
+	static private String TD_MEASUREMENT = "measurement";
+	static private String TD_UNIT = "unit";
+	static private String TD_VARIABLE = "variable";
+	
 	
 	public TreatmentDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
@@ -42,10 +46,10 @@ public class TreatmentDocument extends MongoDocument {
 			/*
 			 * Add the treatment-specific fields
 			 */
-			addData (json_doc, "trait");
-			addData (json_doc, "measurement");
-			addData (json_doc, "unit");
-			addData (json_doc, "variable");
+			addData (json_doc, TD_TRAIT);
+			addData (json_doc, TD_MEASUREMENT);
+			addData (json_doc, TD_UNIT);
+			addData (json_doc, TD_VARIABLE);
 			
 			success_flag = true;
 		}

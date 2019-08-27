@@ -13,7 +13,7 @@ public class SolrDocumentWrapper implements DocumentWrapper {
 	protected SolrInputDocument sdw_doc;
 	
 	public SolrDocumentWrapper () {
-		sdw_client = getSolrClient ();
+		sdw_client = null; // HttpSolr ();
 		sdw_doc = new SolrInputDocument ();
 	}
 	

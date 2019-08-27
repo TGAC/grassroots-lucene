@@ -43,7 +43,7 @@ public class GrassrootsDocumentFactory {
 					doc = new TreatmentDocument (json_doc, wrapper);					
 					break;
 					
-				case "Grassroots:Address": 
+				case "Grassroots:Location": 
 					doc = new AddressDocument (json_doc, wrapper);					
 					break;
 					

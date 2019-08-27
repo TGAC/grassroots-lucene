@@ -55,7 +55,7 @@
 		<pathconvert property="lucene.path" refid="lucene.class.path"/>
 		<pathconvert property="solr.path" refid="solr.class.path"/>
 
-		<javac srcdir="${source.dir}" destdir="${classes.dir}" includes="**/*.java">
+		<javac srcdir="${source.dir}" destdir="${classes.dir}" includes="**/*.java" debug="true">
       <classpath>
       	<pathelement path="${shared.path}" />
       	<pathelement path="${lucene.path}" />

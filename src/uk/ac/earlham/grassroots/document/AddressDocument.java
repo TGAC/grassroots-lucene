@@ -1,11 +1,18 @@
 package uk.ac.earlham.grassroots.document;
 
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 public class AddressDocument extends MongoDocument {
+	static private String AD_STREET = "streetAddress";
+	static private String AD_LOCALITY = "addressLocality";
+	static private String AD_REGION = "addressRegion";
+	static private String AD_COUNTRY = "addressCountry";
+	static private String AD_POSTCODE = "postalCode";
+
 	
 	public AddressDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
@@ -20,11 +27,11 @@ public class AddressDocument extends MongoDocument {
 			/*
 			 * Add the address-specific fields
 			 */
-			if (addText (json_doc, "streetAddress")) {
-				if (addText (json_doc, "addressLocality")) {
-					if (addText (json_doc, "addressRegion")) {
-						if (addText (json_doc, "addressCountry")) {
-							if (addText (json_doc, "postalCode")) {
+			if (addText (json_doc, AD_STREET)) {
+				if (addText (json_doc, AD_LOCALITY)) {
+					if (addText (json_doc, AD_REGION)) {
+						if (addText (json_doc, AD_COUNTRY)) {
+							if (addText (json_doc, AD_POSTCODE)) {
 								success_flag = true;
 							}
 						}
@@ -34,6 +41,19 @@ public class AddressDocument extends MongoDocument {
 		}
 	
 		return success_flag;
+	}
+	
+	
+	public JSONArray getSchemaFields (JSONArray fields) {
+		super.getSchemaFields (fields);
+		
+		addField (fields, AD_STREET, "solr.TextField", true, true);
+		addField (fields, AD_LOCALITY, "solr.TextField", true, true);
+		addField (fields, AD_REGION, "solr.TextField", true, true);
+		addField (fields, AD_COUNTRY, "solr.TextField", true, true);
+		addField (fields, AD_POSTCODE, "solr.StrField", true, true);
+	
+		return fields;
 	}
 	
 	

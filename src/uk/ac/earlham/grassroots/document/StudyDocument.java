@@ -16,17 +16,23 @@ public class StudyDocument extends MongoDocument {
 		
 		if (super.addFields (json_doc)) {
 			
-			/*
-			 * Add the study-specific fields
-			 */
-			addText (json_doc, "soil");
-			
 			if (addMongoId (json_doc, "parent_field_trial_id")) { 
-				if (addDateString (json_doc, "sowing_date")) {
-					if (addDateString (json_doc, "harvest_date")) {
-						success_flag = true;
-					}
+
+				if (addMongoId (json_doc, "address_id")) { 
+	
+					/*
+					 * Add the study-specific fields
+					 */
+					addText (json_doc, "soil");
+					addDateString (json_doc, "sowing_date");
+					addDateString (json_doc, "harvest_date");
+					
+					success_flag = true;
+				} else {
+					System.err.println ("Failed to add mongo id for address_id from " + json_doc);
 				}
+			} else {
+				System.err.println ("Failed to add mongo id for address_id from " + json_doc);
 			}
 		}
 	

@@ -4,6 +4,7 @@ package uk.ac.earlham.grassroots.document;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
@@ -90,7 +91,7 @@ abstract public class GrassrootsDocument {
 		success_flag = true;
 		
 		if (!added_link) {
-			System.err.println ("Failed to add link from " + json_doc);
+			//System.err.println ("Failed to add link from " + json_doc);
 		}
 			
 		return success_flag;
@@ -255,6 +256,33 @@ abstract public class GrassrootsDocument {
 		return "so:name";
 	}
 
+	public JSONArray getSchemaFields (JSONArray fields) {
+		if (fields == null) {
+			fields = new JSONArray ();
+		}
+		
+		addField (fields, GD_NAME, "solr.TextField", true, true);
+		addField (fields, GD_DESCRIPTION, "solr.TextField", true, true);
+		addField (fields, GD_DEFAULT_SEARCH_KEY, "solr.TextField", true, true);
+		addField (fields, GD_PUBLIC_LINK, "solr.StrField", true, true);
+		addField (fields, GD_INTERNAL_LINK, "solr.StrField", true, true);
+	
+		return fields;
+	}
+
+	
 	abstract public String getUserFriendlyTypename ();
+
+	
+	public void addField (JSONArray fields, String name, String datatype, boolean indexed_flag, boolean stored_flag) {
+		JSONObject json = new JSONObject ();
+		
+		json.put ("name", name);
+		json.put ("type", datatype);
+		json.put ("stored", stored_flag ? true : false);
+		json.put ("indexed", stored_flag ? true : false);
+
+		fields.add (json);
+	}
 }
 

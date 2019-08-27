@@ -1,5 +1,6 @@
 package uk.ac.earlham.grassroots.document;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
@@ -13,11 +14,25 @@ abstract public class MongoDocument extends GrassrootsDocument {
 		super (json_doc, wrapper);
 	}
 	
-	protected boolean addFields (JSONObject json_doc) {
-		boolean success_flag = super.addFields (json_doc);
+
+	public JSONArray getSchemaFields (JSONArray fields) {
+		super.getSchemaFields (fields);
 		
-		if (success_flag) {
-			success_flag = addMongoId (json_doc, MD_MONGO_ID);
+		addField (fields, MD_MONGO_ID, "solr.StrField", false, true);
+	
+		return fields;
+	}
+	
+
+	protected boolean addFields (JSONObject json_doc) {
+		boolean success_flag = false;
+				
+		if (super.addFields (json_doc)) {
+			if (addMongoId (json_doc, MD_MONGO_ID)) {
+				success_flag = true;
+			} else {
+				System.err.println ("Failed to add mongo id for " + MD_MONGO_ID + "  from " + json_doc);
+			}				
 		}
 		
 		return success_flag;

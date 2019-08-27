@@ -269,48 +269,59 @@ public class Indexer {
 
 	private boolean indexObj (JSONObject json_obj, int obj_index, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, LuceneDocumentWrapper wrapper) {
 		boolean success_flag = false;
-		GrassrootsDocument grassroots_doc = GrassrootsDocumentFactory.createDocument (json_obj, wrapper);
+		GrassrootsDocument grassroots_doc = null;
+				
+		try {
+			grassroots_doc = GrassrootsDocumentFactory.createDocument (json_obj, wrapper);
+		} catch (Exception e) {
+			System.err.println ("GrassrootsDocumentFactory.createDocument () failed for " + json_obj + " exception: " + e.getMessage ());
+		}
 		
 		if (grassroots_doc != null) {
 			Document doc = wrapper.getDocument ();
 			
 			System.out.println ("initial:\n" + doc);
 			
-			
 			try {
 				doc = in_facets_config.build (tax_writer, doc);	
-			} catch (IOException ioe) {
-				System.err.println ("Building faceted document failed for " + filename + " exception: " + ioe.getMessage ());
+			} catch (Exception e) {
+				System.err.println ("Building faceted document failed for " + json_obj + "\n " + filename + " exception: " + e.getMessage ());
+				doc = null;
 			}
-	
-			if (index_writer.getConfig ().getOpenMode () == OpenMode.CREATE) {
-				// New index, so we just add the document (no old document can be there):
-				System.out.println("adding " + filename);
-	
-				
-				System.out.println ("after facets:\n" + doc);
-	
-				try {
-					index_writer.addDocument (doc);
-					success_flag = true;
-				} catch (IOException ioe) {
-					System.err.println ("writer.addDocument () failed for " + filename + " exception: " + ioe.getMessage ());
-				}
-				
-			} else {
-				// Existing index (an old copy of this document may have been indexed) so
-				// we use updateDocument instead to replace the old one matching the exact
-				// path, if present:
-				System.out.println("updating " + filename);
-				
-				try {
-					index_writer.updateDocument (new Term ("path", filename), doc);
-					success_flag = true;
-				} catch (IOException ioe) {
-					System.err.println ("writer.updateDocument () failed for " + filename + " exception: " + ioe.getMessage ());
+
+			if (doc != null) {
+				if (index_writer.getConfig ().getOpenMode () == OpenMode.CREATE) {
+					// New index, so we just add the document (no old document can be there):
+					System.out.println("adding " + filename);
+		
+					
+					System.out.println ("after facets:\n" + doc);
+		
+					try {
+						index_writer.addDocument (doc);
+						success_flag = true;
+					} catch (IOException ioe) {
+						System.err.println ("writer.addDocument () failed for " + filename + " exception: " + ioe.getMessage ());
+					}
+					
+				} else {
+					// Existing index (an old copy of this document may have been indexed) so
+					// we use updateDocument instead to replace the old one matching the exact
+					// path, if present:
+					System.out.println("updating " + filename);
+					
+					try {
+						index_writer.updateDocument (new Term ("path", filename), doc);
+						success_flag = true;
+					} catch (IOException ioe) {
+						System.err.println ("writer.updateDocument () failed for " + filename + " exception: " + ioe.getMessage ());
+					}
 				}
 			}
+				
+
 			
+		} else {
 		}
 	
 		return success_flag;
