@@ -27,17 +27,22 @@ public class AddressDocument extends MongoDocument {
 			/*
 			 * Add the address-specific fields
 			 */
-			if (addText (json_doc, AD_STREET)) {
-				if (addText (json_doc, AD_LOCALITY)) {
-					if (addText (json_doc, AD_REGION)) {
-						if (addText (json_doc, AD_COUNTRY)) {
-							if (addText (json_doc, AD_POSTCODE)) {
-								success_flag = true;
-							}
-						}
-					}
+			JSONObject temp_json = (JSONObject) json_doc.get ("address");
+			
+			if (temp_json != null) {
+				JSONObject address_json = (JSONObject) temp_json.get ("Address");
+				
+				if (address_json != null) {
+					
+					addText (address_json, AD_STREET);
+					addText (address_json, AD_LOCALITY);
+					addText (address_json, AD_REGION);
+					addText (address_json, AD_COUNTRY);
+					addText (address_json, AD_POSTCODE);
+					
+					success_flag = true;
 				}
-			}
+			}		
 		}
 	
 		return success_flag;
