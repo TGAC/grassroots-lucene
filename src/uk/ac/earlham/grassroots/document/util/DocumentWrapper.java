@@ -16,4 +16,6 @@ public interface DocumentWrapper {
 
 	
 	void addDateString (String key, String value);
+	
+	void clear ();
 }

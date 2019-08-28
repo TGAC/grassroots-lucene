@@ -26,6 +26,12 @@ public class LuceneDocumentWrapper implements DocumentWrapper {
 	}
 
 	
+	public void clear () {
+		ldw_default_field_buffer.setLength (0);
+		ldw_document = new Document ();
+	}
+	
+	
 	@Override
 	public boolean process() {
 		if (ldw_default_field_buffer.length () > 0) {

@@ -2,6 +2,7 @@ package uk.ac.earlham.grassroots.document.util;
 
 import java.io.IOException;
 
+import org.apache.lucene.document.Document;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -18,6 +19,10 @@ public class SolrDocumentWrapper implements DocumentWrapper {
 	}
 	
 
+	public void clear () {
+		sdw_doc.clear ();
+	}
+	
 	@Override
 	public boolean process() {
 		// TODO Auto-generated method stub

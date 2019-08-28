@@ -257,6 +257,8 @@ public class Indexer {
 							} else {
 								System.err.println ("Failed to import \"" + json_obj.toJSONString () + "\"");
 							}
+							
+							wrapper.clear();
 						}
 					}
 				}
@@ -270,7 +272,10 @@ public class Indexer {
 	private boolean indexObj (JSONObject json_obj, int obj_index, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, LuceneDocumentWrapper wrapper) {
 		boolean success_flag = false;
 		GrassrootsDocument grassroots_doc = null;
-				
+
+		System.out.println ("initial json:\n" + json_obj);
+
+		
 		try {
 			grassroots_doc = GrassrootsDocumentFactory.createDocument (json_obj, wrapper);
 		} catch (Exception e) {
@@ -280,12 +285,12 @@ public class Indexer {
 		if (grassroots_doc != null) {
 			Document doc = wrapper.getDocument ();
 			
-			System.out.println ("initial:\n" + doc);
+			System.out.println ("initial doc:\n" + doc);
 			
 			try {
 				doc = in_facets_config.build (tax_writer, doc);	
 			} catch (Exception e) {
-				System.err.println ("Building faceted document failed for " + json_obj + "\n " + filename + " exception: " + e.getMessage ());
+				System.err.println ("Building faceted document failed for " + json_obj + "\n " + "doc " + doc + "\n exception: " + e.getMessage ());
 				doc = null;
 			}
 

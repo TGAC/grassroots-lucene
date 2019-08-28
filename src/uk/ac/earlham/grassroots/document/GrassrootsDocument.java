@@ -56,6 +56,7 @@ abstract public class GrassrootsDocument {
 			wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
 			wrapper.addNonIndexedString (PRIVATE_TYPE, private_typename);
 						
+			
 			if (!addFields (json_doc)) {
 				System.err.println ("Error adding fields for " + json_doc);
 				throw new IllegalArgumentException (json_doc.toJSONString ());
