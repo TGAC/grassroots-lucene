@@ -70,7 +70,8 @@ class DrillDownData {
 	int ddd_from_index;
 	int ddd_to_index;
 	List <Document> ddd_hits;
-	FacetResult ddd_facet;
+	FacetResult ddd_active_facet;
+	List <FacetResult> ddd_facets;	
 }
 
 class DrillSidewaysData {
@@ -228,8 +229,12 @@ public class Searcher {
 							if (results != null) {
 								searcher.addHitsToJSON (results.ddd_hits, json_res);
 								
-								if (results.ddd_facet != null) {
-									searcher.addFacetResult (results.ddd_facet, json_res);
+								if (results.ddd_active_facet != null) {
+									searcher.addFacetResult (results.ddd_active_facet, json_res);
+								}
+								
+								if (results.ddd_facets != null) {
+									searcher.addFacetResults (results.ddd_facets, json_res);
 								}
 								
 								searcher.addSearchStats (results.ddd_from_index, results.ddd_to_index, results.ddd_total_num_hits, json_res);
@@ -475,6 +480,7 @@ public class Searcher {
 	    IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector ();
 		final int MAX_NUM_RESULTS = 1024;
+		List <FacetResult> all_facets = null;
 		
 	    // Passing no baseQuery means we drill down on all
 	    // documents ("browse only"):
@@ -500,6 +506,10 @@ public class Searcher {
 	    // Retrieve facets
 	    Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
 
+	    if (facets != null) {
+	    	all_facets = facets.getAllDims (MAX_NUM_RESULTS);
+	    }
+	    
 	    FacetResult result = null;
 
 	    if (facet_to_return != null) {
@@ -510,6 +520,8 @@ public class Searcher {
 	    for (FacetsCollector.MatchingDocs matching_doc : matching_docs) {
 	    
 	    }
+	    
+
 	    
 	    
 	    // Retrieve results
@@ -542,8 +554,8 @@ public class Searcher {
 		search_results.ddd_from_index = start;
 		search_results.ddd_to_index = end;
 		search_results.ddd_hits = docs;
-		search_results.ddd_facet = result;
-		
+		search_results.ddd_active_facet = result;
+		search_results.ddd_facets = all_facets;
 	    
 	    return search_results;
 	  }
