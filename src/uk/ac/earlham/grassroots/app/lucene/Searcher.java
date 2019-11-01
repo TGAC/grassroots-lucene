@@ -508,6 +508,15 @@ public class Searcher {
 
 	    if (facets != null) {
 	    	all_facets = facets.getAllDims (MAX_NUM_RESULTS);
+	    	
+	    	if (all_facets != null) {
+	    		int num_facets = all_facets.size ();
+				System.out.println ("all_facets size" + num_facets);	
+	    	} else {
+				System.out.println ("all_facets is null");		    		
+	    	}
+	    } else {
+			System.out.println ("no facets");		
 	    }
 	    
 	    FacetResult result = null;
