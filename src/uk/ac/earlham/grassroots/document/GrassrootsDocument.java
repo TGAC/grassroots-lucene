@@ -1,8 +1,14 @@
 package uk.ac.earlham.grassroots.document;
 
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -225,28 +231,55 @@ abstract public class GrassrootsDocument {
 	 */
 	public boolean addDateString (JSONObject json_doc, String key) throws IllegalArgumentException {
 		boolean success_flag = false;
-		String value = (String) json_doc.get (key);
+		Object date_value = json_doc.get (key);
 		
-		if (value != null) {
-			/*
-			 * Grassroots dates are as YYYY-MM-DD and for easy sorting let's store them as
-			 * YYYYMMDD. First let's check that is valid.
-			 */
-			try {
-				LocalDate.parse (value);
-			} catch (DateTimeParseException dtpe) {	
-				throw new IllegalArgumentException ("invalid date " + value + " in " + json_doc);
+		if (date_value != null) {
+			String date_str = null;
+			
+			if (date_value instanceof String) {
+				String value = date_value.toString ();
+				/*
+				 * Grassroots dates are as YYYY-MM-DD and for easy sorting let's store them as
+				 * YYYYMMDD. First let's check that is valid.
+				 */
+				try {
+					LocalDate.parse (value);
+					date_str = value;
+				} catch (DateTimeParseException dtpe) {	
+					throw new IllegalArgumentException ("invalid date " + value + " in " + json_doc);
+				}
+				
+
+			
+			} else if (date_value instanceof Long){
+				long l = ((Long) date_value).longValue ();
+
+				/*
+				 * l is in seconds, Date requires milliseconds 
+				 * so convert it
+				 */
+				Date d = new Date (l * 1000);
+				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+				
+				date_str = formatter.format (d);
+				
+				System.out.println ("l "  + l + " date " + d + " date_str " + date_str);
 			}
-			
-			StringBuilder sb = new StringBuilder ();
-			
-			sb.append (value.substring (0, 4));
-			sb.append (value.substring (5, 7));
-			sb.append (value.substring (8, 10));
-		
-			gd_wrapper.addNonIndexedString (key, sb.toString ());
-			
-			success_flag = true;
+
+			if (date_str != null) {			
+				StringBuilder sb = new StringBuilder ();
+				
+				sb.append (date_str.substring (0, 4));
+				sb.append (date_str.substring (5, 7));
+				sb.append (date_str.substring (8, 10));
+
+				date_str = sb.toString();
+
+				
+				gd_wrapper.addNonIndexedString (key, date_str);
+				success_flag = true;
+			}
+						
 		} 
 
 		return success_flag;

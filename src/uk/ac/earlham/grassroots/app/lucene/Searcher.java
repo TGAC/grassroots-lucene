@@ -129,7 +129,7 @@ public class Searcher {
 					queries.add (args [i]);
 				}
 
-			} else if ("-facet_name".equals (args [i])) {
+			} else if ("-facet_name".equals (args [i])) {				
 				facet_name = args [++ i];
 			} else if ("-facet_value".equals (args [i])) {
 				facet_value = args [++ i];
@@ -736,4 +736,16 @@ public class Searcher {
 		return sb.toString ();
 	}
 
+	static private String [] getFacets (String facet_str) {
+		String [] facets = facet_str.split (",");
+		
+		if (facets != null) {
+			for (int i = facets.length - 1; i >= 0; -- i) {
+				facets [i] = facets [i].trim ();
+			}
+		}
+		
+		return facets;
+	}
+	
 }

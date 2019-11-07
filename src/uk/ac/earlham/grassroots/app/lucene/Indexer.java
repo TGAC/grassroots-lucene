@@ -327,6 +327,8 @@ public class Indexer {
 
 			
 		} else {
+			System.out.println("no document from " + json_obj);
+			
 		}
 	
 		return success_flag;
