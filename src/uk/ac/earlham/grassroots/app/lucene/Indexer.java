@@ -25,6 +25,7 @@ package uk.ac.earlham.grassroots.app.lucene;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,6 +66,42 @@ public class Indexer {
 	private FacetsConfig in_facets_config;
 		
 	
+	class MyFileVisitor extends SimpleFileVisitor<Path> {
+	
+		int mfv_num_imported;
+		IndexWriter mfv_index_writer;
+		TaxonomyWriter mfv_tax_writer;
+		
+		MyFileVisitor (IndexWriter index_writer, TaxonomyWriter tax_writer) {
+			IndexWriter mfv_index_writer = index_writer;
+			TaxonomyWriter mfv_tax_writer = tax_writer;
+			mfv_num_imported = 0;
+		}
+		
+		@Override
+		public FileVisitResult visitFile (Path file, BasicFileAttributes attrs) throws IOException {
+			
+			System.out.println ("Indexing " + file.toString () + "... ");
+
+			LuceneDocumentWrapper wrapper = new LuceneDocumentWrapper ();
+			int res = indexDoc (wrapper, mfv_index_writer, mfv_tax_writer, file.toString (), attrs.lastModifiedTime().toMillis ());
+			
+			if (res == 0) {
+				System.out.println ("Failed to index " + file.toString ());
+			} else {
+				mfv_num_imported += res;
+			}
+
+			return FileVisitResult.CONTINUE;								
+		}
+		
+		int getNumberOfImportedRecords () {
+			return mfv_num_imported;
+		}
+
+	}
+	
+	
 	private Indexer () {
 		in_facets_config = new FacetsConfig ();
 	}
@@ -88,11 +125,25 @@ public class Indexer {
 				taxonomy_dir_name = args [++ i];
 			} else if ("-update".equals (args [i])) {
 				create_index_flag = false;
+			} else if ("-out".equals (args [i])) {
+				try {
+					System.setOut (new PrintStream (args [++ i]));
+				} catch (FileNotFoundException e) {
+					System.out.println ("Couldn't set output stream to " + args [i] + "e: " + e);
+					e.printStackTrace();
+				}
+			} else if ("-err".equals (args [i])) {
+				try {
+					System.setErr (new PrintStream (args [++ i]));
+				} catch (FileNotFoundException e) {
+					System.out.println ("Couldn't set error stream to " + args [i] + "e: " + e);
+					e.printStackTrace();
+				}
 			}
 		}
 
 		if (data_dir_name == null) {
-			System.err.println ("Usage: " + usage);
+			System.out.println ("Usage: " + usage);
 			System.exit (1);
 		}
 
@@ -105,7 +156,6 @@ public class Indexer {
 		Indexer indexer = new Indexer ();
 		
 		Date start = new Date ();
-		System.out.println ("Indexing to directory '" + index_dir_name + "'...");
 		
 		indexer.run (data_path, index_dir_name, taxonomy_dir_name, create_index_flag);
 	
@@ -116,57 +166,100 @@ public class Indexer {
 	
 	/** Index all text files under a directory. */
 	public boolean run (Path data_path, String index_dir_name, String taxonomy_dir_name, boolean create_index_flag) {
-		boolean success_flag = false;
+		boolean success_flag = true;
 		
 		if (Files.isReadable (data_path)) {
-			try {
-				System.out.println("Indexing to directory '" + index_dir_name + "'...");
+			Directory index_dir = null;
+			Directory taxonomy_dir = null;
 
-				Directory index_dir = FSDirectory.open (Paths.get (index_dir_name));
-				Directory taxonomy_dir = FSDirectory.open (Paths.get (taxonomy_dir_name));
+			System.out.println("Indexing to directory '" + index_dir_name + "'...");
+
+			try {
+				index_dir = FSDirectory.open (Paths.get (index_dir_name));
+			} catch (IOException ioe) {
+				System.err.println ("Error opening index dir " + index_dir_name + " e: " + ioe.getMessage());			    																							
+			}
+
+			try {
+				taxonomy_dir = FSDirectory.open (Paths.get (taxonomy_dir_name));
+			} catch (IOException ioe) {
+				System.err.println ("Error opening index dir " + taxonomy_dir_name + " e: " + ioe.getMessage());			    																							
+			}
+
+			
+			if ((index_dir != null) && (taxonomy_dir != null)) {
 				Analyzer analyzer = new StandardAnalyzer ();
 				IndexWriterConfig iwc = new IndexWriterConfig (analyzer);
+				IndexWriter index_writer = null;
+			    DirectoryTaxonomyWriter tax_writer = null;
 
 				
-				if (create_index_flag) {
-					// Create a new index in the directory, removing any
-					// previously indexed documents:
-					iwc.setOpenMode (OpenMode.CREATE);
-				} else {
-					// Add new documents to an existing index:
-					iwc.setOpenMode (OpenMode.CREATE_OR_APPEND);
+				try {
+					index_writer = new IndexWriter (index_dir, iwc);
+				    tax_writer = new DirectoryTaxonomyWriter (taxonomy_dir);
+				} catch (IOException ioe) {
+					System.err.println ("Error opening writers: " + ioe.getMessage());			    																		
 				}
+				
+				
+				if ((index_writer != null) && (tax_writer != null)) {
+					// Optional: for better indexing performance, if you
+					// are indexing many documents, increase the RAM
+					// buffer. But if you do this, increase the max heap
+					// size to the JVM (eg add -Xmx512m or -Xmx1g):
+					//
+					// iwc.setRAMBufferSizeMB(256.0);
 
-				// Optional: for better indexing performance, if you
-				// are indexing many documents, increase the RAM
-				// buffer. But if you do this, increase the max heap
-				// size to the JVM (eg add -Xmx512m or -Xmx1g):
-				//
-				// iwc.setRAMBufferSizeMB(256.0);
 
-				IndexWriter index_writer = new IndexWriter (index_dir, iwc);
-			    DirectoryTaxonomyWriter tax_writer = new DirectoryTaxonomyWriter (taxonomy_dir);
-				indexDocs (index_writer, tax_writer, data_path);
+					if (create_index_flag) {
+						try {
+							index_writer.deleteAll ();
+						} catch (IOException ioe) {
+							success_flag = false;
+							System.err.println ("Clearing existing indexes failed: " + ioe.getMessage());			    							
+						}
+					}
 
-				// NOTE: if you want to maximize search performance,
-				// you can optionally call forceMerge here. This can be
-				// a terribly costly operation, so generally it's only
-				// worth it when your index is relatively static (ie
-				// you're done adding documents to it):
-				//
-				// writer.forceMerge(1);
+					if (success_flag) {
+					    try {
+					    	indexDocs (index_writer, tax_writer, data_path);
+					    	success_flag = true;
+					    } catch (Exception e) {
+							System.err.println ("indexDocs failed: " + e.getClass() + "\n with message: " + e.getMessage());			    	
+					    }
+					}
+					
+					// NOTE: if you want to maximize search performance,
+					// you can optionally call forceMerge here. This can be
+					// a terribly costly operation, so generally it's only
+					// worth it when your index is relatively static (ie
+					// you're done adding documents to it):
+					//
+					// writer.forceMerge(1);
 
-				tax_writer.close ();
-				index_writer.close ();
+					try {
+					    tax_writer.close ();
+					} catch (IOException ioe) {
+						System.err.println ("tax_writer.close (): " + ioe.getMessage());			    							
+					}
 
-			} catch (IOException e) {
-				System.err.println(" caught a " + e.getClass() + "\n with message: " + e.getMessage());
+					try {
+					    index_writer.close ();
+					} catch (IOException ioe) {
+						System.err.println ("index_writer.close (): " + ioe.getMessage());			    													
+					}
+					
+				} else {
+					System.err.println ("Error: index dir '" + index_dir.toString () +  " tax dir '" + taxonomy_dir.toString () + " index_writer " + index_writer + " tax_writer " + tax_writer);
+				}	
+
+				
+			} else {
+				System.err.println ("Error: index dir '" + index_dir.toString () + " tax dir '" + taxonomy_dir.toString ());
 			}
-		
-		
+			
 		} else {
 			System.err.println ("Document directory '" + data_path.toAbsolutePath () + "' does not exist or is not readable, please check the path");
-			return false;
 		}
 
 		return success_flag;
@@ -191,21 +284,22 @@ public class Indexer {
 	 */
 	public void indexDocs (final IndexWriter index_writer, TaxonomyWriter tax_writer, Path path) throws IOException {
 		LuceneDocumentWrapper wrapper = new LuceneDocumentWrapper ();
+		int num_imported = 0;
 		
 		if (Files.isDirectory(path)) {
-			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-				@Override
-				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					if (indexDoc (wrapper, index_writer, tax_writer, file.toString (), attrs.lastModifiedTime().toMillis ()) == 0) {
-						System.err.println ("Failed to index " + file.toString ());
-					}
-
-					return FileVisitResult.CONTINUE;
-				}
-			});
+			
+			System.out.println ("Walking " + path.toString ());
+			MyFileVisitor visitor = new MyFileVisitor (index_writer, tax_writer);
+			
+			Files.walkFileTree (path, visitor);
+			
+			num_imported = visitor.getNumberOfImportedRecords ();
+			
 		} else {
-			indexDoc (wrapper, index_writer, tax_writer, path.toString(), Files.getLastModifiedTime(path).toMillis());
+			num_imported = indexDoc (wrapper, index_writer, tax_writer, path.toString(), Files.getLastModifiedTime(path).toMillis());
 		}
+		
+		System.out.println ("Imported " + num_imported + " records from " + path.toString ());
 	}
 
 	/** Indexes a single document */
@@ -264,6 +358,7 @@ public class Indexer {
 				}
 			}								
 		}
+		System.out.println ("imported " + records_imported);
 	
 		return records_imported;
 	}
@@ -295,39 +390,26 @@ public class Indexer {
 			}
 
 			if (doc != null) {
-				if (index_writer.getConfig ().getOpenMode () == OpenMode.CREATE) {
-					// New index, so we just add the document (no old document can be there):
-					System.out.println("adding " + filename);
-		
-					
-					System.out.println ("after facets:\n" + doc);
-		
+				// Existing index (an old copy of this document may have been indexed) so
+				// we use updateDocument instead to replace the old one matching the exact
+				// path, if present:
+				System.out.println ("updating " + filename);
+				String id_str = grassroots_doc.getUniqueId ();
+				
+				if (id_str != null) {
 					try {
-						index_writer.addDocument (doc);
-						success_flag = true;
-					} catch (IOException ioe) {
-						System.err.println ("writer.addDocument () failed for " + filename + " exception: " + ioe.getMessage ());
-					}
-					
-				} else {
-					// Existing index (an old copy of this document may have been indexed) so
-					// we use updateDocument instead to replace the old one matching the exact
-					// path, if present:
-					System.out.println("updating " + filename);
-					
-					try {
-						index_writer.updateDocument (new Term ("path", filename), doc);
+						index_writer.updateDocument (new Term ("id", id_str), doc);
 						success_flag = true;
 					} catch (IOException ioe) {
 						System.err.println ("writer.updateDocument () failed for " + filename + " exception: " + ioe.getMessage ());
 					}
+				} else {
+					System.err.println ("Not updating doc: No unique id for " + json_obj);					
 				}
 			}
-				
-
-			
+							
 		} else {
-			System.out.println("no document from " + json_obj);
+			System.err.println("no document from " + json_obj);
 			
 		}
 	

@@ -60,7 +60,7 @@ public class TreatmentDocument extends MongoDocument {
 	
 	@Override
 	public String getUserFriendlyTypename() {
-		return "Treatment";
+		return "Measured Variable";
 	}
 
 	

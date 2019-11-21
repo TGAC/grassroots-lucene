@@ -12,6 +12,8 @@ abstract public class MongoDocument extends GrassrootsDocument {
 	
 	public MongoDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
+		
+		setUniqueId (json_doc);
 	}
 	
 
@@ -21,6 +23,14 @@ abstract public class MongoDocument extends GrassrootsDocument {
 		addField (fields, MD_MONGO_ID, "solr.StrField", false, true);
 	
 		return fields;
+	}
+	
+	protected void setUniqueId (JSONObject json_doc) {
+		JSONObject id_obj = (JSONObject) json_doc.get (MD_MONGO_ID);
+
+		if (id_obj != null) {
+			gd_unique_id = (String) id_obj.get ("$oid");			
+		}			
 	}
 	
 
@@ -38,4 +48,7 @@ abstract public class MongoDocument extends GrassrootsDocument {
 		return success_flag;
 	}
 
+	
+
+	
 }

@@ -18,8 +18,15 @@ public class StudyDocument extends MongoDocument {
 			
 			if (addMongoId (json_doc, "parent_field_trial_id")) { 
 
-				if (addMongoId (json_doc, "address_id")) { 
-	
+				boolean added_address_flag = false;
+				
+				if (json_doc.get ("address_id") != null) {
+					added_address_flag = addMongoId (json_doc, "address_id");
+				} else if (json_doc.get ("address") != null) {
+					added_address_flag = true;					
+				}
+				
+				if (added_address_flag) {
 					/*
 					 * Add the study-specific fields
 					 */

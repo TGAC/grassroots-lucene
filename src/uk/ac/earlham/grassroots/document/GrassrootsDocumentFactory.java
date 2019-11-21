@@ -73,7 +73,7 @@ public class GrassrootsDocumentFactory {
 				break;
 					
 				default:
-					System.out.println ("Unknown @type: \"" + datatype + "\"");
+					System.err.println ("Unknown @type: \"" + datatype + "\"");
 					break;
 			}	
 		}

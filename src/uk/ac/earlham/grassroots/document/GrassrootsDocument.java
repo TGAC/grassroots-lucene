@@ -44,6 +44,9 @@ abstract public class GrassrootsDocument {
 	
 	protected DocumentWrapper gd_wrapper;
 	
+	protected String gd_unique_id;
+	
+	
 	/**
 	 * Create a new GrassrootsDocument
 	 * 
@@ -52,6 +55,7 @@ abstract public class GrassrootsDocument {
 	 */
 	public GrassrootsDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		gd_wrapper = wrapper;
+		gd_unique_id = null; 
 		
 		final String PRIVATE_TYPE = "@type";
 		
@@ -303,10 +307,6 @@ abstract public class GrassrootsDocument {
 	
 		return fields;
 	}
-
-	
-	abstract public String getUserFriendlyTypename ();
-
 	
 	public void addField (JSONArray fields, String name, String datatype, boolean indexed_flag, boolean stored_flag) {
 		JSONObject json = new JSONObject ();
@@ -318,5 +318,12 @@ abstract public class GrassrootsDocument {
 
 		fields.add (json);
 	}
+
+	abstract public String getUserFriendlyTypename ();
+
+	public String getUniqueId () {
+		return gd_unique_id;
+	}
+	
 }
 
