@@ -31,6 +31,9 @@ public class StudyDocument extends MongoDocument {
 					 * Add the study-specific fields
 					 */
 					addText (json_doc, "soil");
+					addText (json_doc, "phenotype_gathering_notes", GD_DESCRIPTION);
+					addText (json_doc, "study_design", GD_DESCRIPTION);
+
 					addDateString (json_doc, "sowing_date");
 					addDateString (json_doc, "harvest_date");
 					

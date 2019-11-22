@@ -382,6 +382,8 @@ public class Indexer {
 			
 			System.out.println ("initial doc:\n" + doc);
 			
+			wrapper.process ();
+			
 			try {
 				doc = in_facets_config.build (tax_writer, doc);	
 			} catch (Exception e) {

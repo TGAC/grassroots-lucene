@@ -68,6 +68,6 @@ public class AddressDocument extends MongoDocument {
 	
 	@Override
 	public String getUserFriendlyTypename() {
-		return "Address";
+		return "Location";
 	}
 }
