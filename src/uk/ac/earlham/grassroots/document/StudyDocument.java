@@ -16,7 +16,7 @@ public class StudyDocument extends MongoDocument {
 		
 		if (super.addFields (json_doc)) {
 			
-			if (addMongoId (json_doc, "parent_field_trial_id")) { 
+			if (addMongoId (json_doc, "parent_field_trial")) { 
 
 				boolean added_address_flag = false;
 				
