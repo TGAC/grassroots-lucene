@@ -65,17 +65,48 @@ import org.apache.lucene.store.FSDirectory;
 public class Indexer {
 	private FacetsConfig in_facets_config;
 		
+	class IndexResult {
+		int ir_total_records;	
+		int ir_num_succeeded;
+		String ir_path;
+		
+		IndexResult (String path) {
+			ir_total_records = 0;
+			ir_num_succeeded = 0;
+			ir_path = path;
+		}
+		
+		void AddSuccess () {
+			++ ir_total_records;
+			++ ir_num_succeeded;
+		}
+
+		void AddFailure () {
+			++ ir_total_records;
+		}
+	
+		JSONObject asJSON () {
+			JSONObject obj = new JSONObject ();
+			
+			obj.put ("path", ir_path);
+			obj.put ("successes", ir_num_succeeded);
+			obj.put ("total", ir_total_records);
+			
+			return obj;					
+		}
+	}
+	
 	
 	class MyFileVisitor extends SimpleFileVisitor<Path> {
 	
-		int mfv_num_imported;
+		IndexResult mfv_results;
 		IndexWriter mfv_index_writer;
 		TaxonomyWriter mfv_tax_writer;
 		
-		MyFileVisitor (IndexWriter index_writer, TaxonomyWriter tax_writer) {
-			IndexWriter mfv_index_writer = index_writer;
-			TaxonomyWriter mfv_tax_writer = tax_writer;
-			mfv_num_imported = 0;
+		MyFileVisitor (IndexWriter index_writer, TaxonomyWriter tax_writer, IndexResult totals) {
+			mfv_index_writer = index_writer;
+			mfv_tax_writer = tax_writer;
+			mfv_results = totals;
 		}
 		
 		@Override
@@ -84,19 +115,13 @@ public class Indexer {
 			System.out.println ("Indexing " + file.toString () + "... ");
 
 			LuceneDocumentWrapper wrapper = new LuceneDocumentWrapper ();
-			int res = indexDoc (wrapper, mfv_index_writer, mfv_tax_writer, file.toString (), attrs.lastModifiedTime().toMillis ());
+			indexFile (wrapper, mfv_index_writer, mfv_tax_writer, file.toString (), attrs.lastModifiedTime().toMillis (), mfv_results);
 			
-			if (res == 0) {
-				System.out.println ("Failed to index " + file.toString ());
-			} else {
-				mfv_num_imported += res;
-			}
-
 			return FileVisitResult.CONTINUE;								
 		}
 		
-		int getNumberOfImportedRecords () {
-			return mfv_num_imported;
+		IndexResult getIndexingResults () {
+			return mfv_results;
 		}
 
 	}
@@ -165,7 +190,7 @@ public class Indexer {
 
 	
 	/** Index all text files under a directory. */
-	public boolean run (Path data_path, String index_dir_name, String taxonomy_dir_name, boolean create_index_flag) {
+	public boolean run (Path data_path, String index_dir_name, String taxonomy_dir_name, String results_filename, boolean create_index_flag) {
 		boolean success_flag = true;
 		
 		if (Files.isReadable (data_path)) {
@@ -222,7 +247,17 @@ public class Indexer {
 
 					if (success_flag) {
 					    try {
-					    	indexDocs (index_writer, tax_writer, data_path);
+					    	IndexResult results = indexDocs (index_writer, tax_writer, data_path);
+					    	
+					    	if (results != null) {
+					    		
+					    		if (results_filename != null) {
+					    			JSONObject results_json = results.asJSON ();
+					    		}
+					    			
+					    			
+					    	}
+					    	
 					    	success_flag = true;
 					    } catch (Exception e) {
 							System.err.println ("indexDocs failed: " + e.getClass() + "\n with message: " + e.getMessage());			    	
@@ -282,29 +317,26 @@ public class Indexer {
 	 *               files to index
 	 * @throws IOException If there is a low-level I/O error
 	 */
-	public void indexDocs (final IndexWriter index_writer, TaxonomyWriter tax_writer, Path path) throws IOException {
+	public IndexResult indexDocs (final IndexWriter index_writer, TaxonomyWriter tax_writer, Path path) throws IOException {
 		LuceneDocumentWrapper wrapper = new LuceneDocumentWrapper ();
-		int num_imported = 0;
+		IndexResult totals = new IndexResult (path.toString ());
 		
-		if (Files.isDirectory(path)) {
+		if (Files.isDirectory (path)) {
 			
 			System.out.println ("Walking " + path.toString ());
-			MyFileVisitor visitor = new MyFileVisitor (index_writer, tax_writer);
+			MyFileVisitor visitor = new MyFileVisitor (index_writer, tax_writer, totals);
 			
-			Files.walkFileTree (path, visitor);
-			
-			num_imported = visitor.getNumberOfImportedRecords ();
+			Files.walkFileTree (path, visitor);			
 			
 		} else {
-			num_imported = indexDoc (wrapper, index_writer, tax_writer, path.toString(), Files.getLastModifiedTime(path).toMillis());
+			indexFile (wrapper, index_writer, tax_writer, path.toString(), Files.getLastModifiedTime (path).toMillis (), totals);
 		}
 		
-		System.out.println ("Imported " + num_imported + " records from " + path.toString ());
+		return totals;
 	}
 
-	/** Indexes a single document */
-	public int indexDoc (LuceneDocumentWrapper wrapper, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, long lastModified) {
-		int records_imported = 0;
+	/** Indexes a single file */
+	public void indexFile (LuceneDocumentWrapper wrapper, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, long lastModified, IndexResult results) {
 		FileReader reader = null;
 		
 		/*
@@ -332,9 +364,9 @@ public class Indexer {
 			if (obj != null) {
 				
 				if (obj instanceof JSONObject) {
-					if (indexObj ((JSONObject) obj, 0, index_writer, tax_writer, filename, wrapper)) {
-						++ records_imported;
-					}
+					JSONObject json_obj = (JSONObject) obj;
+
+					indexObj (json_obj, 0, index_writer, tax_writer, filename, wrapper, results);
 				} else if (obj instanceof JSONArray) {
 					JSONArray json_array = (JSONArray) obj;
 					
@@ -346,25 +378,18 @@ public class Indexer {
 						if (obj instanceof JSONObject) {
 							JSONObject json_obj = (JSONObject) obj;
 							
-							if (indexObj (json_obj, i, index_writer, tax_writer, filename, wrapper)) {
-								++ records_imported;
-							} else {
-								System.err.println ("Failed to import \"" + json_obj.toJSONString () + "\"");
-							}
-							
+							indexObj (json_obj, i, index_writer, tax_writer, filename, wrapper, results);
+
 							wrapper.clear();
 						}
 					}
 				}
 			}								
 		}
-		System.out.println ("imported " + records_imported);
-	
-		return records_imported;
 	}
 
 
-	private boolean indexObj (JSONObject json_obj, int obj_index, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, LuceneDocumentWrapper wrapper) {
+	private void indexObj (JSONObject json_obj, int obj_index, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, LuceneDocumentWrapper wrapper, IndexResult results) {
 		boolean success_flag = false;
 		GrassrootsDocument grassroots_doc = null;
 
@@ -415,6 +440,10 @@ public class Indexer {
 			
 		}
 	
-		return success_flag;
+		if (success_flag) {
+			results.AddSuccess ();
+		} else {
+			results.AddFailure ();
+		}
 	}
 }
