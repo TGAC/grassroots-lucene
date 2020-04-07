@@ -24,6 +24,7 @@ package uk.ac.earlham.grassroots.app.lucene;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.FileVisitResult;
@@ -139,6 +140,7 @@ public class Indexer {
 		String index_dir_name = "index";
 		String data_dir_name = null;
 		String taxonomy_dir_name = "taxonomy";
+		String results_filename = null;
 		boolean create_index_flag = true;
 		
 		for (int i = 0; i < args.length; ++ i) {
@@ -150,6 +152,8 @@ public class Indexer {
 				taxonomy_dir_name = args [++ i];
 			} else if ("-update".equals (args [i])) {
 				create_index_flag = false;
+			} else if ("-results".equals (args [i])) {
+				results_filename = args [++ i];
 			} else if ("-out".equals (args [i])) {
 				try {
 					System.setOut (new PrintStream (args [++ i]));
@@ -182,7 +186,7 @@ public class Indexer {
 		
 		Date start = new Date ();
 		
-		indexer.run (data_path, index_dir_name, taxonomy_dir_name, create_index_flag);
+		indexer.run (data_path, index_dir_name, taxonomy_dir_name, results_filename, create_index_flag);
 	
 		Date end = new Date ();
 		System.out.println (end.getTime() - start.getTime() + " total milliseconds");
@@ -246,23 +250,53 @@ public class Indexer {
 					}
 
 					if (success_flag) {
-					    try {
-					    	IndexResult results = indexDocs (index_writer, tax_writer, data_path);
-					    	
-					    	if (results != null) {
-					    		
-					    		if (results_filename != null) {
-					    			JSONObject results_json = results.asJSON ();
-					    		}
-					    			
-					    			
-					    	}
-					    	
-					    	success_flag = true;
-					    } catch (Exception e) {
-							System.err.println ("indexDocs failed: " + e.getClass() + "\n with message: " + e.getMessage());			    	
-					    }
-					}
+				    	IndexResult results = null;
+				    	
+				    	try {
+				    		results = indexDocs (index_writer, tax_writer, data_path);
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+				    	
+				    	if (results != null) {
+				    		
+				    		if (results_filename != null) {
+				    			JSONObject results_json = results.asJSON ();
+				    			
+				    			if (results_json != null) {
+				    				FileWriter results_writer = null;
+				    						
+				    						
+				    				try {
+										results_writer = new FileWriter (results_filename);
+									} catch (IOException e) {
+										System.err.println ("Failed to open " + results_filename + " for saving results");
+									}					    				
+	
+				    				
+				    				if (results_writer != null) {
+				    					try {
+				    						results_json.writeJSONString (results_writer);
+				    				    	success_flag = true;
+				    				    	
+				    					} catch (IOException ioe) {
+											System.err.println ("writeJSONString threw an error: " + ioe.getMessage());	
+				    					} finally {
+				    						try {
+												results_writer.close ();
+											} catch (IOException ioe) {
+												System.err.println ("results_writer.close (): " + ioe.getMessage());	
+											}
+				    					}
+				    				}
+				    			}
+				    		}
+				    			
+				    			
+				    	}
+				    	
+				    }
 					
 					// NOTE: if you want to maximize search performance,
 					// you can optionally call forceMerge here. This can be
