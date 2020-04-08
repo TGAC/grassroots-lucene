@@ -400,7 +400,7 @@ public class Indexer {
 				if (obj instanceof JSONObject) {
 					JSONObject json_obj = (JSONObject) obj;
 
-					indexObj (json_obj, 0, index_writer, tax_writer, filename, wrapper, results);
+					indexObj (json_obj, 1, 1, index_writer, tax_writer, filename, wrapper, results);
 				} else if (obj instanceof JSONArray) {
 					JSONArray json_array = (JSONArray) obj;
 					
@@ -412,7 +412,7 @@ public class Indexer {
 						if (obj instanceof JSONObject) {
 							JSONObject json_obj = (JSONObject) obj;
 							
-							indexObj (json_obj, i, index_writer, tax_writer, filename, wrapper, results);
+							indexObj (json_obj, i + 1, size, index_writer, tax_writer, filename, wrapper, results);
 
 							wrapper.clear();
 						}
@@ -423,11 +423,11 @@ public class Indexer {
 	}
 
 
-	private void indexObj (JSONObject json_obj, int obj_index, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, LuceneDocumentWrapper wrapper, IndexResult results) {
+	private void indexObj (JSONObject json_obj, int obj_index, int total, IndexWriter index_writer, TaxonomyWriter tax_writer, String filename, LuceneDocumentWrapper wrapper, IndexResult results) {
 		boolean success_flag = false;
 		GrassrootsDocument grassroots_doc = null;
 
-		System.out.println ("initial json:\n" + json_obj);
+		//System.out.println ("initial json:\n" + json_obj);
 
 		
 		try {
@@ -439,7 +439,7 @@ public class Indexer {
 		if (grassroots_doc != null) {
 			Document doc = wrapper.getDocument ();
 			
-			System.out.println ("initial doc:\n" + doc);
+			//System.out.println ("initial doc:\n" + doc);
 			
 			wrapper.process ();
 			
@@ -454,7 +454,7 @@ public class Indexer {
 				// Existing index (an old copy of this document may have been indexed) so
 				// we use updateDocument instead to replace the old one matching the exact
 				// path, if present:
-				System.out.println ("updating " + filename);
+				System.out.println ("updating " + filename + ": " + obj_index + "/" + total);
 				String id_str = grassroots_doc.getUniqueId ();
 				
 				if (id_str != null) {

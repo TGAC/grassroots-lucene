@@ -40,9 +40,10 @@ public class AddressDocument extends MongoDocument {
 					addText (address_json, AD_COUNTRY);
 					addText (address_json, AD_POSTCODE);
 					
-					success_flag = true;
 				}
 			}		
+
+			success_flag = true;
 		}
 	
 		return success_flag;
