@@ -184,11 +184,27 @@ abstract public class GrassrootsDocument {
 	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the given key.
 	 */
 	public boolean addString (JSONObject json_doc, String key) throws IllegalArgumentException {
+		return addString (json_doc, key, key);
+	}
+
+	
+	
+	/**
+	 * Add a StringField to the Lucene document with a given boost value for search scoring.
+	 * 
+	 * @param json_doc The Grassroots JSON document to pull the data from.
+	 * @param key The key within the given Grassroots JSON document to get the value for.
+	 * @param boost The boost value that will be used for this field when searching.
+	 * @return <code>true</code> if the Field was added to the underlying Lucene document successfully, 
+	 * <code>false</code> otherwise.
+	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the given key.
+	 */
+	public boolean addString (JSONObject json_doc, String input_key, String output_key) throws IllegalArgumentException {
 		boolean success_flag = false;
-		String value = (String) json_doc.get (key);
+		String value = (String) json_doc.get (input_key);
 		
 		if (value != null) {
-			gd_wrapper.addString (key, value);
+			gd_wrapper.addString (output_key, value);
 
 			success_flag = true;
 		} 
