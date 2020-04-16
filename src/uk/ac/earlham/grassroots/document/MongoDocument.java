@@ -7,7 +7,7 @@ import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 
 abstract public class MongoDocument extends GrassrootsDocument {
-	static private String MD_MONGO_ID = "_id";
+	static public String MD_MONGO_ID = "_id";
 
 	
 	public MongoDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {

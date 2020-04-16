@@ -176,7 +176,7 @@ public class Searcher {
 				Query q = null;
 
 				if (!queries.isEmpty ()) {					
-					q = searcher.buildGrassrootsQuery (queries);
+					q = QueryUtil.buildGrassrootsQuery (queries);
 				} else {
 					q = new MatchAllDocsQuery ();					
 				}
@@ -288,81 +288,6 @@ public class Searcher {
 
 			results.put ("documents", docs_array);
 		}
-	}
-
-	private void buildQuery (StringBuilder sb, String key, String value, float boost) {
-		if (sb.length () > 0) {
-			sb.append (' ');
-		}
-
-		String escaped_key = key.replace (":", "\\:");
-		final boolean wild_flag = value.contains ("*");
-	
-		sb.append ("(");
-		sb.append (escaped_key);
-		sb.append (':');
-		
-		if (!wild_flag) {
-			sb.append ('"');			
-		}
-		
-		sb.append (value);
-
-		if (!wild_flag) {
-			sb.append ('"');			
-		}
-
-		sb.append (")^");
-		sb.append (boost);		
-	}
-	
-	
-	public Query buildGrassrootsQuery (List <String> queries) {
-		final float NAME_BOOST = 5.0f;
-		final float DESCRIPTION_BOOST = 3.0f;
-		Query q = null;		
-		StandardAnalyzer analyzer = new StandardAnalyzer ();
-		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, analyzer);
-		
-		StringBuilder sb = new StringBuilder ();
-			
-		AddStringsToQuery (sb, queries, false);
-		
-		System.out.println ("query: " + sb.toString ());		
-		
-		try {				
-			q = parser.parse (sb.toString ());
-		} catch (ParseException e) {
-			System.err.println ("Failed to parse query \"" + q + "\", exception: "+ e);
-		}
-		
-		return q;
-	}
-
-	
-	private void AddStringsToQuery (StringBuilder sb, List <String> terms, boolean quote_flag) {
-		final float NAME_BOOST = 5.0f;
-		final float DESCRIPTION_BOOST = 3.0f;
-
-		for (String s : terms) {
-			if (sb.length () != 0) {
-				sb.append (' ');
-			}
-
-			if (s.contains (":")) {
-				sb.append (" AND ");
-				sb.append (s);
-			} else {	
-				sb.append ("(");				
-				buildQuery (sb, GrassrootsDocument.GD_NAME, s, NAME_BOOST);
-				buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, s, DESCRIPTION_BOOST);
-				sb.append (" \"");
-				sb.append (s);
-				sb.append ("\")");				
-			}
-			
-		}
-	
 	}
 	
 	
@@ -659,20 +584,7 @@ public class Searcher {
 	 * 
 	 */
 	public List <Document> standardSearch (Query query, int max_num_hits) throws IOException {
-		List <Document> docs = new ArrayList <Document> ();
-		IndexSearcher searcher = new IndexSearcher (se_index_reader);
-		TopDocs results = searcher.search (query, max_num_hits);
-		ScoreDoc [] hits = results.scoreDocs;
-
-		int num_total_hits = Searcher.CastLongToInt (results.totalHits.value);
-		int limit = Math.min (num_total_hits, hits.length);
-		
-		for (int i = 0; i < limit; ++ i) {
-			Document doc = searcher.doc (hits [i].doc);
-			docs.add (doc);
-		}
-		
-		return docs;
+		return QueryUtil.search (query, se_index_reader, max_num_hits);
 	}
 	
 	
