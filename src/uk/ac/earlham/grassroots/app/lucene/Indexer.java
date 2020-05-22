@@ -42,6 +42,7 @@ import org.json.simple.parser.ParseException;
 
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 import uk.ac.earlham.grassroots.document.GrassrootsDocumentFactory;
+import uk.ac.earlham.grassroots.document.MongoDocument;
 import uk.ac.earlham.grassroots.document.util.LuceneDocumentWrapper;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -459,7 +460,7 @@ public class Indexer {
 				
 				if (id_str != null) {
 					try {
-						index_writer.updateDocument (new Term ("id", id_str), doc);
+						index_writer.updateDocument (new Term (MongoDocument.MD_MONGO_ID, id_str), doc);
 						success_flag = true;
 					} catch (IOException ioe) {
 						System.err.println ("writer.updateDocument () failed for " + filename + " exception: " + ioe.getMessage ());
