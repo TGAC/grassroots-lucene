@@ -124,7 +124,7 @@ abstract public class GrassrootsDocument {
 		String oid = (String) id_obj.get ("$oid");
 		
 		if (oid != null) {
-			gd_wrapper.addNonIndexedString (key, oid);
+			gd_wrapper.addString (key, oid);
 			
 			success_flag = true;
 		}

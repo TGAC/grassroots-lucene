@@ -1,6 +1,7 @@
 package uk.ac.earlham.grassroots.document.util;
 
 
+
 public interface DocumentWrapper {
 
 	boolean process ();
@@ -14,7 +15,6 @@ public interface DocumentWrapper {
 	
 	void addNonIndexedString (String key, String value);
 
-	
 	void addDateString (String key, String value);
 	
 	void clear ();

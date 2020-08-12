@@ -9,6 +9,7 @@ import org.apache.lucene.facet.FacetField;
 
 
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
+import org.apache.lucene.index.Term;
 
 public class LuceneDocumentWrapper implements DocumentWrapper {
 
@@ -69,6 +70,7 @@ public class LuceneDocumentWrapper implements DocumentWrapper {
 		ldw_document.add (f);
 	}
 
+	
 	@Override
 	public void addDateString (String key, String value) {
 		// TODO Auto-generated method stub
