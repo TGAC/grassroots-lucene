@@ -27,13 +27,15 @@ public class StudyDocument extends MongoDocument {
 				}
 				
 				if (added_address_flag) {
+					final String description_key = getDescriptionKey ();
+					
 					/*
 					 * Add the study-specific fields
 					 */
 					addText (json_doc, "soil");
-					addText (json_doc, "phenotype_gathering_notes", GD_DESCRIPTION);
-					addText (json_doc, "design", GD_DESCRIPTION);
-					addText (json_doc, "study_design", GD_DESCRIPTION);
+					addText (json_doc, "phenotype_gathering_notes", description_key);
+					addText (json_doc, "design", description_key);
+					addText (json_doc, "study_design", description_key);
 
 					addDateString (json_doc, "sowing_date");
 					addDateString (json_doc, "harvest_date");

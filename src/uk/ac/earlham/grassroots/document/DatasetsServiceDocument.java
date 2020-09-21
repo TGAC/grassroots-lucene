@@ -28,7 +28,7 @@ abstract public class DatasetsServiceDocument extends ServiceDocument {
 						if (o instanceof JSONObject) {
 							JSONObject item = (JSONObject) o;
 							final String name_key = getDatasetNameKey ();
-							final String description_key = getDatasetDescriptionKey ();
+							final String description_key = getDescriptionKey ();
 							
 							if (addText (item, name_key, GD_NAME)) {
 								if (addText (item, description_key, GD_DESCRIPTION)) {
@@ -55,15 +55,21 @@ abstract public class DatasetsServiceDocument extends ServiceDocument {
 
 	
 	protected String getDatasetNameKey () {
-		return GD_NAME;
+		return "projectName";
 	}
 
 	
-	protected String getDatasetDescriptionKey () {
-		return GD_DESCRIPTION;
+	public String geDescriptionKey () {
+		return "desccription";
 	}
 
 
 	abstract protected String getDatasetsKey ();
+
+	
+	public String getUniqueIdKey () {
+		return "uuid";		
+	}
+
 	
 }

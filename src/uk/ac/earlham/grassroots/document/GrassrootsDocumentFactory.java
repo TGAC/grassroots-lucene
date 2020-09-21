@@ -72,6 +72,10 @@ public class GrassrootsDocumentFactory {
 				}
 				break;
 					
+				case "grassroots:project":
+					doc = new ProjectDocument (json_doc, wrapper);
+					break;
+				
 				default:
 					System.err.println ("Unknown @type: \"" + datatype + "\"");
 					break;

@@ -432,18 +432,14 @@ public class Searcher {
 	    // Retrieve facets
 	    Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
 
-	    if (facets != null) {
-	    	all_facets = facets.getAllDims (MAX_NUM_RESULTS);
-	    	
-	    	if (all_facets != null) {
-	    		int num_facets = all_facets.size ();
-				System.out.println ("all_facets size" + num_facets);	
-	    	} else {
-				System.out.println ("all_facets is null");		    		
-	    	}
-	    } else {
-			System.out.println ("no facets");		
-	    }
+    	all_facets = facets.getAllDims (MAX_NUM_RESULTS);
+    	
+    	if (all_facets != null) {
+    		int num_facets = all_facets.size ();
+			System.out.println ("all_facets size" + num_facets);	
+    	} else {
+			System.out.println ("all_facets is null");		    		
+    	}
 	    
 	    FacetResult result = null;
 
@@ -455,9 +451,7 @@ public class Searcher {
 	    for (FacetsCollector.MatchingDocs matching_doc : matching_docs) {
 	    
 	    }
-	    
-
-	    
+	    	    
 	    
 	    // Retrieve results
 		ScoreDoc [] hits = resultDocs.scoreDocs;

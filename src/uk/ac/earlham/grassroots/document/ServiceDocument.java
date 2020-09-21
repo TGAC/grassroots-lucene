@@ -10,7 +10,7 @@ import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
  * @author billy
  *
  */
-public class ServiceDocument extends GrassrootsDocument {
+abstract public class ServiceDocument extends GrassrootsDocument {
 	
 	public ServiceDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);

@@ -22,7 +22,6 @@ import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
  * @author billy
  */
 abstract public class GrassrootsDocument {
-	static private String GD_BOOST_SUFFIX = "_boost";
 	static public String GD_DATATYPE = "facet_type";
 	static public String GD_NAME = "so:name";
 	static public String GD_DESCRIPTION = "so:description";
@@ -80,13 +79,18 @@ abstract public class GrassrootsDocument {
 	}
 
 	
+	/**
+	 * Add the name and description values to the JSON document
+	 * @param json_doc
+	 * @return
+	 */
 	protected boolean addFields (JSONObject json_doc) {
 		boolean success_flag = false;
 		
 		/*
 		 * Add the common fields
 		 */
-		addText (json_doc, "so:description", GD_DESCRIPTION);
+		addText (json_doc, getDescriptionKey (), GD_DESCRIPTION);
 		
 		String name_key = getNameKey ();
 		
@@ -171,6 +175,23 @@ abstract public class GrassrootsDocument {
 		return success_flag;
 	}
 
+	
+	/**
+	 * Add a TextField to the Lucene document with a given boost value for search scoring.
+	 * 
+	 * @param key The key to use in for the added TextField in the Lucene Document.
+	 * @param value The value that will be added to the Lucene Document.
+	 * @return <code>true</code> if the Field was added to the underlying Lucene document successfully, 
+	 * <code>false</code> otherwise.
+	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the given key.
+	 */
+	public boolean addText (String key, String value) throws IllegalArgumentException {
+		gd_wrapper.addText (key, value);
+
+		return true;
+	}
+
+
 
 	
 	/**
@@ -212,6 +233,24 @@ abstract public class GrassrootsDocument {
 		return success_flag;
 	}
 
+	
+	/**
+	 * Add a StringField to the Lucene document with a given boost value for search scoring.
+	 * 
+	 * @param key The key to use in for the added String in the Lucene Document.
+	 * @param value The value that will be added to teh Lucene Document.
+	 * @return <code>true</code> if the Field was added to the underlying Lucene document successfully, 
+	 * <code>false</code> otherwise.
+	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the given key.
+	 */
+	public boolean addString (String key, String value) throws IllegalArgumentException {
+		gd_wrapper.addString (key, value);
+
+		return true;
+	}
+
+	
+	
 	/**
 	 * Add a String value to be stored, but not indexed, to the Lucene document.
 	 * 
@@ -310,13 +349,18 @@ abstract public class GrassrootsDocument {
 		return "so:name";
 	}
 
+	
+	public String getDescriptionKey () {
+		return "so:description";
+	}
+	
 	public JSONArray getSchemaFields (JSONArray fields) {
 		if (fields == null) {
 			fields = new JSONArray ();
 		}
 		
 		addField (fields, GD_NAME, "solr.TextField", true, true);
-		addField (fields, GD_DESCRIPTION, "solr.TextField", true, true);
+		addField (fields, getDescriptionKey (), "solr.TextField", true, true);
 		addField (fields, GD_DEFAULT_SEARCH_KEY, "solr.TextField", true, true);
 		addField (fields, GD_PUBLIC_LINK, "solr.StrField", true, true);
 		addField (fields, GD_INTERNAL_LINK, "solr.StrField", true, true);
@@ -335,11 +379,14 @@ abstract public class GrassrootsDocument {
 		fields.add (json);
 	}
 
-	abstract public String getUserFriendlyTypename ();
-
+	
 	public String getUniqueId () {
 		return gd_unique_id;
 	}
+
 	
+	abstract public String getUserFriendlyTypename ();
+
+	abstract public String getUniqueIdKey ();
 }
 

@@ -460,7 +460,7 @@ public class Indexer {
 				
 				if (id_str != null) {
 					try {
-						index_writer.updateDocument (new Term (MongoDocument.MD_MONGO_ID, id_str), doc);
+						index_writer.updateDocument (new Term (grassroots_doc.getUniqueIdKey (), id_str), doc);
 						success_flag = true;
 					} catch (IOException ioe) {
 						System.err.println ("writer.updateDocument () failed for " + filename + " exception: " + ioe.getMessage ());
