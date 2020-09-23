@@ -27,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,6 +63,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 
@@ -584,6 +586,44 @@ public class Searcher {
 	
 	public JSONObject getLuceneDocumentAsJSON (Document doc) {
 		JSONObject res = new JSONObject ();
+		String service = doc.get ("service");
+		
+		if (service != null) {
+			switch (service) {
+				case "BlastN":
+				case "BlastX":
+				case "BlastP":
+					/*
+					 * Convert the payload field to a full JSON object
+					 */
+					IndexableField field = doc.getField ("payload");
+					
+					if (field != null) {
+						String payload = field.stringValue ();
+						JSONParser parser = new JSONParser ();
+						Object o = null;
+						
+						try {
+							o = parser.parse (payload);
+						} catch (org.json.simple.parser.ParseException e) {
+							e.printStackTrace();
+						}
+						
+						if (o != null) {
+							JSONObject payload_json = (JSONObject) o;
+							
+							res.put ("payload", payload_json);
+						}
+						
+						doc.removeField ("payload");
+					}
+				break;
+				
+				default:
+				break;
+			}	
+		}
+
 		List <IndexableField> fields = doc.getFields ();
 		HashMap <String, List <String> > map = new HashMap <String, List <String>> ();
 		
@@ -621,7 +661,8 @@ public class Searcher {
 	        }
 	       	     	        
 	    }
-		
+					
+				
 		return res;
 	}
 

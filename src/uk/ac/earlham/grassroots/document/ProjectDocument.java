@@ -9,20 +9,9 @@ public class ProjectDocument extends GrassrootsDocument {
 
 	public ProjectDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
-		
-		setUniqueId (json_doc);
 	}
 
-	
-	
-	private void setUniqueId (JSONObject json_doc) {
-		Object obj =  json_doc.get (getUniqueIdKey ());
 
-		if (obj != null) {
-			gd_unique_id = obj.toString ();			
-		}			
-	}
-	
 	protected boolean addFields (JSONObject json_doc) {
 		boolean success_flag = false;
 		

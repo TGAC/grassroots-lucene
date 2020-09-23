@@ -55,29 +55,49 @@ abstract public class GrassrootsDocument {
 	public GrassrootsDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		gd_wrapper = wrapper;
 		gd_unique_id = null; 
-		
-		final String PRIVATE_TYPE = "@type";
-		
-		String private_typename = (String) json_doc.get (PRIVATE_TYPE);
-		
-		if (private_typename != null) {
-		
-			wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
-			wrapper.addNonIndexedString (PRIVATE_TYPE, private_typename);
-						
+
+		if (setUniqueId (json_doc)) {
+			final String PRIVATE_TYPE = "@type";
 			
-			if (!addFields (json_doc)) {
-				System.err.println ("Error adding fields for " + json_doc);
-				throw new IllegalArgumentException (json_doc.toJSONString ());
+			String private_typename = (String) json_doc.get (PRIVATE_TYPE);
+			
+			if (private_typename != null) {
+			
+				wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
+				wrapper.addNonIndexedString (PRIVATE_TYPE, private_typename);
+							
+				
+				if (!addFields (json_doc)) {
+					System.err.println ("Error adding fields for " + json_doc);
+					throw new IllegalArgumentException (json_doc.toJSONString ());
+				}
+				
+
+			} else {
+				System.err.println ("No " + PRIVATE_TYPE + " in " + json_doc);
+				throw new IllegalArgumentException (json_doc.toJSONString ());			
 			}
 			
-
 		} else {
-			System.err.println ("No " + PRIVATE_TYPE + " in " + json_doc);
+			System.err.println ("No  unique id in " + json_doc);
 			throw new IllegalArgumentException (json_doc.toJSONString ());			
 		}
+		
 	}
 
+	
+	
+	private boolean setUniqueId (JSONObject json_doc) {
+		boolean success_flag = false;
+		Object obj =  json_doc.get (getUniqueIdKey ());
+
+		if (obj != null) {
+			gd_unique_id = obj.toString ();			
+			success_flag = true;
+		}			
+
+		return success_flag;
+	}
 	
 	/**
 	 * Add the name and description values to the JSON document
@@ -86,6 +106,7 @@ abstract public class GrassrootsDocument {
 	 */
 	protected boolean addFields (JSONObject json_doc) {
 		boolean success_flag = false;
+		boolean added_link_flag = false;
 		
 		/*
 		 * Add the common fields
@@ -101,11 +122,13 @@ abstract public class GrassrootsDocument {
 			}
 		}
 		
-		boolean added_link = (addNonIndexedString (json_doc, GD_PUBLIC_LINK) || (addNonIndexedString (json_doc, GD_INTERNAL_LINK)));
+		if (addNonIndexedString (json_doc, GD_PUBLIC_LINK)) {
+			added_link_flag = true; 
+		}
 		
 		success_flag = true;
 		
-		if (!added_link) {
+		if (!added_link_flag) {
 			//System.err.println ("Failed to add link from " + json_doc);
 		}
 			
@@ -265,8 +288,7 @@ abstract public class GrassrootsDocument {
 		String value = (String) json_doc.get (key);
 		
 		if (value != null) {
-			gd_wrapper.addNonIndexedString (key, value);
-
+			addNonIndexedString (key, value);
 			success_flag = true;
 		} 
 		
@@ -274,8 +296,23 @@ abstract public class GrassrootsDocument {
 	}
 	
 	
+	/**
+	 * Add a String value to be stored, but not indexed, to the Lucene document.
+	 * 
+	 * @param json_doc The Grassroots JSON document to pull the data from.
+	 * @param key The key within the given Grassroots JSON document to get the value for.
+	 * @return <code>true</code> if the Field was added to the underlying Lucene document successfully, 
+	 * <code>false</code> otherwise.
+	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the given key.
+	 */
+	public boolean addNonIndexedString (String key, String value) throws IllegalArgumentException {
+		gd_wrapper.addNonIndexedString (key, value);
+		return true;
+	}
+	
+	
 
-
+	
 
 	
 	/**

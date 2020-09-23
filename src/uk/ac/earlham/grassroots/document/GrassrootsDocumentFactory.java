@@ -48,7 +48,7 @@ public class GrassrootsDocumentFactory {
 					break;
 					
 				case "Grassroots:Service": {
-					Object o = json_doc.get ("so:name");
+					Object o = json_doc.get ("service");
 					
 					if (o != null) {
 						String name = o.toString ();
@@ -72,7 +72,7 @@ public class GrassrootsDocumentFactory {
 				}
 				break;
 					
-				case "grassroots:project":
+				case "Grassroots:Project":
 					doc = new ProjectDocument (json_doc, wrapper);
 					break;
 				
