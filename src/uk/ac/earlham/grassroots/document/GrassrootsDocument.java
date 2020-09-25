@@ -26,6 +26,7 @@ abstract public class GrassrootsDocument {
 	static public String GD_NAME = "so:name";
 	static public String GD_DESCRIPTION = "so:description";
 	static public String GD_DEFAULT_SEARCH_KEY = "default";
+	static public String GD_ID_KEY = "_id";
 	
 	/** 
 	 * The key for the url to use  the web-based client. 
@@ -65,8 +66,7 @@ abstract public class GrassrootsDocument {
 			
 				wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
 				wrapper.addNonIndexedString (PRIVATE_TYPE, private_typename);
-							
-				
+											
 				if (!addFields (json_doc)) {
 					System.err.println ("Error adding fields for " + json_doc);
 					throw new IllegalArgumentException (json_doc.toJSONString ());
