@@ -440,7 +440,7 @@ public class Indexer {
 		
 		if (grassroots_doc != null) {
 			Document doc = wrapper.getDocument ();
-			String id_str = grassroots_doc.getUniqueId ();
+			String id_str = grassroots_doc.getId ();
 
 			
 			if (id_str != null) {
