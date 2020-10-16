@@ -26,6 +26,7 @@ abstract public class GrassrootsDocument {
 	static public String GD_NAME = "so:name";
 	static public String GD_DESCRIPTION = "so:description";
 	static public String GD_DEFAULT_SEARCH_KEY = "default";
+	static public String GD_LUCENE_ID = "_id";
 	
 	/** 
 	 * The key for the url to use  the web-based client. 
@@ -55,8 +56,8 @@ abstract public class GrassrootsDocument {
 	public GrassrootsDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		gd_wrapper = wrapper;
 		gd_unique_id = null; 
-
-		if (setUniqueId (json_doc)) {
+		
+		if (setId (json_doc)) {
 			final String PRIVATE_TYPE = "@type";
 			
 			String private_typename = (String) json_doc.get (PRIVATE_TYPE);
@@ -65,6 +66,7 @@ abstract public class GrassrootsDocument {
 			
 				wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
 				wrapper.addNonIndexedString (PRIVATE_TYPE, private_typename);
+				//wrapper.addString (GD_LUCENE_ID, gd_unique_id);
 							
 				
 				if (!addFields (json_doc)) {
@@ -83,20 +85,6 @@ abstract public class GrassrootsDocument {
 			throw new IllegalArgumentException (json_doc.toJSONString ());			
 		}
 		
-	}
-
-	
-	
-	private boolean setUniqueId (JSONObject json_doc) {
-		boolean success_flag = false;
-		Object obj =  json_doc.get (getUniqueIdKey ());
-
-		if (obj != null) {
-			gd_unique_id = obj.toString ();			
-			success_flag = true;
-		}			
-
-		return success_flag;
 	}
 	
 	/**
@@ -417,13 +405,13 @@ abstract public class GrassrootsDocument {
 	}
 
 	
-	public String getUniqueId () {
+	public String getId () {
 		return gd_unique_id;
 	}
 
 	
 	abstract public String getUserFriendlyTypename ();
 
-	abstract public String getUniqueIdKey ();
+	abstract public boolean setId (JSONObject json_doc);
 }
 

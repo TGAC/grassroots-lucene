@@ -48,19 +48,7 @@ public class AddressDocument extends MongoDocument {
 	
 		return success_flag;
 	}
-	
-	
-	public JSONArray getSchemaFields (JSONArray fields) {
-		super.getSchemaFields (fields);
-		
-		addField (fields, AD_STREET, "solr.TextField", true, true);
-		addField (fields, AD_LOCALITY, "solr.TextField", true, true);
-		addField (fields, AD_REGION, "solr.TextField", true, true);
-		addField (fields, AD_COUNTRY, "solr.TextField", true, true);
-		addField (fields, AD_POSTCODE, "solr.StrField", true, true);
-	
-		return fields;
-	}
+
 	
 	
 	public String getNameKey () {

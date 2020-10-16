@@ -35,13 +35,6 @@ public class ProjectDocument extends GrassrootsDocument {
 	public String getUserFriendlyTypename () {
 		return "Dataset";
 	}
-
-
-	@Override
-	public String getUniqueIdKey () {
-		return "uuid";
-	}
-
 	
 	public String getNameKey () {
 		return "projectName";
@@ -98,6 +91,20 @@ public class ProjectDocument extends GrassrootsDocument {
 	
 	private boolean addUrl (JSONObject json_doc) {
 		return addString (json_doc, "url", GD_PUBLIC_LINK);
+	}
+
+
+	@Override
+	public boolean setId (JSONObject json_doc) {
+		boolean success_flag = false;
+		String s = (String) json_doc.get ("uuid");
+		
+		if (s != null) {
+			gd_unique_id = s;
+			success_flag = true;
+		}
+		
+		return success_flag;
 	}
 	
 }

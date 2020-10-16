@@ -456,11 +456,11 @@ public class Indexer {
 				// we use updateDocument instead to replace the old one matching the exact
 				// path, if present:
 				System.out.println ("updating " + filename + ": " + obj_index + "/" + total);
-				String id_str = grassroots_doc.getUniqueId ();
+				String id_str = grassroots_doc.getId ();
 				
 				if (id_str != null) {
 					try {
-						index_writer.updateDocument (new Term (grassroots_doc.getUniqueIdKey (), id_str), doc);
+						index_writer.updateDocument (new Term (GrassrootsDocument.GD_LUCENE_ID, id_str), doc);
 						success_flag = true;
 					} catch (IOException ioe) {
 						System.err.println ("writer.updateDocument () failed for " + filename + " exception: " + ioe.getMessage ());

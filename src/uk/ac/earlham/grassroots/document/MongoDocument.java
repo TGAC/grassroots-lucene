@@ -13,25 +13,14 @@ abstract public class MongoDocument extends GrassrootsDocument {
 	}
 	
 
-	public JSONArray getSchemaFields (JSONArray fields) {
-		super.getSchemaFields (fields);
-		
-		addField (fields, getUniqueIdKey (), "solr.StrField", false, true);
-	
-		return fields;
-	}
-	
-
 	protected boolean addFields (JSONObject json_doc) {
 		boolean success_flag = false;
 				
-		if (super.addFields (json_doc)) {
-			String id_key = getUniqueIdKey ();
-			
-			if (addMongoId (json_doc, id_key)) {
+		if (super.addFields (json_doc)) {			
+			if (addString ("mongo_id", gd_unique_id)) {
 				success_flag = true;
 			} else {
-				System.err.println ("Failed to add mongo id for " + id_key + "  from " + json_doc);
+				System.err.println ("Failed to add mongo id for " + gd_unique_id + "  from " + json_doc);
 			}				
 		}
 		
@@ -39,8 +28,20 @@ abstract public class MongoDocument extends GrassrootsDocument {
 	}
 
 	
-	public String getUniqueIdKey () {
-		return "_id";		
+	public boolean setId (JSONObject json_doc) {
+		boolean success_flag = false;
+		JSONObject id_obj = (JSONObject) json_doc.get ("_id");
+		
+		if (id_obj != null) {
+			String oid = (String) id_obj.get ("$oid");
+		
+			if (oid != null) {
+				gd_unique_id = oid;
+				success_flag = true;
+			}
+		}
+		
+		return success_flag;
 	}
-	
+
 }

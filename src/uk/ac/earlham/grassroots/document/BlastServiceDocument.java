@@ -41,9 +41,5 @@ public class BlastServiceDocument extends ServiceDocument {
 		return success_flag;
 	}
 
-	public String getUniqueIdKey() {
-		return "id";
-	}
-	
-	
+
 }

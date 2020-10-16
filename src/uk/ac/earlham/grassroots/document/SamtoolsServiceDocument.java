@@ -5,7 +5,7 @@ import org.json.simple.JSONObject;
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 
-public class SamtoolsServiceDocument extends DatasetsServiceDocument {
+public class SamtoolsServiceDocument extends ServiceDocument {
 
 	public SamtoolsServiceDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
