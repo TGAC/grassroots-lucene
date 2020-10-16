@@ -53,6 +53,7 @@ import org.apache.lucene.facet.taxonomy.TaxonomyWriter;
 import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
@@ -439,42 +440,45 @@ public class Indexer {
 		
 		if (grassroots_doc != null) {
 			Document doc = wrapper.getDocument ();
-			
-			//System.out.println ("initial doc:\n" + doc);
-			
-			wrapper.process ();
-			
-			try {
-				doc = in_facets_config.build (tax_writer, doc);	
-			} catch (Exception e) {
-				System.err.println ("Building faceted document failed for " + json_obj + "\n " + "doc " + doc + "\n exception: " + e.getMessage ());
-				doc = null;
-			}
+			String id_str = grassroots_doc.getUniqueId ();
 
-			if (doc != null) {
-				// Existing index (an old copy of this document may have been indexed) so
-				// we use updateDocument instead to replace the old one matching the exact
-				// path, if present:
-				System.out.println ("updating " + filename + ": " + obj_index + "/" + total);
-				String id_str = grassroots_doc.getId ();
+			
+			if (id_str != null) {
+				//System.out.println ("initial doc:\n" + doc);
 				
-				if (id_str != null) {
+				wrapper.process ();
+				
+				try {
+					doc = in_facets_config.build (tax_writer, doc);	
+				} catch (Exception e) {
+					System.err.println ("Building faceted document failed for " + json_obj + "\n " + "doc " + doc + "\n exception: " + e.getMessage ());
+					doc = null;
+				}
+
+				if (doc != null) {
+					// Existing index (an old copy of this document may have been indexed) so
+					// we use updateDocument instead to replace the old one matching the exact
+					// path, if present:
+					System.out.println ("updating " + filename + ": " + obj_index + "/" + total);
+					
 					try {
 						index_writer.updateDocument (new Term (GrassrootsDocument.GD_LUCENE_ID, id_str), doc);
 						success_flag = true;
 					} catch (IOException ioe) {
 						System.err.println ("writer.updateDocument () failed for " + filename + " exception: " + ioe.getMessage ());
 					}
-				} else {
-					System.err.println ("Not updating doc: No unique id for " + json_obj);					
 				}
+			
+			} else {
+				System.err.println ("Not updating doc: No unique id for " + json_obj);					
 			}
-							
+
+				
 		} else {
 			System.err.println("no document from " + json_obj);
 			
 		}
-	
+
 		if (success_flag) {
 			results.AddSuccess ();
 		} else {
