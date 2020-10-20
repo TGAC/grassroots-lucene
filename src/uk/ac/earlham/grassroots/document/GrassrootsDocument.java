@@ -27,6 +27,8 @@ abstract public class GrassrootsDocument {
 	static public String GD_DESCRIPTION = "so:description";
 	static public String GD_DEFAULT_SEARCH_KEY = "default";
 	static public String GD_LUCENE_ID = "id";
+	static public String GD_ICON = "so:image";
+	static public String GD_TYPE_DESCRIPTION = "type_description";
 	
 	/** 
 	 * The key for the url to use  the web-based client. 
@@ -60,15 +62,32 @@ abstract public class GrassrootsDocument {
 		if (setId (json_doc)) {
 			final String PRIVATE_TYPE = "@type";
 			
-			String private_typename = (String) json_doc.get (PRIVATE_TYPE);
+			String s = (String) json_doc.get (PRIVATE_TYPE);
 			
-			if (private_typename != null) {
+			if (s != null) {
 			
 				wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
-				wrapper.addNonIndexedString (PRIVATE_TYPE, private_typename);
-				wrapper.addString (GD_LUCENE_ID, gd_unique_id);
+				wrapper.addNonIndexedString (PRIVATE_TYPE, s);
+				wrapper.addString (GD_ICON, gd_unique_id);
 							
+				/*
+				 * icon
+				 */
+				s = (String) json_doc.get (GD_ICON);
+				if (s != null) {
+					wrapper.addNonIndexedString (GD_ICON, s);					
+				}
 
+				
+				/*
+				 * user-friendly type name
+				 */
+				s = (String) json_doc.get (GD_TYPE_DESCRIPTION);
+				if (s != null) {
+					wrapper.addNonIndexedString (GD_TYPE_DESCRIPTION, s);					
+				}
+
+				
 				if (!addFields (json_doc)) {
 					System.err.println ("Error adding fields for " + json_doc);
 					throw new IllegalArgumentException (json_doc.toJSONString ());
@@ -113,6 +132,8 @@ abstract public class GrassrootsDocument {
 		if (addNonIndexedString (json_doc, GD_PUBLIC_LINK)) {
 			added_link_flag = true; 
 		}
+		
+
 		
 		success_flag = true;
 		
