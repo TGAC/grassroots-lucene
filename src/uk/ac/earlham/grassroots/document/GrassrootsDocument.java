@@ -56,16 +56,35 @@ abstract public class GrassrootsDocument {
 		
 		if (setId (json_doc)) {
 			final String PRIVATE_TYPE = "@type";
+			final String ICON = "so:image";
+			final String TYPE_DESCRIPTION = "type_description";
+
+			String s = (String) json_doc.get (PRIVATE_TYPE);
 			
-			String private_typename = (String) json_doc.get (PRIVATE_TYPE);
-			
-			if (private_typename != null) {
+			if (s != null) {
 			
 				wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
-				wrapper.addNonIndexedString (PRIVATE_TYPE, private_typename);
+				wrapper.addNonIndexedString (PRIVATE_TYPE, s);
 				wrapper.addString (GD_LUCENE_ID, gd_unique_id);
 							
+				/*
+				 * icon
+				 */
+				s = (String) json_doc.get (ICON);
+				if (s != null) {
+					wrapper.addNonIndexedString (ICON, s);					
+				}
 
+				
+				/*
+				 * user-friendly type name
+				 */
+				s = (String) json_doc.get (TYPE_DESCRIPTION);
+				if (s != null) {
+					wrapper.addNonIndexedString (TYPE_DESCRIPTION, s);					
+				}
+
+				
 				if (!addFields (json_doc)) {
 					System.err.println ("Error adding fields for " + json_doc);
 					throw new IllegalArgumentException (json_doc.toJSONString ());
@@ -118,6 +137,8 @@ abstract public class GrassrootsDocument {
 		if (addNonIndexedString (json_doc, GD_PUBLIC_LINK)) {
 			added_link_flag = true; 
 		}
+		
+
 		
 		success_flag = true;
 		
