@@ -19,8 +19,6 @@ import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 public class QueryUtil {
 
 	public static Query buildGrassrootsQuery (List <String> queries) {
-		final float NAME_BOOST = 5.0f;
-		final float DESCRIPTION_BOOST = 3.0f;
 		Query q = null;		
 		StandardAnalyzer analyzer = new StandardAnalyzer ();
 		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, analyzer);

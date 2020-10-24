@@ -42,7 +42,6 @@ import org.json.simple.parser.ParseException;
 
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 import uk.ac.earlham.grassroots.document.GrassrootsDocumentFactory;
-import uk.ac.earlham.grassroots.document.MongoDocument;
 import uk.ac.earlham.grassroots.document.util.LuceneDocumentWrapper;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -52,8 +51,6 @@ import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.facet.taxonomy.TaxonomyWriter;
 import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;

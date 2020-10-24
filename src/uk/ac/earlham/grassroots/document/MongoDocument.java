@@ -1,6 +1,5 @@
 package uk.ac.earlham.grassroots.document;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;

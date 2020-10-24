@@ -9,7 +9,7 @@ import org.apache.lucene.facet.FacetField;
 
 
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
-import org.apache.lucene.index.Term;
+
 
 public class LuceneDocumentWrapper implements DocumentWrapper {
 

@@ -1,5 +1,6 @@
 package uk.ac.earlham.grassroots.document;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
@@ -52,6 +53,10 @@ public class StudyDocument extends MongoDocument {
 					// aspect
 					addAspect (json_doc);
 					
+					
+					// phenotypes
+					addPhenotypes (json_doc);
+					
 					success_flag = true;
 				} else {
 					System.err.println ("Failed to add mongo id for address_id from " + json_doc);
@@ -69,7 +74,7 @@ public class StudyDocument extends MongoDocument {
 		JSONObject crop = (JSONObject) doc.get (crop_key);
 		
 		if (crop != null) {
-			addText (crop, "so:name", crop_key);
+			addText (crop, GrassrootsDocument.GD_NAME, crop_key);
 		}
 	}
 	
@@ -103,6 +108,37 @@ public class StudyDocument extends MongoDocument {
 		}
 		
 	}
+	
+
+	void addPhenotypes (JSONObject doc) {		
+		Object o = doc.get ("phenotypes");
+		
+		if (o != null) {
+			if (o instanceof JSONArray) {
+				JSONArray phenotypes = (JSONArray) o;				
+				final int num_phenotypes = phenotypes.size ();
+				final String description_key = getDescriptionKey ();
+				final String name_key = getNameKey ();
+				
+				for (int i = 0; i < num_phenotypes; ++ i) {
+					JSONObject phenotype = (JSONObject) phenotypes.get (i);
+
+					Object value = phenotype.get ("so:name");
+					if (value != null) {
+						addText (GrassrootsDocument.GD_NAME, value.toString ());						
+					}
+
+					value = phenotype.get ("so:description");
+					if (value != null) {
+						addText (GrassrootsDocument.GD_DESCRIPTION, value.toString ());						
+					}
+				}
+			}
+			
+		}
+		
+	}
+
 	
 	
 	@Override
