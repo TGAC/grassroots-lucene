@@ -1,5 +1,7 @@
 package uk.ac.earlham.grassroots.document;
 
+import java.util.HashMap;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -56,6 +58,11 @@ public class StudyDocument extends MongoDocument {
 					
 					// phenotypes
 					addPhenotypes (json_doc);
+
+					
+					// parent field trial
+					addParentFieldTrial (json_doc);
+
 					
 					success_flag = true;
 				} else {
@@ -112,29 +119,61 @@ public class StudyDocument extends MongoDocument {
 
 	void addPhenotypes (JSONObject doc) {		
 		Object o = doc.get ("phenotypes");
+		HashMap <String, String> names_map = new HashMap <String, String> ();
+		HashMap <String, String> descriptions_map = new HashMap <String, String> ();
 		
 		if (o != null) {
 			if (o instanceof JSONArray) {
 				JSONArray phenotypes = (JSONArray) o;				
 				final int num_phenotypes = phenotypes.size ();
-				final String description_key = getDescriptionKey ();
-				final String name_key = getNameKey ();
 				
 				for (int i = 0; i < num_phenotypes; ++ i) {
 					JSONObject phenotype = (JSONObject) phenotypes.get (i);
 
 					Object value = phenotype.get ("so:name");
 					if (value != null) {
-						addText (GrassrootsDocument.GD_NAME, value.toString ());						
+						String name = value.toString ();
+						
+						if (!names_map.containsKey (name)) {
+							addText (GrassrootsDocument.GD_NAME, name);						
+							names_map.put (name, name);
+						}
 					}
 
 					value = phenotype.get ("so:description");
 					if (value != null) {
-						addText (GrassrootsDocument.GD_DESCRIPTION, value.toString ());						
+						String description = value.toString ();
+						
+						if (!descriptions_map.containsKey (description)) {
+							addText (GrassrootsDocument.GD_DESCRIPTION, description);						
+							descriptions_map.put (description, description);
+						}
+
 					}
 				}
 			}
 			
+		}
+		
+	}
+
+
+	
+	void addParentFieldTrial (JSONObject doc) {		
+		Object o = doc.get ("parent_field_trial");
+
+		
+		if (o != null) {
+			if (o instanceof JSONObject) {
+				JSONObject field_trial = (JSONObject) o;
+								
+				o = field_trial.get ("so:name");
+				
+				if (o != null) {
+					String name = o.toString ();
+					addText (GrassrootsDocument.GD_NAME, name);						
+				}
+			}
 		}
 		
 	}
