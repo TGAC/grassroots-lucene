@@ -1,5 +1,8 @@
 package uk.ac.earlham.grassroots.document;
 
+import java.util.HashMap;
+
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
@@ -52,6 +55,17 @@ public class StudyDocument extends MongoDocument {
 					// aspect
 					addAspect (json_doc);
 					
+					
+					// phenotypes
+					addPhenotypes (json_doc);
+
+					// acccessions
+					addAccessions (json_doc);
+					
+					// parent field trial
+					addParentFieldTrial (json_doc);
+
+					
 					success_flag = true;
 				} else {
 					System.err.println ("Failed to add mongo id for address_id from " + json_doc);
@@ -69,7 +83,7 @@ public class StudyDocument extends MongoDocument {
 		JSONObject crop = (JSONObject) doc.get (crop_key);
 		
 		if (crop != null) {
-			addText (crop, "so:name", crop_key);
+			addText (crop, GrassrootsDocument.GD_NAME, crop_key);
 		}
 	}
 	
@@ -103,6 +117,89 @@ public class StudyDocument extends MongoDocument {
 		}
 		
 	}
+	
+
+	void addPhenotypes (JSONObject doc) {		
+		Object o = doc.get ("phenotypes");
+		HashMap <String, String> names_map = new HashMap <String, String> ();
+		HashMap <String, String> descriptions_map = new HashMap <String, String> ();
+		
+		if (o != null) {
+			if (o instanceof JSONArray) {
+				JSONArray phenotypes = (JSONArray) o;				
+				final int num_phenotypes = phenotypes.size ();
+				
+				for (int i = 0; i < num_phenotypes; ++ i) {
+					JSONObject phenotype = (JSONObject) phenotypes.get (i);
+
+					Object value = phenotype.get ("so:name");
+					if (value != null) {
+						String name = value.toString ();
+						
+						if (!names_map.containsKey (name)) {
+							addText (GrassrootsDocument.GD_NAME, name);						
+							names_map.put (name, name);
+						}
+					}
+
+					value = phenotype.get ("so:description");
+					if (value != null) {
+						String description = value.toString ();
+						
+						if (!descriptions_map.containsKey (description)) {
+							addText (GrassrootsDocument.GD_DESCRIPTION, description);						
+							descriptions_map.put (description, description);
+						}
+
+					}
+				}
+			}
+			
+		}
+		
+	}
+
+
+	void addAccessions (JSONObject doc) {		
+		Object o = doc.get ("accessions");
+		
+		if (o != null) {
+			if (o instanceof JSONArray) {
+				JSONArray accessions = (JSONArray) o;				
+				final int num_accessions = accessions.size ();
+				
+				for (int i = 0; i < num_accessions; ++ i) {
+					o = accessions.get (i);
+
+					String accession = o.toString ();
+					
+					addString (GrassrootsDocument.GD_STRING_SEARCH_KEY, accession);
+					
+				}
+			}			
+		}
+	}
+
+	
+	void addParentFieldTrial (JSONObject doc) {		
+		Object o = doc.get ("parent_field_trial");
+
+		
+		if (o != null) {
+			if (o instanceof JSONObject) {
+				JSONObject field_trial = (JSONObject) o;
+								
+				o = field_trial.get ("so:name");
+				
+				if (o != null) {
+					String name = o.toString ();
+					addText (GrassrootsDocument.GD_NAME, name);						
+				}
+			}
+		}
+		
+	}
+
 	
 	
 	@Override

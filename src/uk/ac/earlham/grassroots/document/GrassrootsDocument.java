@@ -3,12 +3,8 @@ package uk.ac.earlham.grassroots.document;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -23,9 +19,11 @@ import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
  */
 abstract public class GrassrootsDocument {
 	static public String GD_DATATYPE = "facet_type";
-	static public String GD_NAME = "so:name";
-	static public String GD_DESCRIPTION = "so:description";
+	static public String GD_UNIQUE_NAME = "so:name";
+	static public String GD_NAME = "name";
+	static public String GD_DESCRIPTION = "description";
 	static public String GD_DEFAULT_SEARCH_KEY = "default";
+	static public String GD_STRING_SEARCH_KEY = "indexed_string";
 	static public String GD_LUCENE_ID = "id";
 	
 	/** 
@@ -127,7 +125,15 @@ abstract public class GrassrootsDocument {
 				System.err.println ("Failed to add " + GD_NAME + " using " + name_key + " from " + json_doc);				
 				return false;
 			}
+
+			if (!addText (json_doc, name_key, GD_UNIQUE_NAME)) {
+				System.err.println ("Failed to add " + GD_UNIQUE_NAME + " using " + name_key + " from " + json_doc);				
+				return false;
+			}
+
 		}
+
+		
 		
 		if (addNonIndexedString (json_doc, GD_PUBLIC_LINK)) {
 			added_link_flag = true; 

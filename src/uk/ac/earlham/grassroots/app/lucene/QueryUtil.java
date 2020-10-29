@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -19,10 +21,9 @@ import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 public class QueryUtil {
 
 	public static Query buildGrassrootsQuery (List <String> queries) {
-		final float NAME_BOOST = 5.0f;
-		final float DESCRIPTION_BOOST = 3.0f;
 		Query q = null;		
-		StandardAnalyzer analyzer = new StandardAnalyzer ();
+		Analyzer analyzer = new KeywordAnalyzer (); // StandardAnalyzer ();
+		
 		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, analyzer);
 		
 		StringBuilder sb = new StringBuilder ();
@@ -64,6 +65,7 @@ public class QueryUtil {
 	private static void AddStringsToQuery (StringBuilder sb, List <String> terms, boolean quote_flag) {
 		final float NAME_BOOST = 5.0f;
 		final float DESCRIPTION_BOOST = 3.0f;
+		final float DEFAULT_BOOST = 1.0f;
 
 		for (String s : terms) {
 			if (sb.length () != 0) {
@@ -77,6 +79,8 @@ public class QueryUtil {
 				sb.append ("(");				
 				buildQuery (sb, GrassrootsDocument.GD_NAME, s, NAME_BOOST);
 				buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, s, DESCRIPTION_BOOST);
+				buildQuery (sb, GrassrootsDocument.GD_STRING_SEARCH_KEY, s, DEFAULT_BOOST);
+				
 				sb.append (" \"");
 				sb.append (s);
 				sb.append ("\")");				

@@ -72,8 +72,8 @@ public class TreatmentDocument extends MongoDocument {
 		JSONObject child = (JSONObject) json_doc.get (child_name);
 		
 		if (child != null) {
-			addText (child, "so:name");
-			addText (child, "so:description");
+			addText (child, GrassrootsDocument.GD_NAME);
+			addText (child, GrassrootsDocument.GD_DESCRIPTION);
 			addString (child, "so:sameAs");
 			addText (child, "abbreviation");
 		}			
