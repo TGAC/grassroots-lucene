@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
@@ -17,9 +18,6 @@ import org.apache.lucene.store.FSDirectory;
 
 
 public class Deleter {
-	
-	public Deleter () {
-	}
 	
 	public static void main (String[] args) {
 		String usage =
@@ -102,8 +100,7 @@ public class Deleter {
 	
 	private IndexWriter getIndexWriter (String index_dir_name) throws IOException {
 		Directory index_dir = FSDirectory.open (Paths.get (index_dir_name));	
-		Analyzer analyzer = new StandardAnalyzer ();
-		IndexWriterConfig iwc = new IndexWriterConfig (analyzer);
+		IndexWriterConfig iwc = new IndexWriterConfig (QueryUtil.getAnalyzer ());
 		IndexWriter index_writer = new IndexWriter (index_dir, iwc);
 		
 		return index_writer;

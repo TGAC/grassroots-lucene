@@ -27,6 +27,7 @@
     <pathelement path="${lucene.dir}/core/lucene-core-${lucene.version}.jar" />
     <pathelement path="${lucene.dir}/queryparser/lucene-queryparser-${lucene.version}.jar" />
     <pathelement path="${lucene.dir}/facet/lucene-facet-${lucene.version}.jar" />
+    <pathelement path="${lucene.dir}/highlighter/lucene-highlighter-${lucene.version}.jar" />
   </path>	
 	
 

@@ -19,12 +19,20 @@ import org.apache.lucene.search.TopDocs;
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 
 public class QueryUtil {
-
+	private static Analyzer qu_analyzer;
+	
+	public static Analyzer getAnalyzer () {
+		if (qu_analyzer == null) {
+			qu_analyzer = new KeywordAnalyzer ();
+		}
+		
+		return qu_analyzer;
+	}
+	
 	public static Query buildGrassrootsQuery (List <String> queries) {
 		Query q = null;		
-		Analyzer analyzer = new KeywordAnalyzer (); // StandardAnalyzer ();
 		
-		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, analyzer);
+		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, QueryUtil.getAnalyzer ());
 		
 		StringBuilder sb = new StringBuilder ();
 			

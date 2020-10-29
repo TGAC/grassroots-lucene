@@ -27,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.facet.DrillDownQuery;
 import org.apache.lucene.facet.DrillSideways;
@@ -49,6 +53,9 @@ import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
@@ -63,6 +70,8 @@ import org.apache.lucene.store.FSDirectory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+
+import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 
 
 class DrillDownData {
@@ -173,7 +182,7 @@ public class Searcher {
 
 			if (searcher != null) {
 				Query q = null;
-
+				
 				if (!queries.isEmpty ()) {					
 					q = QueryUtil.buildGrassrootsQuery (queries);
 				} else {
@@ -401,11 +410,12 @@ public class Searcher {
 	  
 	  /** User drills down on a facet, and we
 	   *  return another facets for  */
-	  public DrillDownData drillDown (Query base_query, String facet_name, String facet_value, String facet_to_return, int hits_per_page, int page_number) throws IOException {
+	  public DrillDownData drillDown (Query base_query,  String facet_name, String facet_value, String facet_to_return, int hits_per_page, int page_number) throws IOException {
 	    IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector ();
 		final int MAX_NUM_RESULTS = 1024;
 		List <FacetResult> all_facets = null;
+		Analyzer analyzer = QueryUtil.getAnalyzer ();
 		
 	    // Passing no baseQuery means we drill down on all
 	    // documents ("browse only"):
@@ -456,8 +466,13 @@ public class Searcher {
 		ScoreDoc [] hits = resultDocs.scoreDocs;
 		int total_hits = Searcher.CastLongToInt (resultDocs.totalHits.value);
 		
-		Highlighter highlighter = new Highlighter
+		UnifiedHighlighter highlighter = new UnifiedHighlighter (searcher, analyzer);
 		
+		String [] fragments = highlighter.highlight("contents", base_query, resultDocs);
+		for(String f : fragments)
+		{
+			System.out.println ("frag " + f);
+		}
 		
 		List <Document> docs = new ArrayList <Document> ();
 		int start = hits_per_page * page_number;
