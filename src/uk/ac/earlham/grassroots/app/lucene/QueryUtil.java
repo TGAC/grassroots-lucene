@@ -62,6 +62,7 @@ public class QueryUtil {
 	private static void AddStringsToQuery (StringBuilder sb, List <String> terms, boolean quote_flag) {
 		final float NAME_BOOST = 5.0f;
 		final float DESCRIPTION_BOOST = 3.0f;
+		final float DEFAULT_BOOST = 1.0f;
 
 		for (String s : terms) {
 			if (sb.length () != 0) {
@@ -75,6 +76,8 @@ public class QueryUtil {
 				sb.append ("(");				
 				buildQuery (sb, GrassrootsDocument.GD_NAME, s, NAME_BOOST);
 				buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, s, DESCRIPTION_BOOST);
+				buildQuery (sb, GrassrootsDocument.GD_STRING_SEARCH_KEY, s, DEFAULT_BOOST);
+				
 				sb.append (" \"");
 				sb.append (s);
 				sb.append ("\")");				

@@ -59,6 +59,8 @@ public class StudyDocument extends MongoDocument {
 					// phenotypes
 					addPhenotypes (json_doc);
 
+					// acccessions
+					addAccessions (json_doc);
 					
 					// parent field trial
 					addParentFieldTrial (json_doc);
@@ -157,6 +159,26 @@ public class StudyDocument extends MongoDocument {
 		
 	}
 
+
+	void addAccessions (JSONObject doc) {		
+		Object o = doc.get ("accessions");
+		
+		if (o != null) {
+			if (o instanceof JSONArray) {
+				JSONArray accessions = (JSONArray) o;				
+				final int num_accessions = accessions.size ();
+				
+				for (int i = 0; i < num_accessions; ++ i) {
+					o = accessions.get (i);
+
+					String accession = o.toString ();
+					
+					addString (GrassrootsDocument.GD_STRING_SEARCH_KEY, accession);
+					
+				}
+			}			
+		}
+	}
 
 	
 	void addParentFieldTrial (JSONObject doc) {		
