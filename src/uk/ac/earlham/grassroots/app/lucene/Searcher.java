@@ -60,6 +60,10 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
+
+import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
+
+
 import org.apache.lucene.store.FSDirectory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -458,6 +462,8 @@ public class Searcher {
 	    // Retrieve results
 		ScoreDoc [] hits = resultDocs.scoreDocs;
 		int total_hits = Searcher.CastLongToInt (resultDocs.totalHits.value);
+		
+		Highlighter highlighter = new Highlighter
 		
 		
 		List <Document> docs = new ArrayList <Document> ();
