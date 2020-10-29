@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -466,14 +467,22 @@ public class Searcher {
 		ScoreDoc [] hits = resultDocs.scoreDocs;
 		int total_hits = Searcher.CastLongToInt (resultDocs.totalHits.value);
 		
+		/*
 		UnifiedHighlighter highlighter = new UnifiedHighlighter (searcher, analyzer);
 		
-		String [] fragments = highlighter.highlight("contents", base_query, resultDocs);
-		for(String f : fragments)
-		{
-			System.out.println ("frag " + f);
-		}
+		String [] fields = { GrassrootsDocument.GD_NAME, GrassrootsDocument.GD_DESCRIPTION, GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, GrassrootsDocument.GD_STRING_SEARCH_KEY };
 		
+		Map <String, String []> highlights = highlighter.highlightFields (fields, base_query, resultDocs);
+		Set <String> keys =	highlights.keySet ();
+		for (String key : keys) {
+			String [] values = highlights.get (key);
+			
+			for (String value : values) {
+				System.out.println ("*KEY*: " + key + " *VALUE* " + value);
+			}
+		}
+		*/
+
 		List <Document> docs = new ArrayList <Document> ();
 		int start = hits_per_page * page_number;
 		int end = 0;
