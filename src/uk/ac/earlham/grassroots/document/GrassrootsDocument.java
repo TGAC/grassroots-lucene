@@ -23,7 +23,7 @@ abstract public class GrassrootsDocument {
 	static public String GD_NAME = "name";
 	static public String GD_DESCRIPTION = "description";
 	static public String GD_DEFAULT_SEARCH_KEY = "default";
-	static public String GD_STRING_SEARCH_KEY = "default_string";
+	static public String GD_STRING_SEARCH_KEY = "indexed_string";
 	static public String GD_LUCENE_ID = "id";
 	
 	/** 

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -20,7 +22,8 @@ public class QueryUtil {
 
 	public static Query buildGrassrootsQuery (List <String> queries) {
 		Query q = null;		
-		StandardAnalyzer analyzer = new StandardAnalyzer ();
+		Analyzer analyzer = new KeywordAnalyzer (); // StandardAnalyzer ();
+		
 		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, analyzer);
 		
 		StringBuilder sb = new StringBuilder ();
