@@ -440,5 +440,8 @@ abstract public class GrassrootsDocument {
 	abstract public String getUserFriendlyTypename ();
 
 	abstract public boolean setId (JSONObject json_doc);
+
+
+	abstract public void addQueryTerms (String term, StringBuilder query_buffer);
 }
 

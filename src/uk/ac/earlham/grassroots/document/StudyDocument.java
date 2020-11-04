@@ -206,4 +206,11 @@ public class StudyDocument extends MongoDocument {
 	public String getUserFriendlyTypename() {
 		return "Study";
 	}
+
+
+	@Override
+	public void addQueryTerms(String term, StringBuilder query_buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

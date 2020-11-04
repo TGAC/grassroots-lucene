@@ -25,6 +25,7 @@ package uk.ac.earlham.grassroots.app.lucene;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
@@ -38,6 +39,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -55,13 +57,20 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.highlight.Formatter;
+import org.apache.lucene.search.highlight.Fragmenter;
+import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
+import org.apache.lucene.search.highlight.QueryScorer;
+import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.apache.lucene.search.highlight.SimpleSpanFragmenter;
+import org.apache.lucene.search.highlight.TokenSources;
 import org.apache.lucene.store.Directory;
 
 import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
@@ -71,6 +80,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
 
@@ -97,17 +107,82 @@ public class Searcher {
 	private TaxonomyReader se_taxonomy_reader;
 
 	private FacetsConfig se_config;
+
+	private JSONObject se_queries;
+
 	
-	
-	public Searcher (String index_dir_name, String tax_dir_name) throws IOException {
-		Directory index_dir = FSDirectory.open (Paths.get (index_dir_name));
-		Directory tax_dir = FSDirectory.open (Paths.get (tax_dir_name));
-		
-		se_index_reader =  DirectoryReader.open (index_dir);
-		se_taxonomy_reader = new DirectoryTaxonomyReader (tax_dir);
+	private Searcher (IndexReader index_reader, TaxonomyReader taxonomy_reader) {
+		se_index_reader = index_reader;
+		se_taxonomy_reader = taxonomy_reader;
 		se_config = new FacetsConfig ();
+		se_queries = null;
+	}
+	
+	public static Searcher getSearcher (String index_dir_name, String tax_dir_name, String config_filename) {
+		Searcher searcher = null;
+		IndexReader index_reader = getIndexReader (index_dir_name);
+		
+		if (index_reader != null) {
+			TaxonomyReader taxonomy_reader = getTaxReader (tax_dir_name);		
+			
+			if (taxonomy_reader != null) {
+				searcher = new Searcher (index_reader, taxonomy_reader);							
+			}
+			
+		}
+				
+		return searcher;
 	}
 
+	
+	private static IndexReader getIndexReader (String index_dir_name) {
+		IndexReader reader = null;
+		Directory index_dir = null;
+
+		try {
+			index_dir = FSDirectory.open (Paths.get (index_dir_name));
+		} catch (IOException e) {
+			System.err.println ("Failed to open index_dir " + index_dir_name + ": " + e.getMessage ());	
+		}
+
+		
+		if (index_dir != null) {
+			try {
+				reader =  DirectoryReader.open (index_dir);
+			} catch (IOException e) {
+				System.err.println ("Failed to get index reader " + index_dir_name + ": " + e.getMessage ());	
+			}
+		}
+		
+		return reader;
+	}
+
+
+	private static DirectoryTaxonomyReader getTaxReader (String tax_dir_name) {
+		DirectoryTaxonomyReader reader = null;
+		Directory tax_dir = null;
+
+		try {
+			tax_dir = FSDirectory.open (Paths.get (tax_dir_name));
+		} catch (IOException e) {
+			System.err.println ("Failed to open tax_dir " + tax_dir_name + ": " + e.getMessage ());	
+		}
+
+		if (tax_dir != null) {
+			try {
+				reader = new DirectoryTaxonomyReader (tax_dir);
+			} catch (IOException e) {
+				System.err.println ("Failed to get tax reader " + tax_dir_name + ": " + e.getMessage ());	
+			}
+
+		}
+		
+		return reader;
+	}
+
+	
+	
+	
 	/** Simple command-line based search demo. */
 	public static void main(String[] args)  {
 		String usage =
@@ -172,14 +247,7 @@ public class Searcher {
 		}
 
 		if (index != null) {
-			Searcher searcher = null;
-			
-			try {
-				searcher = new Searcher (index, tax_dirname);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}			
+			Searcher searcher = getSearcher (index, tax_dirname, null);
 
 			if (searcher != null) {
 				Query q = null;
@@ -482,7 +550,10 @@ public class Searcher {
 			}
 		}
 		*/
+		DoHighlighting (base_query, searcher, se_index_reader, analyzer, resultDocs);
 
+
+		
 		List <Document> docs = new ArrayList <Document> ();
 		int start = hits_per_page * page_number;
 		int end = 0;
@@ -717,6 +788,91 @@ public class Searcher {
 		}
 		
 		return facets;
+	}
+	
+	
+	static void DoHighlighting (Query query, IndexSearcher searcher, IndexReader reader, Analyzer analyzer, TopDocs hits) {
+		 //Uses HTML &lt;B&gt;&lt;/B&gt; tag to highlight the searched terms
+        Formatter formatter = new SimpleHTMLFormatter();
+         
+        //It scores text fragments by the number of unique query terms found
+        //Basically the matching score in layman terms
+        QueryScorer scorer = new QueryScorer(query);
+         
+        //used to markup highlighted terms found in the best sections of a text
+        Highlighter highlighter = new Highlighter(formatter, scorer);
+         
+        //It breaks text up into same-size texts but does not split up spans
+        Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, 10);
+         
+        //breaks text up into same-size fragments with no concerns over spotting sentence boundaries.
+        //Fragmenter fragmenter = new SimpleFragmenter(10);
+         
+        //set fragmenter to highlighter
+        highlighter.setTextFragmenter(fragmenter);
+         
+        //Iterate over found results
+        for (int i = 0; i < hits.scoreDocs.length; i++) {
+            int docid = hits.scoreDocs[i].doc;
+            Document doc = null;
+			
+            try {
+				doc = searcher.doc(docid);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            
+            if (doc != null) {
+                String title = doc.get (GrassrootsDocument.GD_NAME);
+                
+                //Printing - to which document result belongs
+                System.out.println("Path " + " : " + title);
+                 
+                //Get stored text from found document
+                String [] values = doc.getValues (GrassrootsDocument.GD_UNIQUE_NAME);
+
+				
+				for (String value : values) {
+
+	                //Create token stream
+	                TokenStream stream = null;
+					try {
+						stream = TokenSources.getAnyTokenStream (reader, docid, GrassrootsDocument.GD_UNIQUE_NAME, analyzer);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	                 
+
+	                //Get highlighted text fragments
+	                String [] frags = null;
+					try {
+						frags = highlighter.getBestFragments(stream, value, 10);
+					} catch (IOException ioe) {
+							// TODO Auto-generated catch block
+						ioe.printStackTrace();
+					} catch (InvalidTokenOffsetsException e) {
+					}
+			
+					if (frags != null) {
+						for (String frag : frags) {
+		                    System.out.println("=======================");
+		                    System.out.println(frag);
+						}
+					}
+					
+					try {
+						stream.reset();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+            	
+            }
+            
+        }
 	}
 	
 }

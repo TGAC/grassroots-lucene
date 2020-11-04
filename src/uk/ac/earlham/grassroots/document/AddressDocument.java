@@ -55,7 +55,14 @@ public class AddressDocument extends MongoDocument {
 	}
 	
 	@Override
-	public String getUserFriendlyTypename() {
+	public String getUserFriendlyTypename () {
 		return "Location";
+	}
+
+
+	@Override
+	public void addQueryTerms (String term, StringBuilder query_buffer) {
+		// TODO Auto-generated method stub
+		
 	}
 }

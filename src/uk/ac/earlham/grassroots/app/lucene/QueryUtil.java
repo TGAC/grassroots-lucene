@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -98,7 +97,8 @@ public class QueryUtil {
 	
 	}
 	
-	
+
+
 	private static void buildQuery (StringBuilder sb, String key, String value, float boost) {
 		if (sb.length () > 0) {
 			sb.append (' ');

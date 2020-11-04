@@ -33,4 +33,11 @@ public class FieldTrialDocument extends MongoDocument {
 		return "Field Trial";
 	}
 
+
+	@Override
+	public void addQueryTerms(String term, StringBuilder query_buffer) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

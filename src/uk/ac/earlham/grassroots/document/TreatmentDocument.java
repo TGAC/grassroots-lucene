@@ -78,4 +78,11 @@ public class TreatmentDocument extends MongoDocument {
 			addText (child, "abbreviation");
 		}			
 	}
+
+
+	@Override
+	public void addQueryTerms(String term, StringBuilder query_buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

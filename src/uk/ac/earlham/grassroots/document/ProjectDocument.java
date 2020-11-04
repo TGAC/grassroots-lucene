@@ -106,5 +106,12 @@ public class ProjectDocument extends GrassrootsDocument {
 		
 		return success_flag;
 	}
+
+
+	@Override
+	public void addQueryTerms(String term, StringBuilder query_buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }
