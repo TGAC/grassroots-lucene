@@ -98,8 +98,7 @@ public class QueryUtil {
 	}
 	
 
-
-	private static void buildQuery (StringBuilder sb, String key, String value, float boost) {
+	public static void buildQuery (StringBuilder sb, String key, String value) {
 		if (sb.length () > 0) {
 			sb.append (' ');
 		}
@@ -120,9 +119,16 @@ public class QueryUtil {
 		if (!wild_flag) {
 			sb.append ('"');			
 		}
+		
+	}
 
-		sb.append (")^");
-		sb.append (boost);		
+	public static void buildQuery (StringBuilder sb, String key, String value, float boost) {
+		buildQuery (sb, key, value);
+		
+		if (boost != 1.0f) {
+			sb.append (")^");
+			sb.append (boost);		
+		}
 	}
 	
 }

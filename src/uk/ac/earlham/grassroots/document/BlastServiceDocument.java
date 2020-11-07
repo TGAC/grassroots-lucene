@@ -41,5 +41,5 @@ public class BlastServiceDocument extends ServiceDocument {
 		return success_flag;
 	}
 
-
+	
 }

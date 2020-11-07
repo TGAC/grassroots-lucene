@@ -6,11 +6,11 @@ import org.json.simple.JSONObject;
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 public class AddressDocument extends MongoDocument {
-	static private String AD_STREET = "streetAddress";
-	static private String AD_LOCALITY = "addressLocality";
-	static private String AD_REGION = "addressRegion";
-	static private String AD_COUNTRY = "addressCountry";
-	static private String AD_POSTCODE = "postalCode";
+	static private String AD_STREET = "street";
+	static private String AD_LOCALITY = "city";
+	static private String AD_REGION = "county";
+	static private String AD_COUNTRY = "country";
+	static private String AD_POSTCODE = "postcode";
 
 	
 	public AddressDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -33,11 +33,11 @@ public class AddressDocument extends MongoDocument {
 				
 				if (address_json != null) {
 					
-					addText (address_json, AD_STREET);
-					addText (address_json, AD_LOCALITY);
-					addText (address_json, AD_REGION);
-					addText (address_json, AD_COUNTRY);
-					addText (address_json, AD_POSTCODE);
+					addText (address_json, "streetAddress", AD_STREET);
+					addText (address_json, "addressLocality", AD_LOCALITY);
+					addText (address_json, "addressRegion", AD_REGION);
+					addText (address_json, "addressCountry", AD_COUNTRY);
+					addText (address_json, "postalCode", AD_POSTCODE);
 					
 				}
 			}		

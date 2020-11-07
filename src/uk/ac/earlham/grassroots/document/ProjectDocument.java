@@ -4,9 +4,12 @@ import org.apache.lucene.search.BooleanQuery;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import uk.ac.earlham.grassroots.app.lucene.QueryUtil;
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 public class ProjectDocument extends GrassrootsDocument {
+	final private static String PR_AUTHOR = "author";
+	final private static String PR_GRANT_CODE = "grant_code";
 
 	public static void addQueries (String value, StringBuilder query_buffer) {
 		
@@ -54,12 +57,12 @@ public class ProjectDocument extends GrassrootsDocument {
 	
 	
 	private boolean addAuthors (JSONObject json_doc) {
-		return addArrayOfStrings (json_doc, "authors", "author", false);
+		return addArrayOfStrings (json_doc, "authors", PR_AUTHOR, false);
 	}
 
 
 	private boolean addProjectCodes (JSONObject json_doc) {
-		return addArrayOfStrings (json_doc, "project_codes", "grant_code", false);
+		return addArrayOfStrings (json_doc, "project_codes", PR_GRANT_CODE, false);
 	}
 
 	
@@ -115,9 +118,9 @@ public class ProjectDocument extends GrassrootsDocument {
 
 
 	@Override
-	public void addQueryTerms(String term, StringBuilder query_buffer) {
-		// TODO Auto-generated method stub
-		
+	public void addQueryTerms(String value, StringBuilder query_buffer) {
+		QueryUtil.buildQuery (query_buffer, PR_AUTHOR, value);		
+		QueryUtil.buildQuery (query_buffer, PR_GRANT_CODE, value);				
 	}
 	
 }

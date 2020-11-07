@@ -36,9 +36,9 @@ public class StudyDocument extends MongoDocument {
 					 * Add the study-specific fields
 					 */
 					addText (json_doc, "soil");
-					addText (json_doc, "phenotype_gathering_notes", description_key);
-					addText (json_doc, "design", description_key);
-					addText (json_doc, "study_design", description_key);
+					addText (json_doc, "phenotype_gathering_notes");
+					addText (json_doc, "design");
+					addText (json_doc, "study_design");
 
 					addDateString (json_doc, "sowing_date");
 					addDateString (json_doc, "harvest_date");
@@ -137,7 +137,7 @@ public class StudyDocument extends MongoDocument {
 						String name = value.toString ();
 						
 						if (!names_map.containsKey (name)) {
-							addText (GrassrootsDocument.GD_NAME, name);						
+							addText ("phenotype_name", name);						
 							names_map.put (name, name);
 						}
 					}
@@ -147,7 +147,7 @@ public class StudyDocument extends MongoDocument {
 						String description = value.toString ();
 						
 						if (!descriptions_map.containsKey (description)) {
-							addText (GrassrootsDocument.GD_DESCRIPTION, description);						
+							addText ("phenotype_description", description);						
 							descriptions_map.put (description, description);
 						}
 
@@ -173,7 +173,7 @@ public class StudyDocument extends MongoDocument {
 
 					String accession = o.toString ();
 					
-					addString (GrassrootsDocument.GD_STRING_SEARCH_KEY, accession);
+					addString ("accession", accession);
 					
 				}
 			}			
@@ -193,7 +193,7 @@ public class StudyDocument extends MongoDocument {
 				
 				if (o != null) {
 					String name = o.toString ();
-					addText (GrassrootsDocument.GD_NAME, name);						
+					addText ("parent_field_trial", name);						
 				}
 			}
 		}
