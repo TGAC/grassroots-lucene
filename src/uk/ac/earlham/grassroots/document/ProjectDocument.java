@@ -1,5 +1,6 @@
 package uk.ac.earlham.grassroots.document;
 
+import org.apache.lucene.search.BooleanQuery;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -7,6 +8,11 @@ import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 public class ProjectDocument extends GrassrootsDocument {
 
+	public static void addQueries (String value, StringBuilder query_buffer) {
+		
+	}
+	
+	
 	public ProjectDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
 	}

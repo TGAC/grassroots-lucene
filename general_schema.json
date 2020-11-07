@@ -1,0 +1,54 @@
+{
+	"add-field": [{
+		"name": "id",
+		"type": "string",
+		"stored": true,
+		"indexed": false
+	}, {
+		"name": "so:name",
+		"type": "text_ws",
+		"stored": true,
+		"indexed": true
+	}, {
+		"name": "so:description",
+		"type": "text_ws",
+		"stored": true,
+		"indexed": true
+	}, {
+		"name": "content",
+		"type": "text_ws",
+		"stored":  true,
+		"indexed": true
+	}, {
+		"name": "image",
+		"type": "string",
+		"stored":  true,
+		"indexed": false
+	}, {
+		"name": "@type",
+		"type": "string",
+		"stored":  true,
+		"indexed": false
+	}, {
+		"name": "facet_type",
+		"type": "string",
+		"stored":  true,
+		"indexed": false
+	}, {
+		"name": "url_public",
+		"type": "string",
+		"stored":  true,
+		"indexed": false
+	}, {
+		"name": "url_internal",
+		"type": "string",
+		"stored":  true,
+		"indexed": false
+	}, {
+		"name": "payload",
+		"type": "string",
+		"stored":  true,
+		"indexed": false
+	}]
+}
+

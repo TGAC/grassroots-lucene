@@ -1,0 +1,19 @@
+{
+	"add-field": [{
+		"name": "authors",
+		"type": "text_ws",
+		"stored":  true,
+		"indexed": true
+	}, {
+		"name": "project_codes",
+		"type": "string",
+		"stored":  true,
+		"indexed": true
+	}, {
+		"name": "url_public",
+		"type": "string",
+		"stored":  true,
+		"indexed": false
+	}]
+}
+
