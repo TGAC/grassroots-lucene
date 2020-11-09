@@ -7,6 +7,11 @@ import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 public class ProjectDocument extends GrassrootsDocument {
 
+	
+	public static addQueriesForValue (String value, StringBuilder query_buffer) {
+		
+	}
+	
 	public ProjectDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
 	}
@@ -53,7 +58,7 @@ public class ProjectDocument extends GrassrootsDocument {
 
 
 	private boolean addProjectCodes (JSONObject json_doc) {
-		return addArrayOfStrings (json_doc, "project_codes", "grant_code", false);
+		return addArrayOfStrings (json_doc, "project_codes", "grant_code", true);
 	}
 
 	

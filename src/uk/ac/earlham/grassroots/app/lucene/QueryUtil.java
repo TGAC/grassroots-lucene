@@ -69,7 +69,7 @@ public class QueryUtil {
 		return docs;
 	}
 	
-	private static void AddStringsToQuery (StringBuilder sb, List <String> terms, boolean quote_flag) {
+	public static void AddStringsToQuery (StringBuilder sb, List <String> terms, boolean quote_flag) {
 		final float NAME_BOOST = 5.0f;
 		final float DESCRIPTION_BOOST = 3.0f;
 		final float DEFAULT_BOOST = 1.0f;
