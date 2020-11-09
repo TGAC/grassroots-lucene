@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -442,6 +444,8 @@ abstract public class GrassrootsDocument {
 	abstract public boolean setId (JSONObject json_doc);
 
 
-	abstract public void addQueryTerms (String term, StringBuilder query_buffer);
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+		
+	}
 }
 

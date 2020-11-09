@@ -1,22 +1,27 @@
 package uk.ac.earlham.grassroots.document;
 
+
+import java.util.List;
+import java.util.Map;
+
 import org.json.simple.JSONObject;
 
-import uk.ac.earlham.grassroots.app.lucene.QueryUtil;
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
+
 public class TreatmentDocument extends MongoDocument {
-	static private String TD_TRAIT_NAME = "trait_name";
-	static private String TD_TRAIT_DESCRIPTION = "trait_description";
-	static private String TD_TRAIT_ABBREVIATION = "trait_abbreviation";
-	static private String TD_TRAIT_ID = "trait_id";
-	static private String TD_MEASUREMENT_NAME = "measurement_name";
-	static private String TD_MEASUREMENT_DESCRIPTION = "measurement_description";
-	static private String TD_MEASUREMENT_ID = "measurement_id";
-	static private String TD_UNIT_NAME = "unit_name";
-	static private String TD_UNIT_ID = "unit_id";
-	static private String TD_VARIABLE_NAME = "variable_name";
-	static private String TD_VARIABLE_ID = "variable_id";
+	final static private String TD_PREFIX = "treatment-";
+	final static private String TD_TRAIT_NAME = TD_PREFIX + "trait_name";
+	final static private String TD_TRAIT_DESCRIPTION = TD_PREFIX + "trait_description";
+	final static private String TD_TRAIT_ABBREVIATION = TD_PREFIX + "trait_abbreviation";
+	final static private String TD_TRAIT_ID = TD_PREFIX + "trait_id";
+	final static private String TD_MEASUREMENT_NAME = TD_PREFIX + "measurement_name";
+	final static private String TD_MEASUREMENT_DESCRIPTION = TD_PREFIX + "measurement_description";
+	final static private String TD_MEASUREMENT_ID = TD_PREFIX + "measurement_id";
+	final static private String TD_UNIT_NAME = TD_PREFIX + "unit_name";
+	final static private String TD_UNIT_ID = TD_PREFIX + "unit_id";
+	final static private String TD_VARIABLE_NAME = TD_PREFIX + "variable_name";
+	final static private String TD_VARIABLE_ID = TD_PREFIX + "variable_id";
 	
 	
 	public TreatmentDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -100,21 +105,21 @@ public class TreatmentDocument extends MongoDocument {
 	}
 	
 
-	@Override
-	public void addQueryTerms(String value, StringBuilder query_buffer) {
-		QueryUtil.buildQuery (query_buffer, TD_TRAIT_NAME, value);		
-		QueryUtil.buildQuery (query_buffer, TD_TRAIT_DESCRIPTION, value);		
-		QueryUtil.buildQuery (query_buffer, TD_TRAIT_ABBREVIATION, value);		
-		QueryUtil.buildQuery (query_buffer, TD_TRAIT_ID, value);		
-
-		QueryUtil.buildQuery (query_buffer, TD_MEASUREMENT_NAME, value);		
-		QueryUtil.buildQuery (query_buffer, TD_MEASUREMENT_DESCRIPTION, value);		
-		QueryUtil.buildQuery (query_buffer, TD_MEASUREMENT_ID, value);		
-
-		QueryUtil.buildQuery (query_buffer, TD_UNIT_NAME, value);		
-		QueryUtil.buildQuery (query_buffer, TD_UNIT_ID, value);		
-
-		QueryUtil.buildQuery (query_buffer, TD_VARIABLE_NAME, value);		
-		QueryUtil.buildQuery (query_buffer, TD_VARIABLE_ID, value);		
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+		fields.add (TD_TRAIT_NAME);
+		fields.add (TD_TRAIT_DESCRIPTION);
+		fields.add (TD_TRAIT_ABBREVIATION);
+		fields.add (TD_TRAIT_ID);
+		fields.add (TD_MEASUREMENT_NAME);
+		fields.add (TD_MEASUREMENT_DESCRIPTION);
+		fields.add (TD_MEASUREMENT_ID);
+		fields.add (TD_UNIT_NAME);
+		fields.add (TD_UNIT_ID);		
+		fields.add (TD_VARIABLE_NAME);
+		fields.add (TD_VARIABLE_ID);
+		
+		boosts.put (TD_TRAIT_NAME, GD_NAME_BOOST);
+		boosts.put (TD_MEASUREMENT_NAME, GD_NAME_BOOST);
+		boosts.put (TD_UNIT_NAME, GD_NAME_BOOST);
 	}
 }

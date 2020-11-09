@@ -6,7 +6,8 @@ import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 
 abstract public class MongoDocument extends GrassrootsDocument {
-	
+	final static private String MD_PREFIX = "mongo-";
+
 	public MongoDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
 	}
@@ -16,7 +17,7 @@ abstract public class MongoDocument extends GrassrootsDocument {
 		boolean success_flag = false;
 				
 		if (super.addFields (json_doc)) {			
-			if (addString ("_id", gd_unique_id)) {
+			if (addString (MD_PREFIX + "_id", gd_unique_id)) {
 				success_flag = true;
 			} else {
 				System.err.println ("Failed to add mongo id for " + gd_unique_id + "  from " + json_doc);

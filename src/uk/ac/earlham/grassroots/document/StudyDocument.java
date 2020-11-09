@@ -1,6 +1,8 @@
 package uk.ac.earlham.grassroots.document;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -8,6 +10,19 @@ import org.json.simple.JSONObject;
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 public class StudyDocument extends MongoDocument {
+	final static private String SD_PREFIX = "study-";
+	final static private String SD_PARENT_TRIAL = SD_PREFIX + "trial";
+	final static private String SD_SOIL = SD_PREFIX + "soil";
+	final static private String SD_PHENOTYPE_GATHERING = SD_PREFIX + "phenotype_gathering_notes";
+	final static private String SD_DESIGN= SD_PREFIX + "design";
+	final static private String SD_STUDY_DESIGN = SD_PREFIX + "study_design";
+	final static private String SD_CURRENT_CROP = SD_PREFIX + "current_crop";
+	final static private String SD_PREVIOUS_CROP = SD_PREFIX + "previous_crop";
+	final static private String SD_SLOPE = SD_PREFIX + "slope";
+	final static private String SD_ASPECT = SD_PREFIX + "aspect";
+	final static private String SD_PHENOTYPE_NAME = SD_PREFIX + "phenotype_name";
+	final static private String SD_PHENOTYPE_DESCRIPTION = SD_PREFIX + "phenotype_description";
+	final static private String SD_ACCESSION = SD_PREFIX + "accession";
 	
 	public StudyDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
@@ -206,11 +221,24 @@ public class StudyDocument extends MongoDocument {
 	public String getUserFriendlyTypename() {
 		return "Study";
 	}
+	
 
-
-	@Override
-	public void addQueryTerms(String term, StringBuilder query_buffer) {
-		// TODO Auto-generated method stub
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+		fields.add (SD_PARENT_TRIAL);
+		fields.add (SD_PHENOTYPE_GATHERING);
+		fields.add (SD_SOIL);
+		fields.add (SD_DESIGN);
+		fields.add (SD_STUDY_DESIGN);
+		fields.add (SD_CURRENT_CROP);
+		fields.add (SD_PREVIOUS_CROP);
+		fields.add (SD_SLOPE);
+		fields.add (SD_ASPECT);		
+		fields.add (SD_PHENOTYPE_NAME);
+		fields.add (SD_PHENOTYPE_DESCRIPTION);
+		fields.add (SD_ACCESSION);
 		
+		boosts.put (SD_ACCESSION, GD_NAME_BOOST);
+		boosts.put (SD_PHENOTYPE_NAME, GD_NAME_BOOST);
 	}
+
 }

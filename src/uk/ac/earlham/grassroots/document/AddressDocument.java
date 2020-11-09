@@ -1,16 +1,20 @@
 package uk.ac.earlham.grassroots.document;
 
 
+import java.util.List;
+import java.util.Map;
+
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 public class AddressDocument extends MongoDocument {
-	static private String AD_STREET = "street";
-	static private String AD_LOCALITY = "city";
-	static private String AD_REGION = "county";
-	static private String AD_COUNTRY = "country";
-	static private String AD_POSTCODE = "postcode";
+	final static private String AD_PREFIX = "address-";
+	final static private String AD_STREET = AD_PREFIX + "street";
+	final static private String AD_LOCALITY = AD_PREFIX + "city";
+	final static private String AD_REGION = AD_PREFIX + "county";
+	final static private String AD_COUNTRY = AD_PREFIX + "country";
+	final static private String AD_POSTCODE = AD_PREFIX + "postcode";
 
 	
 	public AddressDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -60,9 +64,12 @@ public class AddressDocument extends MongoDocument {
 	}
 
 
-	@Override
-	public void addQueryTerms (String term, StringBuilder query_buffer) {
-		// TODO Auto-generated method stub
-		
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+		fields.add (AD_STREET);
+		fields.add (AD_LOCALITY);
+		fields.add (AD_REGION);
+		fields.add (AD_COUNTRY);
+		fields.add (AD_POSTCODE);
 	}
+
 }
