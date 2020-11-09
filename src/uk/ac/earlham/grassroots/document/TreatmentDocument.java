@@ -1,14 +1,27 @@
 package uk.ac.earlham.grassroots.document;
 
+
+import java.util.List;
+import java.util.Map;
+
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
+
 public class TreatmentDocument extends MongoDocument {
-	static private String TD_TRAIT = "trait";
-	static private String TD_MEASUREMENT = "measurement";
-	static private String TD_UNIT = "unit";
-	static private String TD_VARIABLE = "variable";
+	final static private String TD_PREFIX = "treatment-";
+	final static private String TD_TRAIT_NAME = TD_PREFIX + "trait_name";
+	final static private String TD_TRAIT_DESCRIPTION = TD_PREFIX + "trait_description";
+	final static private String TD_TRAIT_ABBREVIATION = TD_PREFIX + "trait_abbreviation";
+	final static private String TD_TRAIT_ID = TD_PREFIX + "trait_id";
+	final static private String TD_MEASUREMENT_NAME = TD_PREFIX + "measurement_name";
+	final static private String TD_MEASUREMENT_DESCRIPTION = TD_PREFIX + "measurement_description";
+	final static private String TD_MEASUREMENT_ID = TD_PREFIX + "measurement_id";
+	final static private String TD_UNIT_NAME = TD_PREFIX + "unit_name";
+	final static private String TD_UNIT_ID = TD_PREFIX + "unit_id";
+	final static private String TD_VARIABLE_NAME = TD_PREFIX + "variable_name";
+	final static private String TD_VARIABLE_ID = TD_PREFIX + "variable_id";
 	
 	
 	public TreatmentDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -46,10 +59,33 @@ public class TreatmentDocument extends MongoDocument {
 			/*
 			 * Add the treatment-specific fields
 			 */
-			addData (json_doc, TD_TRAIT);
-			addData (json_doc, TD_MEASUREMENT);
-			addData (json_doc, TD_UNIT);
-			addData (json_doc, TD_VARIABLE);
+			JSONObject child = (JSONObject) json_doc.get ("trait");
+
+			if (child != null) {
+				addText (child, "so:name", "trait_name");
+				addText (child, "so:description", "trait_description");
+				addString (child, "abbreviation", "trait_abbreviation");
+				addString (child, "so:sameAs", "trait_id");				
+			}
+
+			child = (JSONObject) json_doc.get ("measurement");
+			if (child != null) {
+				addText (child, "so:name", "measurement_name");
+				addText (child, "so:description", "measurement_description");
+				addString (child, "so:sameAs", "trait_id");				
+			}
+
+			child = (JSONObject) json_doc.get ("unit");
+			if (child != null) {
+				addText (child, "so:name", "unit_name");
+				addString (child, "so:sameAs", "unit_id");				
+			}
+			
+			child = (JSONObject) json_doc.get ("variable");
+			if (child != null) {
+				addText (child, "so:name", "variable_name");
+				addString (child, "so:sameAs", "variable_id");				
+			}
 			
 			success_flag = true;
 		}
@@ -68,21 +104,22 @@ public class TreatmentDocument extends MongoDocument {
 		return null;
 	}
 	
-	private void addData (JSONObject json_doc, String child_name) {
-		JSONObject child = (JSONObject) json_doc.get (child_name);
-		
-		if (child != null) {
-			addText (child, GrassrootsDocument.GD_NAME);
-			addText (child, GrassrootsDocument.GD_DESCRIPTION);
-			addString (child, "so:sameAs");
-			addText (child, "abbreviation");
-		}			
-	}
 
-
-	@Override
-	public void addQueryTerms(String term, StringBuilder query_buffer) {
-		// TODO Auto-generated method stub
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+		fields.add (TD_TRAIT_NAME);
+		fields.add (TD_TRAIT_DESCRIPTION);
+		fields.add (TD_TRAIT_ABBREVIATION);
+		fields.add (TD_TRAIT_ID);
+		fields.add (TD_MEASUREMENT_NAME);
+		fields.add (TD_MEASUREMENT_DESCRIPTION);
+		fields.add (TD_MEASUREMENT_ID);
+		fields.add (TD_UNIT_NAME);
+		fields.add (TD_UNIT_ID);		
+		fields.add (TD_VARIABLE_NAME);
+		fields.add (TD_VARIABLE_ID);
 		
+		boosts.put (TD_TRAIT_NAME, GD_NAME_BOOST);
+		boosts.put (TD_MEASUREMENT_NAME, GD_NAME_BOOST);
+		boosts.put (TD_UNIT_NAME, GD_NAME_BOOST);
 	}
 }

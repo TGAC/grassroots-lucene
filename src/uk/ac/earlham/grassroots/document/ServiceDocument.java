@@ -1,5 +1,6 @@
 package uk.ac.earlham.grassroots.document;
 
+
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
@@ -36,10 +37,5 @@ public class ServiceDocument extends GrassrootsDocument {
 	}
 
 
-	@Override
-	public void addQueryTerms(String term, StringBuilder query_buffer) {
-		// TODO Auto-generated method stub
-		
-	}
-	
 }
+	

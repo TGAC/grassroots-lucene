@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -21,7 +23,7 @@ abstract public class GrassrootsDocument {
 	static public String GD_DATATYPE = "facet_type";
 	static public String GD_UNIQUE_NAME = "so:name";
 	static public String GD_NAME = "name";
-	static public String GD_DESCRIPTION = "description";
+	static public String GD_DESCRIPTION = "so:description";
 	static public String GD_DEFAULT_SEARCH_KEY = "default";
 	static public String GD_STRING_SEARCH_KEY = "indexed_string";
 	static public String GD_LUCENE_ID = "id";
@@ -442,6 +444,8 @@ abstract public class GrassrootsDocument {
 	abstract public boolean setId (JSONObject json_doc);
 
 
-	abstract public void addQueryTerms (String term, StringBuilder query_buffer);
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+		
+	}
 }
 

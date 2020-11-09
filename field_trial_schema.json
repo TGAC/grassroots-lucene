@@ -1,0 +1,9 @@
+{
+	"add-field": [{
+		"name": "team",
+		"type": "text_ws",
+		"stored":  true,
+		"indexed": true
+	}]
+}
+

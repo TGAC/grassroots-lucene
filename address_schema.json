@@ -1,0 +1,29 @@
+{
+	"add-field": [{
+		"name": "street",
+		"type": "text_ws",
+		"stored":  true,
+		"indexed": true
+	}, {
+		"name": "city",
+		"type": "text_ws",
+		"stored":  true,
+		"indexed": true
+	}, {
+		"name": "county",
+		"type": "text_ws",
+		"stored":  true,
+		"indexed": true
+	}, {
+		"name": "country",
+		"type": "text_ws",
+		"stored":  true,
+		"indexed": true
+	}, {
+		"name": "postcode",
+		"type": "text_ws",
+		"stored":  true,
+		"indexed": true
+	}]
+}
+

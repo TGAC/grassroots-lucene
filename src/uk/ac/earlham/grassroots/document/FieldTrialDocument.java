@@ -1,11 +1,16 @@
 package uk.ac.earlham.grassroots.document;
 
+import java.util.List;
+import java.util.Map;
+
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 public class FieldTrialDocument extends MongoDocument {
-
+	final static private String FD_PREFIX = "trial-";
+	final static private String FT_TEAM = FD_PREFIX + "team";
+	
 	public FieldTrialDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
 	}
@@ -19,7 +24,7 @@ public class FieldTrialDocument extends MongoDocument {
 			/*
 			 * Add the field trial-specific fields
 			 */
-			if (addText (json_doc, "team")) {
+			if (addText (json_doc, FT_TEAM)) {
 				success_flag = true;
 			}
 		}
@@ -34,10 +39,8 @@ public class FieldTrialDocument extends MongoDocument {
 	}
 
 
-	@Override
-	public void addQueryTerms(String term, StringBuilder query_buffer) {
-		// TODO Auto-generated method stub
-		
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+		fields.add (FT_TEAM);
 	}
 
 }

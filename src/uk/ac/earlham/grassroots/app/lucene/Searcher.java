@@ -108,14 +108,11 @@ public class Searcher {
 
 	private FacetsConfig se_config;
 
-	private JSONObject se_queries;
-
 	
 	private Searcher (IndexReader index_reader, TaxonomyReader taxonomy_reader) {
 		se_index_reader = index_reader;
 		se_taxonomy_reader = taxonomy_reader;
 		se_config = new FacetsConfig ();
-		se_queries = null;
 	}
 	
 	public static Searcher getSearcher (String index_dir_name, String tax_dir_name, String config_filename) {

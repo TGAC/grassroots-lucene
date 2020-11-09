@@ -2,12 +2,15 @@ package uk.ac.earlham.grassroots.app.lucene;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -15,7 +18,12 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 
+import uk.ac.earlham.grassroots.document.AddressDocument;
+import uk.ac.earlham.grassroots.document.FieldTrialDocument;
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
+import uk.ac.earlham.grassroots.document.ProjectDocument;
+import uk.ac.earlham.grassroots.document.StudyDocument;
+import uk.ac.earlham.grassroots.document.TreatmentDocument;
 
 public class QueryUtil {
 	private static Analyzer qu_analyzer;
@@ -31,11 +39,27 @@ public class QueryUtil {
 	public static Query buildGrassrootsQuery (List <String> queries) {
 		Query q = null;		
 		
-		QueryParser parser = new QueryParser (GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, QueryUtil.getAnalyzer ());
+		List  <String>  fields = new ArrayList <String> ();
+		Map <String, Float> boosts = new HashMap <String, Float> ();
 		
-		StringBuilder sb = new StringBuilder ();
+	
+		GrassrootsDocument.addQueryTerms (fields, boosts);		
+		AddressDocument.addQueryTerms (fields, boosts);
+		FieldTrialDocument.addQueryTerms (fields, boosts);
+		ProjectDocument.addQueryTerms (fields, boosts);
+		StudyDocument.addQueryTerms (fields, boosts);
+		TreatmentDocument.addQueryTerms (fields, boosts);
+		
+		String [] fields_array = fields.toArray (new String [0]);
+		QueryParser parser = new MultiFieldQueryParser (fields_array, getAnalyzer (), boosts);
+
 			
-		AddStringsToQuery (sb, queries, false);
+		StringBuilder sb = new StringBuilder ();
+		
+		for (String query : queries) {
+			sb.append (query);
+			sb.append (" ");
+		}
 		
 		System.out.println ("query: " + sb.toString ());		
 		
@@ -98,8 +122,7 @@ public class QueryUtil {
 	}
 	
 
-
-	private static void buildQuery (StringBuilder sb, String key, String value, float boost) {
+	public static void buildQuery (StringBuilder sb, String key, String value) {
 		if (sb.length () > 0) {
 			sb.append (' ');
 		}
@@ -120,9 +143,16 @@ public class QueryUtil {
 		if (!wild_flag) {
 			sb.append ('"');			
 		}
+		
+	}
 
-		sb.append (")^");
-		sb.append (boost);		
+	public static void buildQuery (StringBuilder sb, String key, String value, float boost) {
+		buildQuery (sb, key, value);
+		
+		if (boost != 1.0f) {
+			sb.append (")^");
+			sb.append (boost);		
+		}
 	}
 	
 }

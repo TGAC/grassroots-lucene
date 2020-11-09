@@ -1,0 +1,14 @@
+{
+	"add-field": [{
+		"name": "database_name",
+		"type": "text_ws",
+		"stored":  true,
+		"indexed": true
+	}, {
+		"name": "database_description",
+		"type": "text_ws",
+		"stored":  true,
+		"indexed": true
+	}]
+}
+

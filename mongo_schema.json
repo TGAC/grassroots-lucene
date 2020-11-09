@@ -1,0 +1,9 @@
+{
+	"add-field": [{
+		"name": "_id",
+		"type": "string",
+		"stored":  true,
+		"indexed": true
+	}]
+}
+

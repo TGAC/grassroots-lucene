@@ -1,17 +1,20 @@
 package uk.ac.earlham.grassroots.document;
 
+import java.util.List;
+import java.util.Map;
+
+import org.apache.lucene.search.BooleanQuery;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
 
 public class ProjectDocument extends GrassrootsDocument {
+	final static private String PR_PREFIX = "project-";
+	final static private String PR_AUTHOR = PR_PREFIX + "author";
+	final static private String PR_GRANT_CODE = PR_PREFIX + "grant_code";
 
-	
-	public static addQueriesForValue (String value, StringBuilder query_buffer) {
-		
-	}
-	
+
 	public ProjectDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
 	}
@@ -53,12 +56,12 @@ public class ProjectDocument extends GrassrootsDocument {
 	
 	
 	private boolean addAuthors (JSONObject json_doc) {
-		return addArrayOfStrings (json_doc, "authors", "author", false);
+		return addArrayOfStrings (json_doc, "authors", PR_AUTHOR, false);
 	}
 
 
 	private boolean addProjectCodes (JSONObject json_doc) {
-		return addArrayOfStrings (json_doc, "project_codes", "grant_code", true);
+		return addArrayOfStrings (json_doc, "project_codes", PR_GRANT_CODE, false);
 	}
 
 	
@@ -113,10 +116,9 @@ public class ProjectDocument extends GrassrootsDocument {
 	}
 
 
-	@Override
-	public void addQueryTerms(String term, StringBuilder query_buffer) {
-		// TODO Auto-generated method stub
-		
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+		fields.add (PR_AUTHOR);
+		fields.add (PR_GRANT_CODE);
 	}
 	
 }
