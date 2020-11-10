@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -30,7 +31,7 @@ public class QueryUtil {
 	
 	public static Analyzer getAnalyzer () {
 		if (qu_analyzer == null) {
-			qu_analyzer = new KeywordAnalyzer ();
+			qu_analyzer = new StandardAnalyzer (); // KeywordAnalyzer ();
 		}
 		
 		return qu_analyzer;
@@ -61,13 +62,16 @@ public class QueryUtil {
 			sb.append (" ");
 		}
 		
-		System.out.println ("query: " + sb.toString ());		
+		System.out.println ("raw query: " + sb.toString ());		
 		
 		try {				
 			q = parser.parse (sb.toString ());
 		} catch (ParseException e) {
 			System.err.println ("Failed to parse query \"" + q + "\", exception: "+ e);
 		}
+
+		System.out.println ("parsed query: " + q.toString ());		
+
 		
 		return q;
 	}
@@ -89,6 +93,9 @@ public class QueryUtil {
 			Document doc = searcher.doc (hits [i].doc);
 			docs.add (doc);
 		}
+		
+		
+		Searcher.DoUnifiedHighlighting (query, searcher, reader, qu_analyzer, results);
 		
 		return docs;
 	}

@@ -14,7 +14,6 @@ public class StudyDocument extends MongoDocument {
 	final static private String SD_PARENT_TRIAL = SD_PREFIX + "trial";
 	final static private String SD_SOIL = SD_PREFIX + "soil";
 	final static private String SD_PHENOTYPE_GATHERING = SD_PREFIX + "phenotype_gathering_notes";
-	final static private String SD_DESIGN= SD_PREFIX + "design";
 	final static private String SD_STUDY_DESIGN = SD_PREFIX + "study_design";
 	final static private String SD_CURRENT_CROP = SD_PREFIX + "current_crop";
 	final static private String SD_PREVIOUS_CROP = SD_PREFIX + "previous_crop";
@@ -227,7 +226,6 @@ public class StudyDocument extends MongoDocument {
 		fields.add (SD_PARENT_TRIAL);
 		fields.add (SD_PHENOTYPE_GATHERING);
 		fields.add (SD_SOIL);
-		fields.add (SD_DESIGN);
 		fields.add (SD_STUDY_DESIGN);
 		fields.add (SD_CURRENT_CROP);
 		fields.add (SD_PREVIOUS_CROP);

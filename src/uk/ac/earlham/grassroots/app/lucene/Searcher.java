@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -82,7 +84,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import uk.ac.earlham.grassroots.document.AddressDocument;
+import uk.ac.earlham.grassroots.document.FieldTrialDocument;
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
+import uk.ac.earlham.grassroots.document.ProjectDocument;
+import uk.ac.earlham.grassroots.document.StudyDocument;
+import uk.ac.earlham.grassroots.document.TreatmentDocument;
 
 
 class DrillDownData {
@@ -786,9 +793,74 @@ public class Searcher {
 		
 		return facets;
 	}
+
 	
+	static public void DoUnifiedHighlighting (Query query, IndexSearcher searcher, IndexReader reader, Analyzer analyzer, TopDocs hits) {
+		UnifiedHighlighter highlighter = new UnifiedHighlighter (searcher, analyzer);
+        
+		List  <String>  fields = new ArrayList <String> ();
+		Map <String, Float> boosts = new HashMap <String, Float> ();
+		
+		GrassrootsDocument.addQueryTerms (fields, boosts);		
+		AddressDocument.addQueryTerms (fields, boosts);
+		FieldTrialDocument.addQueryTerms (fields, boosts);
+		ProjectDocument.addQueryTerms (fields, boosts);
+		StudyDocument.addQueryTerms (fields, boosts);
+		TreatmentDocument.addQueryTerms (fields, boosts);
+		
+		String [] fields_array = (String []) fields.toArray (new String [0]);
+
+		Map <String, String []> highlights = null;
+
+		try {
+			highlights = highlighter.highlightFields (fields_array, query, hits);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		
+		if (highlights != null) {
+			ScoreDoc [] docs = hits.scoreDocs;
+			
+			for (Map.Entry <String, String []> entry : highlights.entrySet ()) {
+			    System.out.println (entry.getKey () + ":");
+			    String [] values = entry.getValue ();
+			    int i = 0;
+			    Pattern pattern = Pattern.compile("<b>(\\S+)</b>");
+			    
+			    for (String value: values) {
+//					Document doc  = null;
+//
+//					try {
+//						doc = searcher.doc (docs [i].doc);
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					
+			    	//System.out.println ("\t doc [" + i + "] " + docs [i] + ": " + value);
+			    	
+			    	if (value != null) {
+			    		Matcher matcher = pattern.matcher (value);
+			    		
+			    		if (matcher.find ()) {
+			    			System.out.println ("\t MATCH doc [" + i + "] " + docs [i] + ": " + value);
+			    		} else {
+			    			System.out.println ("\t MISS  doc [" + i + "] " + docs [i] + ": " + value);			    			
+			    		}
+			    	} else {
+			    		System.out.println ("\t EMPTY doc [" + i + "] " + docs [i] + ": null");
+			    	}
+			    	
+			    	++ i;
+			    }
+			}
+		}
+		
+	}
+
 	
-	static void DoHighlighting (Query query, IndexSearcher searcher, IndexReader reader, Analyzer analyzer, TopDocs hits) {
+	static public void DoHighlighting (Query query, IndexSearcher searcher, IndexReader reader, Analyzer analyzer, TopDocs hits) {
 		 //Uses HTML &lt;B&gt;&lt;/B&gt; tag to highlight the searched terms
         Formatter formatter = new SimpleHTMLFormatter();
          
@@ -827,7 +899,7 @@ public class Searcher {
                 System.out.println("Path " + " : " + title);
                  
                 //Get stored text from found document
-                String [] values = doc.getValues (GrassrootsDocument.GD_UNIQUE_NAME);
+                String [] values = doc.getValues (GrassrootsDocument.GD_DESCRIPTION);
 
 				
 				for (String value : values) {
@@ -835,7 +907,7 @@ public class Searcher {
 	                //Create token stream
 	                TokenStream stream = null;
 					try {
-						stream = TokenSources.getAnyTokenStream (reader, docid, GrassrootsDocument.GD_UNIQUE_NAME, analyzer);
+						stream = TokenSources.getAnyTokenStream (reader, docid, GrassrootsDocument.GD_DESCRIPTION, analyzer);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
