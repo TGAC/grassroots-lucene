@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -97,7 +98,6 @@ class DrillDownData {
 	int ddd_from_index;
 	int ddd_to_index;
 	List <Document> ddd_hits;
-	FacetResult ddd_active_facet;
 	List <FacetResult> ddd_facets;	
 }
 
@@ -201,8 +201,7 @@ public class Searcher {
 		List <String> queries = new ArrayList <String> ();
 		int hits_per_page = 10;
 		int page = 0;
-		String facet_name = null;
-		String facet_value = null;
+		List <AbstractMap.SimpleEntry <String, String>> facets = new ArrayList <AbstractMap.SimpleEntry <String, String>> ();
 		String search_type = "default";
 		PrintStream output_stm = System.out;
 		
@@ -218,10 +217,15 @@ public class Searcher {
 					queries.add (args [i]);
 				}
 
-			} else if ("-facet_name".equals (args [i])) {				
-				facet_name = args [++ i];
-			} else if ("-facet_value".equals (args [i])) {
-				facet_value = args [++ i];
+			} else if ("-facet".equals (args [i])) {				
+				String facet = args [++ i];				
+				String [] parts = facet.split (":");
+				
+				if (parts.length == 2) {
+					facets.add (new AbstractMap.SimpleEntry <String, String> (parts [0], parts [1]));
+				} else {
+					System.err.println ("Failed to parse facet " + facet);
+				}
 			} else if ("-out".equals (args [i])) {
 				String filename = args [++ i];
 				
@@ -281,19 +285,19 @@ public class Searcher {
 						break;
 						
 						case "all-facets": {
-							List <FacetResult> facets = searcher.getAllFacets (q, hits_per_page);
+							List <FacetResult> facet_results = searcher.getAllFacets (q, hits_per_page);
 							
-							if (facets != null) {
-								searcher.addFacetResults (facets, json_res);
+							if (facet_results != null) {
+								searcher.addFacetResults (facet_results, json_res);
 							}							
 						}
 						break;
 						
 						case "facets-only": {
-							List <FacetResult> facets = searcher.facetsOnlySearch (q, facet_name, hits_per_page);
+							List <FacetResult> facet_results = searcher.facetsOnlySearch (q, facets, hits_per_page);
 							
-							if (facets != null) {
-								searcher.addFacetResults (facets, json_res);
+							if (facet_results != null) {
+								searcher.addFacetResults (facet_results, json_res);
 							}
 						}
 						break;
@@ -302,7 +306,7 @@ public class Searcher {
 							DrillDownData results = null;
 							
 							try {
-								results = searcher.drillDown (q, facet_name, facet_value, facet_name, hits_per_page, page);
+								results = searcher.drillDown (q, facets, hits_per_page, page);
 							} catch (IOException e) {
 								System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
 							}
@@ -310,10 +314,6 @@ public class Searcher {
 						
 							if (results != null) {
 								searcher.addHitsToJSON (results.ddd_hits, json_res);
-								
-								if (results.ddd_active_facet != null) {
-									searcher.addFacetResult (results.ddd_active_facet, json_res);
-								}
 								
 								if (results.ddd_facets != null) {
 									searcher.addFacetResults (results.ddd_facets, json_res);
@@ -328,9 +328,9 @@ public class Searcher {
 							DrillSidewaysData results = null;
 
 							try {
-								results = searcher.drillSideways (q, facet_name, facet_value, hits_per_page);
+								results = searcher.drillSideways (q, facets, hits_per_page);
 							} catch (IOException e) {
-								System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
+								System.err.println ("drillSideways failed: " + q.toString () + " e: " + e);
 							}
 							
 							if (results != null) {
@@ -358,7 +358,7 @@ public class Searcher {
 	}
 
 	
-	private void addHitsToJSON (List<Document> docs, JSONObject results) {
+	private void addHitsToJSON (List <Document> docs, JSONObject results) {
 		if (docs != null) {
 			JSONArray docs_array = new JSONArray ();
 
@@ -396,8 +396,7 @@ public class Searcher {
 			results = facets.getAllDims (max_num_facets);
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println ("getAllFacets failed for query : " + q.toString () + " e: " + e);
 			return null;
 		}
 
@@ -406,7 +405,8 @@ public class Searcher {
 
 		  
 	/** User runs a query and counts facets only without collecting the matching documents.*/
-	public List <FacetResult> facetsOnlySearch (Query q, String facet_name, int max_num_facets) {
+	public List <FacetResult> facetsOnlySearch (Query q, List <AbstractMap.SimpleEntry <String, String>> facets, int max_num_facets) {
+		List <FacetResult> results = null;
 		IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector();
 
@@ -418,19 +418,37 @@ public class Searcher {
 			q = new MatchAllDocsQuery ();
 		}
 
-		// Retrieve results
-		List <FacetResult> results = new ArrayList <FacetResult> ();
+		Facets facet_counts = null;
 
 		try {
 			FacetsCollector.search (searcher, q, max_num_facets, fc);
-			// Count both "Publish Date" and "Author" dimensions
-			Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
-			results.add (facets.getTopChildren (max_num_facets, facet_name));
-		} catch (IOException e) {
+			facet_counts = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
+		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+			e1.printStackTrace();
 		}
+				
+		if ((facets != null) && (!facets.isEmpty ())) {
+			// Retrieve results
+			results = new ArrayList <FacetResult> ();
+
+		    if ((facets != null) && (!facets.isEmpty ())) {
+		    	for (AbstractMap.SimpleEntry <String, String> facet : facets) {
+		    		FacetResult fr = null;
+		    		
+					try {
+						fr = facet_counts.getTopChildren (max_num_facets, facet.getKey ());
+					} catch (IOException e) {
+						System.err.println ("Failed to get facte count for " + facet.getKey () + " e: " + e);
+					}
+		    		
+		    		if (fr != null) {
+		    			results.add (fr);	    		
+		    		}
+		    	}
+		    }
+			
+		}		
 
 		return results;
 	}
@@ -439,7 +457,7 @@ public class Searcher {
 	  /** 
 	   * Drill down on a given facet and return all hits and facets
 	   */
-	  public DrillSidewaysData drillSideways (Query base_query, String facet_name, String facet_value, int max_num_facets) throws IOException {
+	  public DrillSidewaysData drillSideways (Query base_query, List <AbstractMap.SimpleEntry <String, String>> facets, int max_num_facets) throws IOException {
 	    IndexSearcher searcher = new IndexSearcher (se_index_reader);
 
 	    // Passing no base_query means we drill down on all
@@ -452,13 +470,17 @@ public class Searcher {
 	    }
 	    
 	    // Now user drills down on the given facet
-	    q.add (facet_name, facet_value);
-		
+	    if (facets != null) {
+	    	for (AbstractMap.SimpleEntry <String, String> facet : facets) {
+		    	q.add (facet.getKey (), facet.getValue ());	    		
+	    	}
+	    }
+	    
 	    DrillSideways ds = new DrillSideways(searcher, se_config, se_taxonomy_reader);
 	    DrillSidewaysResult result = ds.search (q, max_num_facets);
 
 	    // Retrieve results
-	    List <FacetResult> facets = result.facets.getAllDims (max_num_facets);
+	    List <FacetResult> facet_results = result.facets.getAllDims (max_num_facets);
 
 	    
 	    // Retrieve results
@@ -474,7 +496,7 @@ public class Searcher {
 	    
 		DrillSidewaysData search_results = new DrillSidewaysData ();
 		search_results.dsd_hits = docs;
-		search_results.dsd_facets = facets;
+		search_results.dsd_facets = facet_results;
 		
 		return search_results;
 	  }
@@ -483,7 +505,7 @@ public class Searcher {
 	  
 	  /** User drills down on a facet, and we
 	   *  return another facets for  */
-	  public DrillDownData drillDown (Query base_query,  String facet_name, String facet_value, String facet_to_return, int hits_per_page, int page_number) throws IOException {
+	  public DrillDownData drillDown (Query base_query,  List <AbstractMap.SimpleEntry <String, String>> facets, int hits_per_page, int page_number) throws IOException {
 	    IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector ();
 		final int MAX_NUM_RESULTS = 1024;
@@ -502,8 +524,10 @@ public class Searcher {
 	    /*
 	     * Are we drilling down on a specific facet?
 	     */
-	    if ((facet_name != null) && (facet_value != null)) {
-	    	q.add (facet_name, facet_value);
+	    if (facets != null) {
+	    	for (AbstractMap.SimpleEntry <String, String> facet : facets) {
+		    	q.add (facet.getKey (), facet.getValue ());	    		
+	    	}
 	    }
 
 	    
@@ -512,9 +536,9 @@ public class Searcher {
 	    List <FacetsCollector.MatchingDocs> matching_docs = fc.getMatchingDocs ();
 	    
 	    // Retrieve facets
-	    Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
+	    Facets facet_counts = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
 
-    	all_facets = facets.getAllDims (MAX_NUM_RESULTS);
+    	all_facets = facet_counts.getAllDims (MAX_NUM_RESULTS);
     	
     	if (all_facets != null) {
     		int num_facets = all_facets.size ();
@@ -523,13 +547,16 @@ public class Searcher {
 			System.out.println ("all_facets is null");		    		
     	}
 	    
-	    FacetResult result = null;
-
-	    if (facet_to_return != null) {
-	    	result = facets.getTopChildren (hits_per_page, facet_to_return);
+	    if ((facets != null) && (!facets.isEmpty ())) {
+	    	for (AbstractMap.SimpleEntry <String, String> facet : facets) {
+	    		FacetResult fr = facet_counts.getTopChildren (hits_per_page, facet.getKey ());
+	    		
+	    		if (fr != null) {
+	    			all_facets.add (fr);	    		
+	    		}
+	    	}
 	    }
 	    
-
 	    for (FacetsCollector.MatchingDocs matching_doc : matching_docs) {
 	    
 	    }
@@ -539,24 +566,7 @@ public class Searcher {
 		ScoreDoc [] hits = resultDocs.scoreDocs;
 		int total_hits = Searcher.CastLongToInt (resultDocs.totalHits.value);
 		
-		/*
-		UnifiedHighlighter highlighter = new UnifiedHighlighter (searcher, analyzer);
-		
-		String [] fields = { GrassrootsDocument.GD_NAME, GrassrootsDocument.GD_DESCRIPTION, GrassrootsDocument.GD_DEFAULT_SEARCH_KEY, GrassrootsDocument.GD_STRING_SEARCH_KEY };
-		
-		Map <String, String []> highlights = highlighter.highlightFields (fields, base_query, resultDocs);
-		Set <String> keys =	highlights.keySet ();
-		for (String key : keys) {
-			String [] values = highlights.get (key);
-			
-			for (String value : values) {
-				System.out.println ("*KEY*: " + key + " *VALUE* " + value);
-			}
-		}
-		*/
-		DoHighlighting (base_query, searcher, se_index_reader, analyzer, resultDocs);
-
-
+		QueryUtil.DoUnifiedHighlighting (base_query, searcher, se_index_reader, analyzer, resultDocs);
 		
 		List <Document> docs = new ArrayList <Document> ();
 		int start = hits_per_page * page_number;
@@ -583,7 +593,6 @@ public class Searcher {
 		search_results.ddd_from_index = start;
 		search_results.ddd_to_index = end;
 		search_results.ddd_hits = docs;
-		search_results.ddd_active_facet = result;
 		search_results.ddd_facets = all_facets;
 	    
 	    return search_results;
@@ -722,6 +731,9 @@ public class Searcher {
 			}	
 		}
 
+		/*
+		 * Group the duplicated fields together
+		 */
 		List <IndexableField> fields = doc.getFields ();
 		HashMap <String, List <String> > map = new HashMap <String, List <String>> ();
 		
@@ -792,156 +804,5 @@ public class Searcher {
 		}
 		
 		return facets;
-	}
-
-	
-	static public void DoUnifiedHighlighting (Query query, IndexSearcher searcher, IndexReader reader, Analyzer analyzer, TopDocs hits) {
-		UnifiedHighlighter highlighter = new UnifiedHighlighter (searcher, analyzer);
-        
-		List  <String>  fields = new ArrayList <String> ();
-		Map <String, Float> boosts = new HashMap <String, Float> ();
-		
-		GrassrootsDocument.addQueryTerms (fields, boosts);		
-		AddressDocument.addQueryTerms (fields, boosts);
-		FieldTrialDocument.addQueryTerms (fields, boosts);
-		ProjectDocument.addQueryTerms (fields, boosts);
-		StudyDocument.addQueryTerms (fields, boosts);
-		TreatmentDocument.addQueryTerms (fields, boosts);
-		
-		String [] fields_array = (String []) fields.toArray (new String [0]);
-
-		Map <String, String []> highlights = null;
-
-		try {
-			highlights = highlighter.highlightFields (fields_array, query, hits);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		
-		if (highlights != null) {
-			ScoreDoc [] docs = hits.scoreDocs;
-			
-			for (Map.Entry <String, String []> entry : highlights.entrySet ()) {
-			    System.out.println (entry.getKey () + ":");
-			    String [] values = entry.getValue ();
-			    int i = 0;
-			    Pattern pattern = Pattern.compile("<b>(\\S+)</b>");
-			    
-			    for (String value: values) {
-//					Document doc  = null;
-//
-//					try {
-//						doc = searcher.doc (docs [i].doc);
-//					} catch (IOException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//					
-			    	//System.out.println ("\t doc [" + i + "] " + docs [i] + ": " + value);
-			    	
-			    	if (value != null) {
-			    		Matcher matcher = pattern.matcher (value);
-			    		
-			    		if (matcher.find ()) {
-			    			System.out.println ("\t MATCH doc [" + i + "] " + docs [i] + ": " + value);
-			    		} else {
-			    			System.out.println ("\t MISS  doc [" + i + "] " + docs [i] + ": " + value);			    			
-			    		}
-			    	} else {
-			    		System.out.println ("\t EMPTY doc [" + i + "] " + docs [i] + ": null");
-			    	}
-			    	
-			    	++ i;
-			    }
-			}
-		}
-		
-	}
-
-	
-	static public void DoHighlighting (Query query, IndexSearcher searcher, IndexReader reader, Analyzer analyzer, TopDocs hits) {
-		 //Uses HTML &lt;B&gt;&lt;/B&gt; tag to highlight the searched terms
-        Formatter formatter = new SimpleHTMLFormatter();
-         
-        //It scores text fragments by the number of unique query terms found
-        //Basically the matching score in layman terms
-        QueryScorer scorer = new QueryScorer(query);
-         
-        //used to markup highlighted terms found in the best sections of a text
-        Highlighter highlighter = new Highlighter(formatter, scorer);
-         
-        //It breaks text up into same-size texts but does not split up spans
-        Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, 10);
-         
-        //breaks text up into same-size fragments with no concerns over spotting sentence boundaries.
-        //Fragmenter fragmenter = new SimpleFragmenter(10);
-         
-        //set fragmenter to highlighter
-        highlighter.setTextFragmenter(fragmenter);
-         
-        //Iterate over found results
-        for (int i = 0; i < hits.scoreDocs.length; i++) {
-            int docid = hits.scoreDocs[i].doc;
-            Document doc = null;
-			
-            try {
-				doc = searcher.doc(docid);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-            
-            if (doc != null) {
-                String title = doc.get (GrassrootsDocument.GD_NAME);
-                
-                //Printing - to which document result belongs
-                System.out.println("Path " + " : " + title);
-                 
-                //Get stored text from found document
-                String [] values = doc.getValues (GrassrootsDocument.GD_DESCRIPTION);
-
-				
-				for (String value : values) {
-
-	                //Create token stream
-	                TokenStream stream = null;
-					try {
-						stream = TokenSources.getAnyTokenStream (reader, docid, GrassrootsDocument.GD_DESCRIPTION, analyzer);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-	                 
-
-	                //Get highlighted text fragments
-	                String [] frags = null;
-					try {
-						frags = highlighter.getBestFragments(stream, value, 10);
-					} catch (IOException ioe) {
-							// TODO Auto-generated catch block
-						ioe.printStackTrace();
-					} catch (InvalidTokenOffsetsException e) {
-					}
-			
-					if (frags != null) {
-						for (String frag : frags) {
-		                    System.out.println("=======================");
-		                    System.out.println(frag);
-						}
-					}
-					
-					try {
-						stream.reset();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-            	
-            }
-            
-        }
-	}
-	
+	}	
 }

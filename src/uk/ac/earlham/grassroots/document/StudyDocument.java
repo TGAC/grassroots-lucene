@@ -17,6 +17,8 @@ public class StudyDocument extends MongoDocument {
 	final static private String SD_STUDY_DESIGN = SD_PREFIX + "study_design";
 	final static private String SD_CURRENT_CROP = SD_PREFIX + "current_crop";
 	final static private String SD_PREVIOUS_CROP = SD_PREFIX + "previous_crop";
+	final static private String SD_SOWING_DATE = SD_PREFIX + "sowing_date";
+	final static private String SD_HARVEST_DATE = SD_PREFIX + "harvest_date";
 	final static private String SD_SLOPE = SD_PREFIX + "slope";
 	final static private String SD_ASPECT = SD_PREFIX + "aspect";
 	final static private String SD_PHENOTYPE_NAME = SD_PREFIX + "phenotype_name";
@@ -49,22 +51,21 @@ public class StudyDocument extends MongoDocument {
 					/*
 					 * Add the study-specific fields
 					 */
-					addText (json_doc, "soil");
-					addText (json_doc, "phenotype_gathering_notes");
-					addText (json_doc, "design");
-					addText (json_doc, "study_design");
+					addText (json_doc, "soil", SD_SOIL);
+					addText (json_doc, "phenotype_gathering_notes", SD_PHENOTYPE_GATHERING);
+					addText (json_doc, "study_design", SD_STUDY_DESIGN);
 
-					addDateString (json_doc, "sowing_date");
-					addDateString (json_doc, "harvest_date");
+					addDateString (json_doc, "sowing_date", SD_SOWING_DATE);
+					addDateString (json_doc, "harvest_date", SD_HARVEST_DATE);
 					
 					/*
 					 * crop, previous crop, aspect, slope 
 					 */
-					addCrop (json_doc, "current_crop");
-					addCrop (json_doc, "previous_crop");
+					addCrop (json_doc, "current_crop", SD_CURRENT_CROP);
+					addCrop (json_doc, "previous_crop", SD_PREVIOUS_CROP);
 
 					// slope
-					addText (json_doc, "envo:00002000");
+					addText (json_doc, "envo:00002000", SD_SLOPE);
 
 					// aspect
 					addAspect (json_doc);
@@ -93,11 +94,11 @@ public class StudyDocument extends MongoDocument {
 	}
 	
 	
-	void addCrop (JSONObject doc, String crop_key) {
+	void addCrop (JSONObject doc, String crop_key, String lucene_key) {
 		JSONObject crop = (JSONObject) doc.get (crop_key);
 		
 		if (crop != null) {
-			addText (crop, GrassrootsDocument.GD_NAME, crop_key);
+			addText (crop, GrassrootsDocument.GD_NAME, lucene_key);
 		}
 	}
 	
@@ -126,7 +127,7 @@ public class StudyDocument extends MongoDocument {
 			}
 
 			if (aspect_str != null) {
-				gd_wrapper.addString ("aspect", aspect_str);
+				addString (SD_ASPECT, aspect_str);
 			}
 		}
 		
@@ -151,7 +152,7 @@ public class StudyDocument extends MongoDocument {
 						String name = value.toString ();
 						
 						if (!names_map.containsKey (name)) {
-							addText ("phenotype_name", name);						
+							addText (SD_PHENOTYPE_NAME, name);						
 							names_map.put (name, name);
 						}
 					}
@@ -161,7 +162,7 @@ public class StudyDocument extends MongoDocument {
 						String description = value.toString ();
 						
 						if (!descriptions_map.containsKey (description)) {
-							addText ("phenotype_description", description);						
+							addText (SD_PHENOTYPE_DESCRIPTION, description);						
 							descriptions_map.put (description, description);
 						}
 
@@ -187,7 +188,7 @@ public class StudyDocument extends MongoDocument {
 
 					String accession = o.toString ();
 					
-					addString ("accession", accession);
+					addString (SD_ACCESSION, accession);
 					
 				}
 			}			
@@ -207,7 +208,7 @@ public class StudyDocument extends MongoDocument {
 				
 				if (o != null) {
 					String name = o.toString ();
-					addText ("parent_field_trial", name);						
+					addText (SD_PARENT_TRIAL, name);						
 				}
 			}
 		}
@@ -235,8 +236,10 @@ public class StudyDocument extends MongoDocument {
 		fields.add (SD_PHENOTYPE_DESCRIPTION);
 		fields.add (SD_ACCESSION);
 		
-		boosts.put (SD_ACCESSION, GD_NAME_BOOST);
-		boosts.put (SD_PHENOTYPE_NAME, GD_NAME_BOOST);
+		if (boosts != null) {
+			boosts.put (SD_ACCESSION, GD_NAME_BOOST);
+			boosts.put (SD_PHENOTYPE_NAME, GD_NAME_BOOST);
+		}
 	}
 
 }

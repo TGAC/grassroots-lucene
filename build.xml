@@ -7,7 +7,6 @@
 	<property name="lucene.jar" value="${ant.project.name}-lucene-app-${current.version}.jar" />
 	<property name="solr.jar" value="${ant.project.name}-solr-app-${current.version}.jar" />
 	
-	
 	<loadproperties srcFile="grassroots-lucene.properties"/>
 
 	<!-- shared libs -->
@@ -52,9 +51,9 @@
 	</target>
 	
 	<target name="compile" depends="init">
-		<pathconvert property="shared.path" refid="shared.class.path"/>
-		<pathconvert property="lucene.path" refid="lucene.class.path"/>
-		<pathconvert property="solr.path" refid="solr.class.path"/>
+	  <pathconvert property="shared.path" refid="shared.class.path"/>
+	  <pathconvert property="lucene.path" refid="lucene.class.path"/>
+	  <pathconvert property="solr.path" refid="solr.class.path"/>
 
 		<javac srcdir="${source.dir}" destdir="${classes.dir}" includes="**/*.java" debug="true">
       <classpath>
@@ -107,14 +106,14 @@
 
 	
 	<target name="install" depends="jars">
-		<copy file="${core.jar}" tofile="${install.dir}/${core.jar}" overwrite="true" />
-		<copy file="${lucene.jar}" tofile="${install.dir}/${lucene.jar}" overwrite="true" />
-		<copy file="${solr.jar}" tofile="${install.dir}/${solr.jar}" overwrite="true" />
+		<copy file="${core.jar}" tofile="${install.lib.dir}/${core.jar}" overwrite="true" />
+		<copy file="${lucene.jar}" tofile="${install.lib.dir}/${lucene.jar}" overwrite="true" />
+		<copy file="${solr.jar}" tofile="${install.lib.dir}/${solr.jar}" overwrite="true" />
 	</target>	
 	
 	<target name="run-lucene-indexer" depends="jars">
 		<java classname="uk.ac.earlham.grassroots.app.Indexer">
-		  <arg value="-index ~/Desktop/lucene_test/index -data ~/Desktop/lucene_test/docs"/>
+		  <arg value="index ${index.dir} -tax ${tax.dir} -data ~/Desktop/lucene_test/docs"/>
 		  <classpath>
 		    <pathelement path="${ant.project.name}-${current.version}.jar" />
 		  	<pathelement refid="class.path" />
@@ -122,14 +121,34 @@
 		</java>
 	</target>
 
+  <target name="echo-paths">	
+	  <pathconvert property="shared.path" refid="shared.class.path"/>
+	  <pathconvert property="lucene.path" refid="lucene.class.path"/>
+	  <pathconvert property="solr.path" refid="solr.class.path"/>
+
+    <echo message="core ${install.lib.dir}/${core.jar}" />
+    <echo message="lucene ${install.lib.dir}/${lucene.jar}" />
+    <echo message="solr ${install.lib.dir}/${solr.jar}" />
+    <echo message="lucene.path ${lucene.path}" />
+    <echo message="solr.path ${solr.path}" />
+    <echo message="shared.path ${shared.path}" />
+  </target>
 	
-	<target name="run-lucence-searcher" depends="jars">
-		<java classname="uk.ac.earlham.grassroots.app.Searcher">
-		  <arg value="-index ~/Desktop/lucene_test/index -tax ~/Desktop/lucene_test/tax -query ${searcher.query}"/>
+	<target name="run-lucene-searcher" depends="install">
+	  <pathconvert property="shared.path" refid="shared.class.path"/>
+	  <pathconvert property="lucene.path" refid="lucene.class.path"/>
+	  <pathconvert property="solr.path" refid="solr.class.path"/>
+
+		<java classname="uk.ac.earlham.grassroots.app.lucene.Searcher">
+		  <arg value="-index ${index.dir} -tax ${tax.dir} -query ${searcher.query}"/>
 		  <classpath>
-		    <pathelement path="${ant.project.name}-${current.version}.jar" />
-		  	<path refid="class.path" />
-		  </classpath>
+      	<pathelement path="${install.lib.dir}/${core.jar}" />
+      	<pathelement path="${install.lib.dir}/${lucene.jar}" />
+      	<pathelement path="${install.lib.dir}/${solr.jar}" />
+      	<pathelement path="${lucene.path}" />
+      	<pathelement path="${solr.path}" />
+      	<pathelement path="${shared.path}" />
+			</classpath>
 		</java>
 	</target>
 </project>

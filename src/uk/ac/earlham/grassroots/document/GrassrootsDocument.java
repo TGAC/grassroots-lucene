@@ -342,9 +342,9 @@ abstract public class GrassrootsDocument {
 	 * @throws IllegalArgumentException If the Grassroots JSON document does not contain the given key or 
 	 * if the corresponding value is not in the form YYYY-MM-DD.
 	 */
-	public boolean addDateString (JSONObject json_doc, String key) throws IllegalArgumentException {
+	public boolean addDateString (JSONObject json_doc, String input_key, String output_key) throws IllegalArgumentException {
 		boolean success_flag = false;
-		Object date_value = json_doc.get (key);
+		Object date_value = json_doc.get (input_key);
 		
 		if (date_value != null) {
 			String date_str = null;
@@ -389,7 +389,7 @@ abstract public class GrassrootsDocument {
 				date_str = sb.toString();
 
 				
-				gd_wrapper.addNonIndexedString (key, date_str);
+				gd_wrapper.addNonIndexedString (output_key, date_str);
 				success_flag = true;
 			}
 						
@@ -449,8 +449,10 @@ abstract public class GrassrootsDocument {
 		fields.add (GD_DESCRIPTION);
 		fields.add (GD_DEFAULT_SEARCH_KEY);
 
-		boosts.put (GD_UNIQUE_NAME, GD_NAME_BOOST);
-		boosts.put (GD_DESCRIPTION, GD_DESCRIPTION_BOOST);
+		if (boosts != null) {
+			boosts.put (GD_UNIQUE_NAME, GD_NAME_BOOST);
+			boosts.put (GD_DESCRIPTION, GD_DESCRIPTION_BOOST);
+		}
 	}
 }
 

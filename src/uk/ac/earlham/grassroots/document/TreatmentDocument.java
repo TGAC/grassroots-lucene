@@ -118,8 +118,10 @@ public class TreatmentDocument extends MongoDocument {
 		fields.add (TD_VARIABLE_NAME);
 		fields.add (TD_VARIABLE_ID);
 		
-		boosts.put (TD_TRAIT_NAME, GD_NAME_BOOST);
-		boosts.put (TD_MEASUREMENT_NAME, GD_NAME_BOOST);
-		boosts.put (TD_UNIT_NAME, GD_NAME_BOOST);
+		if (boosts != null) {
+			boosts.put (TD_TRAIT_NAME, GD_NAME_BOOST);
+			boosts.put (TD_MEASUREMENT_NAME, GD_NAME_BOOST);
+			boosts.put (TD_UNIT_NAME, GD_NAME_BOOST);
+		}
 	}
 }

@@ -2,9 +2,13 @@ package uk.ac.earlham.grassroots.app.lucene;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -18,6 +22,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 
 import uk.ac.earlham.grassroots.document.AddressDocument;
 import uk.ac.earlham.grassroots.document.FieldTrialDocument;
@@ -27,7 +32,8 @@ import uk.ac.earlham.grassroots.document.StudyDocument;
 import uk.ac.earlham.grassroots.document.TreatmentDocument;
 
 public class QueryUtil {
-	private static Analyzer qu_analyzer;
+	private static Analyzer qu_analyzer = null;
+	private static Pattern qu_highlighted_pattern = null;
 	
 	public static Analyzer getAnalyzer () {
 		if (qu_analyzer == null) {
@@ -36,25 +42,37 @@ public class QueryUtil {
 		
 		return qu_analyzer;
 	}
-	
-	public static Query buildGrassrootsQuery (List <String> queries) {
-		Query q = null;		
+
+	public static Pattern getHighlightedPattern () {
+		if (qu_highlighted_pattern == null) {
+			qu_highlighted_pattern = Pattern.compile ("<b>(\\S+)</b>");
+		}
 		
-		List  <String>  fields = new ArrayList <String> ();
-		Map <String, Float> boosts = new HashMap <String, Float> ();
-		
+		return qu_highlighted_pattern;
+	}
+
 	
+	private static void getFields (List <String> fields, Map <String, Float> boosts) {
 		GrassrootsDocument.addQueryTerms (fields, boosts);		
 		AddressDocument.addQueryTerms (fields, boosts);
 		FieldTrialDocument.addQueryTerms (fields, boosts);
 		ProjectDocument.addQueryTerms (fields, boosts);
 		StudyDocument.addQueryTerms (fields, boosts);
-		TreatmentDocument.addQueryTerms (fields, boosts);
+		TreatmentDocument.addQueryTerms (fields, boosts);		
+	}
+	
+	
+	public static Query buildGrassrootsQuery (List <String> queries) {
+		Query q = null;		
+		
+		List <String> fields = new ArrayList <String> ();
+		Map <String, Float> boosts = new HashMap <String, Float> ();
+			
+		getFields (fields, boosts);
 		
 		String [] fields_array = fields.toArray (new String [0]);
 		QueryParser parser = new MultiFieldQueryParser (fields_array, getAnalyzer (), boosts);
 
-			
 		StringBuilder sb = new StringBuilder ();
 		
 		for (String query : queries) {
@@ -89,77 +107,111 @@ public class QueryUtil {
 		int num_total_hits = Searcher.CastLongToInt (results.totalHits.value);
 		int limit = Math.min (num_total_hits, hits.length);
 		
+		
+		Map <String, String []> highlights = GetHighlightingData (query, searcher, reader, qu_analyzer, results);
+
+		
 		for (int i = 0; i < limit; ++ i) {
-			Document doc = searcher.doc (hits [i].doc);
+			ScoreDoc score_doc = hits [i];
+			Document doc = searcher.doc (score_doc.doc);
+			
+			if (highlights != null) {
+				
+			}
+			
 			docs.add (doc);
 		}
 		
 		
-		Searcher.DoUnifiedHighlighting (query, searcher, reader, qu_analyzer, results);
-		
+		DoUnifiedHighlighting (query, searcher, reader, qu_analyzer, results);
+				
 		return docs;
 	}
 	
-	public static void AddStringsToQuery (StringBuilder sb, List <String> terms, boolean quote_flag) {
-		final float NAME_BOOST = 5.0f;
-		final float DESCRIPTION_BOOST = 3.0f;
-		final float DEFAULT_BOOST = 1.0f;
-
-		for (String s : terms) {
-			if (sb.length () != 0) {
-				sb.append (' ');
-			}
-
-			if (s.contains (":")) {
-				sb.append (" AND ");
-				sb.append (s);
-			} else {	
-				sb.append ("(");				
-				buildQuery (sb, GrassrootsDocument.GD_NAME, s, NAME_BOOST);
-				buildQuery (sb, GrassrootsDocument.GD_DESCRIPTION, s, DESCRIPTION_BOOST);
-				buildQuery (sb, GrassrootsDocument.GD_STRING_SEARCH_KEY, s, DEFAULT_BOOST);
+	
+	
+	static public String getHighlightedFieldValue (String field_name, Map <String, String []> highlights, ScoreDoc [] docs, int index) {
+		String highlighted_value = null;
+		String [] values = highlights.get (field_name);
+		
+		if (values != null) {
+			if (index < values.length) {
+				String value = values [index];
 				
-				sb.append (" \"");
-				sb.append (s);
-				sb.append ("\")");				
+				if (value != null) {
+					Pattern p = getHighlightedPattern ();					
+		    		Matcher matcher = p.matcher (value);
+		    		
+		    		if (matcher.find ()) {
+		    			highlighted_value = value;
+		    		}
+				}
 			}
+		}
+				
+		return highlighted_value;
+	}
+
+	
+	static public Map <String, String []> GetHighlightingData (Query query, IndexSearcher searcher, IndexReader reader, Analyzer analyzer, TopDocs hits) {
+		UnifiedHighlighter highlighter = new UnifiedHighlighter (searcher, analyzer);        
+		List <String> fields = new ArrayList <String> ();
+		
+		getFields (fields, null);
+		
+		String [] fields_array = (String []) fields.toArray (new String [0]);
+	
+		Map <String, String []> highlights = null;
+	
+		try {
+			highlights = highlighter.highlightFields (fields_array, query, hits);
+		} catch (IOException e) {
+			System.err.println ("Failed to get highlighted fields for query \"" + query + "\", exception: "+ e);
+		}
+	
+		return highlights;
+	}
+	
+	
+	static public void DoUnifiedHighlighting (Query query, IndexSearcher searcher, IndexReader reader, Analyzer analyzer, TopDocs hits) {
+		Map <String, String []> highlights = GetHighlightingData (query, searcher, reader, analyzer, hits);	
+		
+		if (highlights != null) {
+			ScoreDoc [] docs = hits.scoreDocs;
 			
-		}
-	
-	}
-	
+			String [] keys = highlights.keySet ().toArray (new String [0]);
+			
+			Arrays.sort (keys);
+			
+			final int num_keys = keys.length;
 
-	public static void buildQuery (StringBuilder sb, String key, String value) {
-		if (sb.length () > 0) {
-			sb.append (' ');
-		}
+			for (int i = 0; i < num_keys; ++ i) {
+			    System.out.println (keys [i] + ":");
+			    String [] values = highlights.get (keys [i]);
 
-		String escaped_key = key.replace (":", "\\:");
-		final boolean wild_flag = value.contains ("*");
-	
-		sb.append ("(");
-		sb.append (escaped_key);
-		sb.append (':');
-		
-		if (!wild_flag) {
-			sb.append ('"');			
+			    Pattern pattern = Pattern.compile ("<b>(\\S+)</b>");
+			    
+			    int j = 0;
+			    
+			    for (String value: values) {
+			    	
+			    	if (value != null) {
+			    		Matcher matcher = pattern.matcher (value);
+			    		
+			    		if (matcher.find ()) {
+			    			System.out.println ("\t MATCH doc [" + j + "] " + docs [j] + ": " + value);
+			    		} else {
+			    			System.out.println ("\t MISS  doc [" + j + "] " + docs [j] + ": " + value);			    			
+			    		}
+			    	} else {
+			    		System.out.println ("\t EMPTY doc [" + j + "] " + docs [j] + ": null");
+			    	}		
+			    	
+			    	++ j;
+			    }
+			}
 		}
 		
-		sb.append (value);
-
-		if (!wild_flag) {
-			sb.append ('"');			
-		}
-		
-	}
-
-	public static void buildQuery (StringBuilder sb, String key, String value, float boost) {
-		buildQuery (sb, key, value);
-		
-		if (boost != 1.0f) {
-			sb.append (")^");
-			sb.append (boost);		
-		}
 	}
 	
 }
