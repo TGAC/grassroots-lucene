@@ -67,15 +67,15 @@ abstract public class GrassrootsDocument {
 			if (s != null) {
 			
 				wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
-				wrapper.addNonIndexedString (PRIVATE_TYPE, s);
-				wrapper.addString (GD_LUCENE_ID, gd_unique_id);
+				addNonIndexedString (PRIVATE_TYPE, s);
+				addString (GD_LUCENE_ID, gd_unique_id);
 							
 				/*
 				 * icon
 				 */
 				s = (String) json_doc.get (ICON);
 				if (s != null) {
-					wrapper.addNonIndexedString (ICON, s);					
+					addNonIndexedString (ICON, s);					
 				}
 
 				
@@ -84,7 +84,9 @@ abstract public class GrassrootsDocument {
 				 */
 				s = (String) json_doc.get (TYPE_DESCRIPTION);
 				if (s != null) {
-					wrapper.addNonIndexedString (TYPE_DESCRIPTION, s);					
+					addNonIndexedString (TYPE_DESCRIPTION, s);					
+				} else {
+					
 				}
 
 				

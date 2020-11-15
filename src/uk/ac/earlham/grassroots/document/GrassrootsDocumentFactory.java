@@ -46,7 +46,11 @@ public class GrassrootsDocumentFactory {
 				case "Grassroots:Location": 
 					doc = new AddressDocument (json_doc, wrapper);					
 					break;
-					
+
+				case "Grassroots:Program": 
+					doc = new ProgramDocument (json_doc, wrapper);					
+					break;
+
 				case "Grassroots:Service": {
 					Object o = json_doc.get ("service");
 					
