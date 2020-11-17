@@ -39,8 +39,8 @@ abstract public class GrassrootsDocument {
 	 */
 	static public String GD_INTERNAL_LINK = "internal_url";
 
-	static public final float GD_NAME_BOOST = 5.0f;
-	static public final float GD_DESCRIPTION_BOOST = 3.0f;
+	static public final float GD_NAME_BOOST = 2.0f;
+	static public final float GD_DESCRIPTION_BOOST = 1.5f;
 	
 	protected DocumentWrapper gd_wrapper;
 	

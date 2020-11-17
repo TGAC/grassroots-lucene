@@ -47,6 +47,10 @@ public class ProgramDocument extends MongoDocument {
 		fields.add (PD_CROP);
 		fields.add (PD_PI);
 		fields.add (PD_URL);
+	
+		if (boosts != null) {
+			boosts.put (PD_ABBREVIATION, GD_DESCRIPTION_BOOST);
+		}
 	}
 
 }
