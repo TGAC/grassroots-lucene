@@ -27,6 +27,7 @@ import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import uk.ac.earlham.grassroots.document.AddressDocument;
 import uk.ac.earlham.grassroots.document.FieldTrialDocument;
 import uk.ac.earlham.grassroots.document.GrassrootsDocument;
+import uk.ac.earlham.grassroots.document.ProgramDocument;
 import uk.ac.earlham.grassroots.document.ProjectDocument;
 import uk.ac.earlham.grassroots.document.StudyDocument;
 import uk.ac.earlham.grassroots.document.TreatmentDocument;
@@ -58,7 +59,8 @@ public class QueryUtil {
 		FieldTrialDocument.addQueryTerms (fields, boosts);
 		ProjectDocument.addQueryTerms (fields, boosts);
 		StudyDocument.addQueryTerms (fields, boosts);
-		TreatmentDocument.addQueryTerms (fields, boosts);		
+		TreatmentDocument.addQueryTerms (fields, boosts);	
+		ProgramDocument.addQueryTerms (fields, boosts);		
 	}
 	
 	
