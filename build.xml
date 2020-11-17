@@ -3,6 +3,8 @@
 	<property name="classes.dir" value="classes" />
 	<property name="source.dir" value="src" />
 
+	<property name="install.lib.dir" value="${install.dir}/lib" />
+
 	<property name="core.jar" value="${ant.project.name}-core-${current.version}.jar" />
 	<property name="lucene.jar" value="${ant.project.name}-lucene-app-${current.version}.jar" />
 	<property name="solr.jar" value="${ant.project.name}-solr-app-${current.version}.jar" />
