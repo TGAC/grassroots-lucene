@@ -36,58 +36,58 @@ public class StudyDocument extends MongoDocument {
 		if (super.addFields (json_doc)) {
 			JSONObject parent_field_trial = (JSONObject) json_doc.get ("parent_field_trial");
 			
-			if (parent_field_trial != null) {
-				boolean added_address_flag = false;
+			if (parent_field_trial != null) {	
+				// parent field trial
+				addParentFieldTrial (json_doc);
+			}
+
+			boolean added_address_flag = false;
 				
-				if (json_doc.get ("address_id") != null) {
-					added_address_flag = addMongoId (json_doc, "address_id");
-				} else if (json_doc.get ("address") != null) {
-					added_address_flag = true;					
-				}
-				
-				if (added_address_flag) {
-					final String description_key = getDescriptionKey ();
-					
-					/*
-					 * Add the study-specific fields
-					 */
-					addText (json_doc, "soil", SD_SOIL);
-					addText (json_doc, "phenotype_gathering_notes", SD_PHENOTYPE_GATHERING);
-					addText (json_doc, "study_design", SD_STUDY_DESIGN);
-
-					addDateString (json_doc, "sowing_date", SD_SOWING_DATE);
-					addDateString (json_doc, "harvest_date", SD_HARVEST_DATE);
-					
-					/*
-					 * crop, previous crop, aspect, slope 
-					 */
-					addCrop (json_doc, "current_crop", SD_CURRENT_CROP);
-					addCrop (json_doc, "previous_crop", SD_PREVIOUS_CROP);
-
-					// slope
-					addText (json_doc, "envo:00002000", SD_SLOPE);
-
-					// aspect
-					addAspect (json_doc);
-					
-					
-					// phenotypes
-					addPhenotypes (json_doc);
-
-					// acccessions
-					addAccessions (json_doc);
-					
-					// parent field trial
-					addParentFieldTrial (json_doc);
-
-					
-					success_flag = true;
-				} else {
-					System.err.println ("Failed to add mongo id for address_id from " + json_doc);
-				}
-				
+			if (json_doc.get ("address_id") != null) {
+				added_address_flag = addMongoId (json_doc, "address_id");
+			} else if (json_doc.get ("address") != null) {
+				added_address_flag = true;					
 			}
 			
+			if (added_address_flag) {
+				final String description_key = getDescriptionKey ();
+				
+				/*
+				 * Add the study-specific fields
+				 */
+				addText (json_doc, "soil", SD_SOIL);
+				addText (json_doc, "phenotype_gathering_notes", SD_PHENOTYPE_GATHERING);
+				addText (json_doc, "study_design", SD_STUDY_DESIGN);
+
+				addDateString (json_doc, "sowing_date", SD_SOWING_DATE);
+				addDateString (json_doc, "harvest_date", SD_HARVEST_DATE);
+				
+				/*
+				 * crop, previous crop, aspect, slope 
+				 */
+				addCrop (json_doc, "current_crop", SD_CURRENT_CROP);
+				addCrop (json_doc, "previous_crop", SD_PREVIOUS_CROP);
+
+				// slope
+				addText (json_doc, "envo:00002000", SD_SLOPE);
+
+				// aspect
+				addAspect (json_doc);
+				
+				
+				// phenotypes
+				addPhenotypes (json_doc);
+
+				// acccessions
+				addAccessions (json_doc);
+
+
+				
+				success_flag = true;
+			} else {
+				System.err.println ("Failed to add mongo id for address_id from " + json_doc);
+			}
+						
 		}
 	
 		return success_flag;
