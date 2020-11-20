@@ -47,8 +47,8 @@ public class GrassrootsDocumentFactory {
 					doc = new AddressDocument (json_doc, wrapper);					
 					break;
 
-				case "Grassroots:Program": 
-					doc = new ProgramDocument (json_doc, wrapper);					
+				case "Grassroots:Programme": 
+					doc = new ProgrammeDocument (json_doc, wrapper);					
 					break;
 
 				case "Grassroots:Service": {
