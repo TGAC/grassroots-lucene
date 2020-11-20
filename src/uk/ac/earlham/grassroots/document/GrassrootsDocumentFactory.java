@@ -39,7 +39,7 @@ public class GrassrootsDocumentFactory {
 					doc = new StudyDocument (json_doc, wrapper);					
 					break;
 
-				case "Grassroots:Phenotype": 
+				case "Grassroots:MeasuredVariable": 
 					doc = new TreatmentDocument (json_doc, wrapper);					
 					break;
 					
