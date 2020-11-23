@@ -1,4 +1,4 @@
-package uk.ac.earlham.grassroots.document;
+package uk.ac.earlham.grassroots.document.lucene;
 
 import java.util.List;
 import java.util.Map;
@@ -7,7 +7,8 @@ import org.apache.lucene.search.BooleanQuery;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+import uk.ac.earlham.grassroots.document.json.ProjectJSON;
+import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 public class ProjectDocument extends GrassrootsDocument {
 	final static private String PR_PREFIX = "project-";
@@ -56,12 +57,12 @@ public class ProjectDocument extends GrassrootsDocument {
 	
 	
 	private boolean addAuthors (JSONObject json_doc) {
-		return addArrayOfStrings (json_doc, "authors", PR_AUTHOR, false);
+		return addArrayOfStrings (json_doc, ProjectJSON.PR_AUTHORS, PR_AUTHOR, false);
 	}
 
 
 	private boolean addProjectCodes (JSONObject json_doc) {
-		return addArrayOfStrings (json_doc, "project_codes", PR_GRANT_CODE, false);
+		return addArrayOfStrings (json_doc, ProjectJSON.PR_PROJECT_CODES, PR_GRANT_CODE, false);
 	}
 
 	
@@ -98,7 +99,7 @@ public class ProjectDocument extends GrassrootsDocument {
 
 	
 	private boolean addUrl (JSONObject json_doc) {
-		return addString (json_doc, "url", GD_PUBLIC_LINK);
+		return addString (json_doc, ProjectJSON.PR_URL, GD_PUBLIC_LINK);
 	}
 
 
@@ -120,5 +121,5 @@ public class ProjectDocument extends GrassrootsDocument {
 		fields.add (PR_AUTHOR);
 		fields.add (PR_GRANT_CODE);
 	}
-	
+
 }

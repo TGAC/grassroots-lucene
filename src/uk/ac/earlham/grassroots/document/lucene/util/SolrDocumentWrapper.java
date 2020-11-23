@@ -1,4 +1,4 @@
-package uk.ac.earlham.grassroots.document.util;
+package uk.ac.earlham.grassroots.document.lucene.util;
 
 import java.io.IOException;
 

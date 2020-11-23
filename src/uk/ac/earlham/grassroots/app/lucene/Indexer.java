@@ -40,9 +40,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import uk.ac.earlham.grassroots.document.GrassrootsDocument;
-import uk.ac.earlham.grassroots.document.GrassrootsDocumentFactory;
-import uk.ac.earlham.grassroots.document.util.LuceneDocumentWrapper;
+import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
+import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocumentFactory;
+import uk.ac.earlham.grassroots.document.lucene.util.LuceneDocumentWrapper;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;

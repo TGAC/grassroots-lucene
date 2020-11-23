@@ -1,8 +1,8 @@
-package uk.ac.earlham.grassroots.document;
+package uk.ac.earlham.grassroots.document.lucene;
 
 import org.json.simple.JSONObject;
 
-import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 
 public class SamtoolsServiceDocument extends ServiceDocument {
@@ -20,4 +20,7 @@ public class SamtoolsServiceDocument extends ServiceDocument {
 		return "Blast database";
 	}
 
+	static public boolean isFieldMultiValued (String field) {
+		return GrassrootsDocument.isFieldMultiValued (field);
+	}
 }

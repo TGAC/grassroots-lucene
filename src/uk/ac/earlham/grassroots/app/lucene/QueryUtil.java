@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -15,6 +16,7 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -24,13 +26,17 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 
-import uk.ac.earlham.grassroots.document.AddressDocument;
-import uk.ac.earlham.grassroots.document.FieldTrialDocument;
-import uk.ac.earlham.grassroots.document.GrassrootsDocument;
-import uk.ac.earlham.grassroots.document.ProgrammeDocument;
-import uk.ac.earlham.grassroots.document.ProjectDocument;
-import uk.ac.earlham.grassroots.document.StudyDocument;
-import uk.ac.earlham.grassroots.document.TreatmentDocument;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import uk.ac.earlham.grassroots.document.lucene.AddressDocument;
+import uk.ac.earlham.grassroots.document.lucene.FieldTrialDocument;
+import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
+import uk.ac.earlham.grassroots.document.lucene.ProgrammeDocument;
+import uk.ac.earlham.grassroots.document.lucene.ProjectDocument;
+import uk.ac.earlham.grassroots.document.lucene.StudyDocument;
+import uk.ac.earlham.grassroots.document.lucene.TreatmentDocument;
+
 
 public class QueryUtil {
 	private static Analyzer qu_analyzer = null;
@@ -96,21 +102,20 @@ public class QueryUtil {
 		return q;
 	}
 	
-	public static List <Document> search (Query query, IndexReader reader) throws IOException {
-		return search (query, reader, reader.numDocs ());
+	public static JSONArray search (Query query, IndexReader reader, IndexSearcher searcher) throws IOException {
+		return search (query, reader, searcher, reader.numDocs ());
 	}
 	
-	public static List <Document> search (Query query, IndexReader reader, int max_num_hits) throws IOException {
-		List <Document> docs = new ArrayList <Document> ();
-		IndexSearcher searcher = new IndexSearcher (reader);
+	public static JSONArray search (Query query, IndexReader reader, IndexSearcher searcher, int max_num_hits) throws IOException {
+		JSONArray docs = new JSONArray ();
 		TopDocs results = searcher.search (query, max_num_hits);
 		ScoreDoc [] hits = results.scoreDocs;
 
 		int num_total_hits = Searcher.CastLongToInt (results.totalHits.value);
 		int limit = Math.min (num_total_hits, hits.length);
 		
-		
-		Map <String, String []> highlights = GetHighlightingData (query, searcher, reader, qu_analyzer, results);
+		UnifiedHighlighter highlighter = new UnifiedHighlighter (searcher, QueryUtil.getAnalyzer ());   
+	    Pattern pattern = Pattern.compile ("<b>(\\S+)</b>");
 
 		
 		for (int i = 0; i < limit; ++ i) {
@@ -119,8 +124,21 @@ public class QueryUtil {
 			Document doc = searcher.doc (score_doc.doc);
 			
 			
-			if (highlights != null) {
-			
+			if (highlighter != null) {
+				List <IndexableField> fields = doc.getFields ();
+				Iterator <IndexableField> itr = fields.iterator ();
+				
+				while (itr.hasNext ()) {
+					IndexableField field = itr.next ();
+					
+					String  value = field.stringValue ();
+		    		Matcher matcher = pattern.matcher (value);
+		    		
+		     		if (matcher.find ()) {
+		     		
+		     		}
+				}
+				
 			}
 			
 			docs.add (doc);
@@ -199,19 +217,33 @@ public class QueryUtil {
 			    int j = 0;
 			    
 			    for (String value: values) {
-			    	
-			    	if (value != null) {
-			    		Matcher matcher = pattern.matcher (value);
-			    		
-			    		if (matcher.find ()) {
-			    			System.out.println ("\t MATCH doc [" + j + "] " + docs [j] + ": " + value);
-			    		} else {
-			    			System.out.println ("\t MISS  doc [" + j + "] " + docs [j] + ": " + value);			    			
-			    		}
-			    	} else {
-			    		System.out.println ("\t EMPTY doc [" + j + "] " + docs [j] + ": null");
-			    	}		
-			    	
+		    		int doc_id = docs [j].doc;
+		    		Document doc = null;
+		    		
+					try {
+						doc = reader.document (doc_id);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					if (doc != null) {
+			    		String name = doc.get (GrassrootsDocument.GD_UNIQUE_NAME);
+			    						    	
+				    	if (value != null) {
+				    		Matcher matcher = pattern.matcher (value);
+				    		
+				    		
+				    		if (matcher.find ()) {
+				    			System.out.println ("\t MATCH doc [" + j + "] " + doc_id +  " - " + name + ": " + value);
+				    		} else {
+				    			System.out.println ("\t MISS  doc [" + j + "] " + doc_id +  " - " +name + ": " + value);			    			
+				    		}
+				    	} else {
+				    		System.out.println ("\t EMPTY doc [" + j + "] " + doc_id +  " - " + name + ": null");
+				    	}		
+					}
+					
 			    	++ j;
 			    }
 			}

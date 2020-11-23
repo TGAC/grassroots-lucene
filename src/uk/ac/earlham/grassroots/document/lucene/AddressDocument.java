@@ -1,4 +1,4 @@
-package uk.ac.earlham.grassroots.document;
+package uk.ac.earlham.grassroots.document.lucene;
 
 
 import java.util.List;
@@ -6,15 +6,16 @@ import java.util.Map;
 
 import org.json.simple.JSONObject;
 
-import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+import uk.ac.earlham.grassroots.document.json.AddressJSON;
+import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 public class AddressDocument extends MongoDocument {
 	final static private String AD_PREFIX = "address-";
-	final static private String AD_STREET = AD_PREFIX + "street";
-	final static private String AD_LOCALITY = AD_PREFIX + "city";
-	final static private String AD_REGION = AD_PREFIX + "county";
-	final static private String AD_COUNTRY = AD_PREFIX + "country";
-	final static private String AD_POSTCODE = AD_PREFIX + "postcode";
+	final static public String AD_STREET = AD_PREFIX + "street";
+	final static public String AD_LOCALITY = AD_PREFIX + "city";
+	final static public String AD_REGION = AD_PREFIX + "county";
+	final static public String AD_COUNTRY = AD_PREFIX + "country";
+	final static public String AD_POSTCODE = AD_PREFIX + "postcode";
 
 	
 	public AddressDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -37,11 +38,11 @@ public class AddressDocument extends MongoDocument {
 				
 				if (address_json != null) {
 					
-					addText (address_json, "streetAddress", AD_STREET);
-					addText (address_json, "addressLocality", AD_LOCALITY);
-					addText (address_json, "addressRegion", AD_REGION);
-					addText (address_json, "addressCountry", AD_COUNTRY);
-					addText (address_json, "postalCode", AD_POSTCODE);
+					addText (address_json, AddressJSON.AJ_STREET, AD_STREET);
+					addText (address_json, AddressJSON.AJ_CITY, AD_LOCALITY);
+					addText (address_json, AddressJSON.AJ_COUNTY, AD_REGION);
+					addText (address_json, AddressJSON.AJ_COUNTRY, AD_COUNTRY);
+					addText (address_json, AddressJSON.AJ_POSTCODE, AD_POSTCODE);
 					
 				}
 			}		
@@ -71,5 +72,4 @@ public class AddressDocument extends MongoDocument {
 		fields.add (AD_COUNTRY);
 		fields.add (AD_POSTCODE);
 	}
-
 }

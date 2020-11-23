@@ -1,4 +1,4 @@
-package uk.ac.earlham.grassroots.document.util;
+package uk.ac.earlham.grassroots.document.lucene.util;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -7,8 +7,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.facet.FacetField;
 
-
-import uk.ac.earlham.grassroots.document.GrassrootsDocument;
+import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
 
 
 public class LuceneDocumentWrapper implements DocumentWrapper {

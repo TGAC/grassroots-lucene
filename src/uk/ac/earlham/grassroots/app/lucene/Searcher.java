@@ -85,12 +85,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import uk.ac.earlham.grassroots.document.AddressDocument;
-import uk.ac.earlham.grassroots.document.FieldTrialDocument;
-import uk.ac.earlham.grassroots.document.GrassrootsDocument;
-import uk.ac.earlham.grassroots.document.ProjectDocument;
-import uk.ac.earlham.grassroots.document.StudyDocument;
-import uk.ac.earlham.grassroots.document.TreatmentDocument;
+import uk.ac.earlham.grassroots.document.lucene.AddressDocument;
+import uk.ac.earlham.grassroots.document.lucene.FieldTrialDocument;
+import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
+import uk.ac.earlham.grassroots.document.lucene.ProjectDocument;
+import uk.ac.earlham.grassroots.document.lucene.StudyDocument;
+import uk.ac.earlham.grassroots.document.lucene.TreatmentDocument;
 
 
 class DrillDownData {
@@ -114,13 +114,15 @@ class DrillSidewaysData {
 public class Searcher {
 	private IndexReader se_index_reader;
 	private TaxonomyReader se_taxonomy_reader;
-
+	private IndexSearcher se_index_searcher;
+	
 	private FacetsConfig se_config;
 
 	
 	private Searcher (IndexReader index_reader, TaxonomyReader taxonomy_reader) {
 		se_index_reader = index_reader;
 		se_taxonomy_reader = taxonomy_reader;
+		se_index_searcher = new IndexSearcher (se_index_reader);
 		se_config = new FacetsConfig ();
 	}
 	
@@ -281,7 +283,7 @@ public class Searcher {
 							}
 							
 							if (docs != null) {
-								searcher.addHitsToJSON (docs, json_res);
+								searcher.addHitsToJSON (docs, json_res, q);
 							}
 						}
 						break;
@@ -315,7 +317,7 @@ public class Searcher {
 							
 						
 							if (results != null) {
-								searcher.addHitsToJSON (results.ddd_hits, json_res);
+								searcher.addHitsToJSON (results.ddd_hits, json_res, q);
 								
 								if (results.ddd_facets != null) {
 									searcher.addFacetResults (results.ddd_facets, json_res);
@@ -336,7 +338,7 @@ public class Searcher {
 							}
 							
 							if (results != null) {
-								searcher.addHitsToJSON (results.dsd_hits, json_res);
+								searcher.addHitsToJSON (results.dsd_hits, json_res, q);
 								searcher.addFacetResults (results.dsd_facets, json_res);
 							}
 							
@@ -360,8 +362,11 @@ public class Searcher {
 	}
 
 	
-	private void addHitsToJSON (List <Document> docs, JSONObject results) {
+	private void addHitsToJSON (List <Document> docs, JSONObject results, Query query) {
 		if (docs != null) {
+			Map <String, String []> highlights = QueryUtil.GetHighlightingData (query, se_index_searcher, se_index_reader, QueryUtil.getAnalyzer (), results);
+
+			
 			JSONArray docs_array = new JSONArray ();
 
 			for (Document doc : docs) {	
@@ -376,7 +381,6 @@ public class Searcher {
 	
 	/** User runs a query and counts facets only without collecting the matching documents.*/
 	public List <FacetResult> getAllFacets (Query q, int max_num_facets) {
-		IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector();
 
 		// MatchAllDocsQuery is for "browsing" (counts facets
@@ -391,7 +395,7 @@ public class Searcher {
 		List <FacetResult> results = new ArrayList <FacetResult> ();
 
 		try {
-			FacetsCollector.search (searcher, q, max_num_facets, fc);
+			FacetsCollector.search (se_index_searcher, q, max_num_facets, fc);
 			// Count both "Publish Date" and "Author" dimensions
 			Facets facets = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
 			
@@ -409,7 +413,6 @@ public class Searcher {
 	/** User runs a query and counts facets only without collecting the matching documents.*/
 	public List <FacetResult> facetsOnlySearch (Query q, List <AbstractMap.SimpleEntry <String, String>> facets, int max_num_facets) {
 		List <FacetResult> results = null;
-		IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector();
 
 		// MatchAllDocsQuery is for "browsing" (counts facets
@@ -423,7 +426,7 @@ public class Searcher {
 		Facets facet_counts = null;
 
 		try {
-			FacetsCollector.search (searcher, q, max_num_facets, fc);
+			FacetsCollector.search (se_index_searcher, q, max_num_facets, fc);
 			facet_counts = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
@@ -460,8 +463,6 @@ public class Searcher {
 	   * Drill down on a given facet and return all hits and facets
 	   */
 	  public DrillSidewaysData drillSideways (Query base_query, List <AbstractMap.SimpleEntry <String, String>> facets, int max_num_facets) throws IOException {
-	    IndexSearcher searcher = new IndexSearcher (se_index_reader);
-
 	    // Passing no base_query means we drill down on all
 	    // documents ("browse only"):
 		DrillDownQuery q = null;
@@ -478,7 +479,7 @@ public class Searcher {
 	    	}
 	    }
 	    
-	    DrillSideways ds = new DrillSideways(searcher, se_config, se_taxonomy_reader);
+	    DrillSideways ds = new DrillSideways (se_index_searcher, se_config, se_taxonomy_reader);
 	    DrillSidewaysResult result = ds.search (q, max_num_facets);
 
 	    // Retrieve results
@@ -492,7 +493,7 @@ public class Searcher {
 		
 		List <Document> docs = new ArrayList <Document> ();
 		for (int i = 0; i < limit; ++ i) {
-			Document doc = searcher.doc (hits [i].doc);
+			Document doc = se_index_searcher.doc (hits [i].doc);
 			docs.add (doc);
 		}
 	    
@@ -508,7 +509,6 @@ public class Searcher {
 	  /** User drills down on a facet, and we
 	   *  return another facets for  */
 	  public DrillDownData drillDown (Query base_query,  List <AbstractMap.SimpleEntry <String, String>> facets, int hits_per_page, int page_number) throws IOException {
-	    IndexSearcher searcher = new IndexSearcher (se_index_reader);
 		FacetsCollector fc = new FacetsCollector ();
 		final int MAX_NUM_RESULTS = 1024;
 		List <FacetResult> all_facets = null;
@@ -533,7 +533,7 @@ public class Searcher {
 	    }
 
 	    
-	    TopDocs resultDocs = FacetsCollector.search (searcher, q, MAX_NUM_RESULTS, fc);
+	    TopDocs resultDocs = FacetsCollector.search (se_index_searcher, q, MAX_NUM_RESULTS, fc);
 
 	    List <FacetsCollector.MatchingDocs> matching_docs = fc.getMatchingDocs ();
 	    
@@ -563,9 +563,8 @@ public class Searcher {
 	    // Retrieve results
 		ScoreDoc [] hits = resultDocs.scoreDocs;
 		int total_hits = Searcher.CastLongToInt (resultDocs.totalHits.value);
-
-		Map <String, String []> highlights = QueryUtil.GetHighlightingData (base_query, searcher, se_index_reader, analyzer, resultDocs);
-
+		
+		QueryUtil.DoUnifiedHighlighting (base_query, se_index_searcher, se_index_reader, analyzer, resultDocs);
 		
 		List <Document> docs = new ArrayList <Document> ();
 		int start = hits_per_page * page_number;
@@ -579,22 +578,7 @@ public class Searcher {
 			}
 			
 			for (int i = start; i <= end; ++ i) {
-				Document doc = searcher.doc (hits [i].doc);
-				
-				/*
-				Iterator <IndexableField> fields = doc.iterator ();
-				
-				while (fields.hasNext ()) {
-					IndexableField field = fields.next ();
-					
-					String [] values = highlights.get (field.name ());
-					
-					if (values != null) {
-						
-					}
-				}
-				*/
-				
+				Document doc = se_index_searcher.doc (hits [i].doc);
 				docs.add (doc);
 			}
 		} else {
@@ -703,13 +687,15 @@ public class Searcher {
 	 * 
 	 */
 	public List <Document> standardSearch (Query query, int max_num_hits) throws IOException {
-		return QueryUtil.search (query, se_index_reader, max_num_hits);
+		return QueryUtil.search (query, se_index_reader, se_index_searcher, max_num_hits);
 	}
 	
 	
 	public JSONObject getLuceneDocumentAsJSON (Document doc) {
 		JSONObject res = new JSONObject ();
 		String service = doc.get ("service");
+			
+		System.out.println ("doc + " );
 		
 		if (service != null) {
 			switch (service) {

@@ -1,0 +1,45 @@
+package uk.ac.earlham.grassroots.document.json;
+
+import java.util.Map;
+
+import org.apache.lucene.document.Document;
+
+import uk.ac.earlham.grassroots.document.lucene.MongoDocument;
+
+public class StudyJSON extends MongoJSON {
+	final static public String SJ_PARENT_TRIAL = "parent_field_trial";
+	final static public String SJ_SOIL = "soil";
+	final static public String SJ_PHENOTYPE_GATHERING = "phenotype_gathering_notes";
+	final static public String SJ_STUDY_DESIGN = "study_design";
+	final static public String SJ_CURRENT_CROP = "current_crop";
+	final static public String SJ_PREVIOUS_CROP = "previous_crop";
+	final static public String SJ_SOWING_DATE = "sowing_date";
+	final static public String SJ_HARVEST_DATE = "harvest_date";
+	final static public String SJ_SLOPE = "envo:00002000";
+	final static public String SJ_ASPECT = "ncit:C42677";
+	final static public String SJ_PHENOTYPES = "phenotypes";
+	final static public String SJ_ACCESSIONS = "accessions";
+	final static public String SJ_ADDRESS = "address";
+	final static public String SJ_ADDRESS_ID = "address_id";
+	
+	
+	public StudyJSON (Document doc, Map <String, String []> highlights) {
+		super (doc, highlights);		
+	}
+
+	public boolean addToJSON (Document doc, Map <String, String []> highlights) {
+		boolean b = super.addToJSON (doc, highlights);
+		
+		if (b) {
+			String id = doc.get (MongoDocument.MD_ID);
+			
+			if (id != null) {
+				gj_json.put (MongoJSON.MJ_ID, id);
+			} else {
+				b = false;
+			}
+		}
+		
+		return b;
+	}
+}
