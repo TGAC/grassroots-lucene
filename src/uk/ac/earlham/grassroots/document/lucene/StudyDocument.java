@@ -1,4 +1,4 @@
-package uk.ac.earlham.grassroots.document;
+package uk.ac.earlham.grassroots.document.lucene;
 
 import java.util.HashMap;
 import java.util.List;
@@ -7,23 +7,26 @@ import java.util.Map;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+import uk.ac.earlham.grassroots.document.json.StudyJSON;
+import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 public class StudyDocument extends MongoDocument {
-	final static private String SD_PREFIX = "study-";
-	final static private String SD_PARENT_TRIAL = SD_PREFIX + "trial";
-	final static private String SD_SOIL = SD_PREFIX + "soil";
-	final static private String SD_PHENOTYPE_GATHERING = SD_PREFIX + "phenotype_gathering_notes";
-	final static private String SD_STUDY_DESIGN = SD_PREFIX + "study_design";
-	final static private String SD_CURRENT_CROP = SD_PREFIX + "current_crop";
-	final static private String SD_PREVIOUS_CROP = SD_PREFIX + "previous_crop";
-	final static private String SD_SOWING_DATE = SD_PREFIX + "sowing_date";
-	final static private String SD_HARVEST_DATE = SD_PREFIX + "harvest_date";
-	final static private String SD_SLOPE = SD_PREFIX + "slope";
-	final static private String SD_ASPECT = SD_PREFIX + "aspect";
-	final static private String SD_PHENOTYPE_NAME = SD_PREFIX + "phenotype_name";
-	final static private String SD_PHENOTYPE_DESCRIPTION = SD_PREFIX + "phenotype_description";
-	final static private String SD_ACCESSION = SD_PREFIX + "accession";
+	final static public String SD_PREFIX = "study-";
+	final static public String SD_PARENT_TRIAL = SD_PREFIX + "trial";
+	final static public String SD_SOIL = SD_PREFIX + "soil";
+	final static public String SD_PHENOTYPE_GATHERING = SD_PREFIX + "phenotype_gathering_notes";
+	final static public String SD_STUDY_DESIGN = SD_PREFIX + "study_design";
+	final static public String SD_CURRENT_CROP = SD_PREFIX + "current_crop";
+	final static public String SD_PREVIOUS_CROP = SD_PREFIX + "previous_crop";
+	final static public String SD_SOWING_DATE = SD_PREFIX + "sowing_date";
+	final static public String SD_HARVEST_DATE = SD_PREFIX + "harvest_date";
+	final static public String SD_SLOPE = SD_PREFIX + "slope";
+	final static public String SD_ASPECT = SD_PREFIX + "aspect";
+	final static public String SD_PHENOTYPE_NAME = SD_PREFIX + "phenotype_name";
+	final static public String SD_PHENOTYPE_DESCRIPTION = SD_PREFIX + "phenotype_description";
+	final static public String SD_ACCESSION = SD_PREFIX + "accession";
+	final static public String SD_ADDRESS = SD_PREFIX + "address_id";
+	
 	
 	public StudyDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
@@ -41,52 +44,41 @@ public class StudyDocument extends MongoDocument {
 				addParentFieldTrial (json_doc);
 			}
 
-			boolean added_address_flag = false;
-				
-			if (json_doc.get ("address_id") != null) {
-				added_address_flag = addMongoId (json_doc, "address_id");
-			} else if (json_doc.get ("address") != null) {
-				added_address_flag = true;					
+			if (json_doc.get (StudyJSON.SJ_ADDRESS_ID) != null) {
+				addMongoId (json_doc, StudyDocument.SD_ADDRESS);
 			}
+							
+			/*
+			 * Add the study-specific fields
+			 */
+			addText (json_doc, StudyJSON.SJ_SOIL, SD_SOIL);
+			addText (json_doc, StudyJSON.SJ_PHENOTYPE_GATHERING, SD_PHENOTYPE_GATHERING);
+			addText (json_doc, StudyJSON.SJ_STUDY_DESIGN, SD_STUDY_DESIGN);
+	
+			addDateString (json_doc, StudyJSON.SJ_SOWING_DATE, SD_SOWING_DATE);
+			addDateString (json_doc, StudyJSON.SJ_HARVEST_DATE, SD_HARVEST_DATE);
 			
-			if (added_address_flag) {
-				final String description_key = getDescriptionKey ();
-				
-				/*
-				 * Add the study-specific fields
-				 */
-				addText (json_doc, "soil", SD_SOIL);
-				addText (json_doc, "phenotype_gathering_notes", SD_PHENOTYPE_GATHERING);
-				addText (json_doc, "study_design", SD_STUDY_DESIGN);
-
-				addDateString (json_doc, "sowing_date", SD_SOWING_DATE);
-				addDateString (json_doc, "harvest_date", SD_HARVEST_DATE);
-				
-				/*
-				 * crop, previous crop, aspect, slope 
-				 */
-				addCrop (json_doc, "current_crop", SD_CURRENT_CROP);
-				addCrop (json_doc, "previous_crop", SD_PREVIOUS_CROP);
-
-				// slope
-				addText (json_doc, "envo:00002000", SD_SLOPE);
-
-				// aspect
-				addAspect (json_doc);
-				
-				
-				// phenotypes
-				addPhenotypes (json_doc);
-
-				// acccessions
-				addAccessions (json_doc);
-
-
-				
-				success_flag = true;
-			} else {
-				System.err.println ("Failed to add mongo id for address_id from " + json_doc);
-			}
+			/*
+			 * crop, previous crop, aspect, slope 
+			 */
+			addCrop (json_doc, StudyJSON.SJ_CURRENT_CROP, SD_CURRENT_CROP);
+			addCrop (json_doc, StudyJSON.SJ_PREVIOUS_CROP, SD_PREVIOUS_CROP);
+	
+			// slope
+			addText (json_doc, StudyJSON.SJ_SLOPE, SD_SLOPE);
+	
+			// aspect
+			addAspect (json_doc);
+			
+			
+			// phenotypes
+			addPhenotypes (json_doc);
+	
+			// acccessions
+			addAccessions (json_doc);
+	
+			
+			success_flag = true;
 						
 		}
 	
@@ -99,7 +91,7 @@ public class StudyDocument extends MongoDocument {
 	}
 	
 	void addAspect (JSONObject doc) {		
-		String aspect = (String) doc.get ("ncit:C42677");
+		String aspect = (String) doc.get (StudyJSON.SJ_ASPECT);
 		
 		if (aspect != null) {
 			String aspect_str = null;
@@ -131,7 +123,7 @@ public class StudyDocument extends MongoDocument {
 	
 
 	void addPhenotypes (JSONObject doc) {		
-		Object o = doc.get ("phenotypes");
+		Object o = doc.get (StudyJSON.SJ_PHENOTYPES);
 		HashMap <String, String> names_map = new HashMap <String, String> ();
 		HashMap <String, String> descriptions_map = new HashMap <String, String> ();
 		
@@ -172,7 +164,7 @@ public class StudyDocument extends MongoDocument {
 
 
 	void addAccessions (JSONObject doc) {		
-		Object o = doc.get ("accessions");
+		Object o = doc.get (StudyJSON.SJ_ACCESSIONS);
 		
 		if (o != null) {
 			if (o instanceof JSONArray) {
@@ -193,7 +185,7 @@ public class StudyDocument extends MongoDocument {
 
 	
 	void addParentFieldTrial (JSONObject doc) {		
-		Object o = doc.get ("parent_field_trial");
+		Object o = doc.get (StudyJSON.SJ_PARENT_TRIAL);
 
 		
 		if (o != null) {
@@ -238,4 +230,13 @@ public class StudyDocument extends MongoDocument {
 		}
 	}
 
+	
+	static public boolean isFieldMultiValued (String field) {		
+		if ((field.equals (SD_PHENOTYPE_NAME)) || (field.equals (SD_PHENOTYPE_DESCRIPTION)) || (field.equals (SD_ACCESSION))) {
+			return true;
+		} else {		
+			return MongoDocument.isFieldMultiValued (field);
+		}
+	}
+	
 }

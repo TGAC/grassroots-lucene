@@ -1,4 +1,4 @@
-package uk.ac.earlham.grassroots.document;
+package uk.ac.earlham.grassroots.document.lucene;
 
 
 import java.util.List;
@@ -6,7 +6,8 @@ import java.util.Map;
 
 import org.json.simple.JSONObject;
 
-import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+import uk.ac.earlham.grassroots.document.json.TreatmentJSON;
+import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 
 public class TreatmentDocument extends MongoDocument {
@@ -59,7 +60,7 @@ public class TreatmentDocument extends MongoDocument {
 			/*
 			 * Add the treatment-specific fields
 			 */
-			JSONObject child = (JSONObject) json_doc.get ("trait");
+			JSONObject child = (JSONObject) json_doc.get (TreatmentJSON.TJ_TRAIT);
 
 			if (child != null) {
 				addText (child, "so:name", "trait_name");
@@ -68,20 +69,20 @@ public class TreatmentDocument extends MongoDocument {
 				addString (child, "so:sameAs", "trait_id");				
 			}
 
-			child = (JSONObject) json_doc.get ("measurement");
+			child = (JSONObject) json_doc.get (TreatmentJSON.TJ_MEASUREMENT);
 			if (child != null) {
 				addText (child, "so:name", "measurement_name");
 				addText (child, "so:description", "measurement_description");
 				addString (child, "so:sameAs", "trait_id");				
 			}
 
-			child = (JSONObject) json_doc.get ("unit");
+			child = (JSONObject) json_doc.get (TreatmentJSON.TJ_UNIT);
 			if (child != null) {
 				addText (child, "so:name", "unit_name");
 				addString (child, "so:sameAs", "unit_id");				
 			}
 			
-			child = (JSONObject) json_doc.get ("variable");
+			child = (JSONObject) json_doc.get (TreatmentJSON.TJ_VARIABLE);
 			if (child != null) {
 				addText (child, "so:name", "variable_name");
 				addString (child, "so:sameAs", "variable_id");				
@@ -123,5 +124,10 @@ public class TreatmentDocument extends MongoDocument {
 			boosts.put (TD_MEASUREMENT_NAME, GD_NAME_BOOST);
 			boosts.put (TD_UNIT_NAME, GD_NAME_BOOST);
 		}
+	}
+	
+	
+	static public boolean isFieldMultiValued (String field) {			
+		return MongoDocument.isFieldMultiValued (field);
 	}
 }

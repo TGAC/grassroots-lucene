@@ -1,4 +1,4 @@
-package uk.ac.earlham.grassroots.document;
+package uk.ac.earlham.grassroots.document.lucene;
 
 
 import java.text.SimpleDateFormat;
@@ -11,7 +11,7 @@ import java.util.Map;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 
 /**
@@ -456,5 +456,10 @@ abstract public class GrassrootsDocument {
 			boosts.put (GD_DESCRIPTION, GD_DESCRIPTION_BOOST);
 		}
 	}
+
+	static public boolean isFieldMultiValued (String field) {
+		return false;
+	}
+
 }
 

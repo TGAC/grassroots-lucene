@@ -1,8 +1,8 @@
-package uk.ac.earlham.grassroots.document;
+package uk.ac.earlham.grassroots.document.lucene;
 
 import org.json.simple.JSONObject;
 
-import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 public class BlastServiceDocument extends ServiceDocument {
 
@@ -41,5 +41,8 @@ public class BlastServiceDocument extends ServiceDocument {
 		return success_flag;
 	}
 
-	
+	static public boolean isFieldMultiValued (String field) {
+		return GrassrootsDocument.isFieldMultiValued (field);
+	}
+
 }

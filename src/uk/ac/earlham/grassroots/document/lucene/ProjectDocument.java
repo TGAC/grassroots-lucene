@@ -1,4 +1,4 @@
-package uk.ac.earlham.grassroots.document;
+package uk.ac.earlham.grassroots.document.lucene;
 
 import java.util.List;
 import java.util.Map;
@@ -7,7 +7,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import uk.ac.earlham.grassroots.document.util.DocumentWrapper;
+import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 public class ProjectDocument extends GrassrootsDocument {
 	final static private String PR_PREFIX = "project-";
@@ -120,5 +120,5 @@ public class ProjectDocument extends GrassrootsDocument {
 		fields.add (PR_AUTHOR);
 		fields.add (PR_GRANT_CODE);
 	}
-	
+
 }
