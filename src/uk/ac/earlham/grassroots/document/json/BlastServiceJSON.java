@@ -17,7 +17,7 @@ public class BlastServiceJSON extends ServiceJSON {
 		boolean b = super.addToJSON (doc);
 		
 		if (b) {
-			addJSONField (doc, BlastServiceJSON.BSJ_PAYLOAD, BlastServiceJSON.BSJ_PAYLOAD);
+			addJSONField (doc, BlastServiceJSON.BSJ_PAYLOAD, BlastServiceJSON.BSJ_PAYLOAD, false);
 		}
 		
 		return b;
