@@ -115,10 +115,12 @@ public class QueryUtil {
 		
 		for (int i = 0; i < limit; ++ i) {
 			ScoreDoc score_doc = hits [i];
+			int doc_id = score_doc.doc;
 			Document doc = searcher.doc (score_doc.doc);
 			
+			
 			if (highlights != null) {
-				
+			
 			}
 			
 			docs.add (doc);
@@ -174,6 +176,7 @@ public class QueryUtil {
 		return highlights;
 	}
 	
+
 	
 	static public void DoUnifiedHighlighting (Query query, IndexSearcher searcher, IndexReader reader, Analyzer analyzer, TopDocs hits) {
 		Map <String, String []> highlights = GetHighlightingData (query, searcher, reader, analyzer, hits);	

@@ -99,11 +99,13 @@ class DrillDownData {
 	int ddd_to_index;
 	List <Document> ddd_hits;
 	List <FacetResult> ddd_facets;	
+	Map <String, String []> ddd_highlits;
 }
 
 class DrillSidewaysData {
 	List <Document> dsd_hits;
 	List <FacetResult> dsd_facets;
+	Map <String, String []> dsd_highlights;
 }
 
 
@@ -557,16 +559,13 @@ public class Searcher {
 	    	}
 	    }
 	    
-	    for (FacetsCollector.MatchingDocs matching_doc : matching_docs) {
-	    
-	    }
-	    	    
-	    
+	    	    	    
 	    // Retrieve results
 		ScoreDoc [] hits = resultDocs.scoreDocs;
 		int total_hits = Searcher.CastLongToInt (resultDocs.totalHits.value);
-		
-		QueryUtil.DoUnifiedHighlighting (base_query, searcher, se_index_reader, analyzer, resultDocs);
+
+		Map <String, String []> highlights = QueryUtil.GetHighlightingData (base_query, searcher, se_index_reader, analyzer, resultDocs);
+
 		
 		List <Document> docs = new ArrayList <Document> ();
 		int start = hits_per_page * page_number;
@@ -581,13 +580,30 @@ public class Searcher {
 			
 			for (int i = start; i <= end; ++ i) {
 				Document doc = searcher.doc (hits [i].doc);
+				
+				/*
+				Iterator <IndexableField> fields = doc.iterator ();
+				
+				while (fields.hasNext ()) {
+					IndexableField field = fields.next ();
+					
+					String [] values = highlights.get (field.name ());
+					
+					if (values != null) {
+						
+					}
+				}
+				*/
+				
 				docs.add (doc);
 			}
 		} else {
 			start = 0;
 		}
 
-	    
+	
+		
+		
 		DrillDownData search_results = new DrillDownData ();
 		search_results.ddd_total_num_hits = total_hits;
 		search_results.ddd_from_index = start;

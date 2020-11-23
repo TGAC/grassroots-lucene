@@ -449,7 +449,7 @@ abstract public class GrassrootsDocument {
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
 		fields.add (GD_UNIQUE_NAME);
 		fields.add (GD_DESCRIPTION);
-		fields.add (GD_DEFAULT_SEARCH_KEY);
+	//	fields.add (GD_DEFAULT_SEARCH_KEY);
 
 		if (boosts != null) {
 			boosts.put (GD_UNIQUE_NAME, GD_NAME_BOOST);
