@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.apache.lucene.document.Document;
 
-import uk.ac.earlham.grassroots.document.lucene.FieldTrialDocument;
+import uk.ac.earlham.grassroots.document.lucene.TreatmentDocument;
 
 public class TreatmentJSON extends GrassrootsJSON {
 	final public static String TJ_TRAIT = "trait";
@@ -22,7 +22,7 @@ public class TreatmentJSON extends GrassrootsJSON {
 		boolean b = super.addToJSON (doc, highlights);
 		
 		if (b) {
-			addJSONField (doc, FieldTrialDocument.FT_TEAM, FieldTrialJSON.FTJ_TEAM);
+
 		}
 		
 		return b;
