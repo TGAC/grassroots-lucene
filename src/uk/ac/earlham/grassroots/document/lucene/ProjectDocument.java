@@ -11,9 +11,9 @@ import uk.ac.earlham.grassroots.document.json.ProjectJSON;
 import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 public class ProjectDocument extends GrassrootsDocument {
-	final static private String PR_PREFIX = "project-";
-	final static private String PR_AUTHOR = PR_PREFIX + "author";
-	final static private String PR_GRANT_CODE = PR_PREFIX + "grant_code";
+	final static private String PD_PREFIX = "project-";
+	final static public String PD_AUTHOR = PD_PREFIX + "author";
+	final static public String PD_GRANT_CODE = PD_PREFIX + "grant_code";
 
 
 	public ProjectDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -57,12 +57,12 @@ public class ProjectDocument extends GrassrootsDocument {
 	
 	
 	private boolean addAuthors (JSONObject json_doc) {
-		return addArrayOfStrings (json_doc, ProjectJSON.PR_AUTHORS, PR_AUTHOR, false);
+		return addArrayOfStrings (json_doc, ProjectJSON.PR_AUTHORS, PD_AUTHOR, false);
 	}
 
 
 	private boolean addProjectCodes (JSONObject json_doc) {
-		return addArrayOfStrings (json_doc, ProjectJSON.PR_PROJECT_CODES, PR_GRANT_CODE, false);
+		return addArrayOfStrings (json_doc, ProjectJSON.PR_PROJECT_CODES, PD_GRANT_CODE, false);
 	}
 
 	
@@ -99,14 +99,14 @@ public class ProjectDocument extends GrassrootsDocument {
 
 	
 	private boolean addUrl (JSONObject json_doc) {
-		return addString (json_doc, ProjectJSON.PR_URL, GD_PUBLIC_LINK);
+		return addString (json_doc, ProjectJSON.PR_URL, GrassrootsDocument.GD_PUBLIC_LINK);
 	}
 
 
 	@Override
 	public boolean setId (JSONObject json_doc) {
 		boolean success_flag = false;
-		String s = (String) json_doc.get ("uuid");
+		String s = (String) json_doc.get (ProjectJSON.PR_ID);
 		
 		if (s != null) {
 			gd_unique_id = s;
@@ -118,8 +118,8 @@ public class ProjectDocument extends GrassrootsDocument {
 
 
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
-		fields.add (PR_AUTHOR);
-		fields.add (PR_GRANT_CODE);
+		fields.add (ProjectDocument.PD_AUTHOR);
+		fields.add (ProjectDocument.PD_GRANT_CODE);
 	}
 
 }

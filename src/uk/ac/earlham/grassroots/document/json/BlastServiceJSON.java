@@ -8,13 +8,17 @@ public class BlastServiceJSON extends ServiceJSON {
 	final static public String BSJ_PAYLOAD = "payload";
 	
 	
-	public BlastServiceJSON (Document doc, Map <String, String []> highlights) {
-		super (doc, highlights);	
+	public BlastServiceJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
+		super (doc, highlights, highlighter_index);	
 	}
 	
 
-	public boolean addToJSON (Document doc, Map <String, String []> highlights) {
-		boolean b = super.addToJSON (doc, highlights);
+	public boolean addToJSON (Document doc) {
+		boolean b = super.addToJSON (doc);
+		
+		if (b) {
+			addJSONField (doc, BlastServiceJSON.BSJ_PAYLOAD, BlastServiceJSON.BSJ_PAYLOAD);
+		}
 		
 		return b;
 	}

@@ -8,8 +8,8 @@ import org.json.simple.JSONObject;
 import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 public class FieldTrialDocument extends MongoDocument {
-	final static private String FD_PREFIX = "trial-";
-	final static public String FT_TEAM = FD_PREFIX + "team";
+	final static private String FTD_PREFIX = "trial-";
+	final static public String FTD_TEAM = FTD_PREFIX + "team";
 	
 	public FieldTrialDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
@@ -24,7 +24,7 @@ public class FieldTrialDocument extends MongoDocument {
 			/*
 			 * Add the field trial-specific fields
 			 */
-			if (addText (json_doc, "team", FT_TEAM)) {
+			if (addText (json_doc, "team", FieldTrialDocument.FTD_TEAM)) {
 				success_flag = true;
 			}
 		}
@@ -40,7 +40,7 @@ public class FieldTrialDocument extends MongoDocument {
 
 
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
-		fields.add (FT_TEAM);
+		fields.add (FieldTrialDocument.FTD_TEAM);
 	}
 	
 }

@@ -85,9 +85,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import uk.ac.earlham.grassroots.document.json.GrassrootsJSON;
 import uk.ac.earlham.grassroots.document.lucene.AddressDocument;
 import uk.ac.earlham.grassroots.document.lucene.FieldTrialDocument;
 import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
+import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocumentFactory;
 import uk.ac.earlham.grassroots.document.lucene.ProjectDocument;
 import uk.ac.earlham.grassroots.document.lucene.StudyDocument;
 import uk.ac.earlham.grassroots.document.lucene.TreatmentDocument;
@@ -97,15 +99,13 @@ class DrillDownData {
 	int ddd_total_num_hits;
 	int ddd_from_index;
 	int ddd_to_index;
-	List <Document> ddd_hits;
+	JSONArray ddd_results;
 	List <FacetResult> ddd_facets;	
-	Map <String, String []> ddd_highlits;
 }
 
 class DrillSidewaysData {
 	List <Document> dsd_hits;
 	List <FacetResult> dsd_facets;
-	Map <String, String []> dsd_highlights;
 }
 
 
@@ -274,16 +274,16 @@ public class Searcher {
 
 					switch (search_type) {
 						case "default": {
-							List <Document> docs = null;
-
+							JSONArray results = null;
+							
 							try {
-								docs = searcher.standardSearch (q, hits_per_page);
+								results = searcher.standardSearch (q, hits_per_page);
 							} catch (IOException e) {
 								System.err.println ("standardSearch failed: " + q.toString () + " e: " + e);
 							}
 							
-							if (docs != null) {
-								searcher.addHitsToJSON (docs, json_res, q);
+							if (results != null) {
+								json_res.put ("documents", results);
 							}
 						}
 						break;
@@ -317,7 +317,7 @@ public class Searcher {
 							
 						
 							if (results != null) {
-								searcher.addHitsToJSON (results.ddd_hits, json_res, q);
+								json_res.put ("documents", results.ddd_results);
 								
 								if (results.ddd_facets != null) {
 									searcher.addFacetResults (results.ddd_facets, json_res);
@@ -364,9 +364,7 @@ public class Searcher {
 	
 	private void addHitsToJSON (List <Document> docs, JSONObject results, Query query) {
 		if (docs != null) {
-			Map <String, String []> highlights = QueryUtil.GetHighlightingData (query, se_index_searcher, se_index_reader, QueryUtil.getAnalyzer (), results);
-
-			
+						
 			JSONArray docs_array = new JSONArray ();
 
 			for (Document doc : docs) {	
@@ -564,11 +562,12 @@ public class Searcher {
 		ScoreDoc [] hits = resultDocs.scoreDocs;
 		int total_hits = Searcher.CastLongToInt (resultDocs.totalHits.value);
 		
-		QueryUtil.DoUnifiedHighlighting (base_query, se_index_searcher, se_index_reader, analyzer, resultDocs);
 		
-		List <Document> docs = new ArrayList <Document> ();
+		JSONArray docs = new JSONArray ();
 		int start = hits_per_page * page_number;
 		int end = 0;
+
+
 
 		if (start < total_hits) {
 			end = start + hits_per_page - 1;
@@ -576,15 +575,27 @@ public class Searcher {
 			if (end >= total_hits) {
 				end = total_hits - 1;
 			}
-			
+
+			Map <String, String []> highlights = QueryUtil.GetHighlightingData (q, se_index_searcher, se_index_reader, QueryUtil.getAnalyzer (), resultDocs);
+
 			for (int i = start; i <= end; ++ i) {
+				ScoreDoc score_doc = hits [i];
+				int doc_id = score_doc.doc;
 				Document doc = se_index_searcher.doc (hits [i].doc);
-				docs.add (doc);
+				
+				GrassrootsJSON json_doc = GrassrootsDocumentFactory.getJSON (doc, highlights, i);
+
+				if (json_doc != null) {
+					JSONObject json = json_doc.getAsJSON ();
+					
+					if (json != null) {
+						docs.add (json);
+					}
+				}
 			}
 		} else {
 			start = 0;
 		}
-
 	
 		
 		
@@ -592,7 +603,7 @@ public class Searcher {
 		search_results.ddd_total_num_hits = total_hits;
 		search_results.ddd_from_index = start;
 		search_results.ddd_to_index = end;
-		search_results.ddd_hits = docs;
+		search_results.ddd_results = docs;
 		search_results.ddd_facets = all_facets;
 	    
 	    return search_results;
@@ -686,7 +697,7 @@ public class Searcher {
 	 * is executed another time and all hits are collected.
 	 * 
 	 */
-	public List <Document> standardSearch (Query query, int max_num_hits) throws IOException {
+	public JSONArray standardSearch (Query query, int max_num_hits) throws IOException {
 		return QueryUtil.search (query, se_index_reader, se_index_searcher, max_num_hits);
 	}
 	

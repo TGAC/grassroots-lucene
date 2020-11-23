@@ -15,13 +15,13 @@ public class AddressJSON extends GrassrootsJSON {
 	final public static String AJ_POSTCODE = "postalCode";
 	
 	
-	public AddressJSON (Document doc, Map <String, String []> highlights) {
-		super (doc, highlights);		
+	public AddressJSON (Document doc, Map <String, String []> highlights, int highlight_index) {
+		super (doc, highlights, highlight_index);		
 	}
 	
 
-	public boolean addToJSON (Document doc, Map <String, String []> highlights) {
-		boolean b = super.addToJSON (doc, highlights);
+	public boolean addToJSON (Document doc) {
+		boolean b = super.addToJSON (doc);
 		
 		if (b) {
 			addJSONField (doc, AddressDocument.AD_STREET, AddressJSON.AJ_STREET);

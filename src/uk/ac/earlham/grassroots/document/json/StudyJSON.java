@@ -23,12 +23,12 @@ public class StudyJSON extends MongoJSON {
 	final static public String SJ_ADDRESS_ID = "address_id";
 	
 	
-	public StudyJSON (Document doc, Map <String, String []> highlights) {
-		super (doc, highlights);		
+	public StudyJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
+		super (doc, highlights, highlighter_index);		
 	}
 
-	public boolean addToJSON (Document doc, Map <String, String []> highlights) {
-		boolean b = super.addToJSON (doc, highlights);
+	public boolean addToJSON (Document doc) {
+		boolean b = super.addToJSON (doc);
 		
 		if (b) {
 			String id = doc.get (MongoDocument.MD_ID);

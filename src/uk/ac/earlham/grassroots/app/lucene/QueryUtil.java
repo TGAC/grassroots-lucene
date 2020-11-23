@@ -29,9 +29,11 @@ import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import uk.ac.earlham.grassroots.document.json.GrassrootsJSON;
 import uk.ac.earlham.grassroots.document.lucene.AddressDocument;
 import uk.ac.earlham.grassroots.document.lucene.FieldTrialDocument;
 import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
+import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocumentFactory;
 import uk.ac.earlham.grassroots.document.lucene.ProgrammeDocument;
 import uk.ac.earlham.grassroots.document.lucene.ProjectDocument;
 import uk.ac.earlham.grassroots.document.lucene.StudyDocument;
@@ -114,8 +116,8 @@ public class QueryUtil {
 		int num_total_hits = Searcher.CastLongToInt (results.totalHits.value);
 		int limit = Math.min (num_total_hits, hits.length);
 		
-		UnifiedHighlighter highlighter = new UnifiedHighlighter (searcher, QueryUtil.getAnalyzer ());   
-	    Pattern pattern = Pattern.compile ("<b>(\\S+)</b>");
+
+		Map <String, String []> highlights = GetHighlightingData (query, searcher, reader, getAnalyzer (), results);
 
 		
 		for (int i = 0; i < limit; ++ i) {
@@ -123,30 +125,14 @@ public class QueryUtil {
 			int doc_id = score_doc.doc;
 			Document doc = searcher.doc (score_doc.doc);
 			
-			
-			if (highlighter != null) {
-				List <IndexableField> fields = doc.getFields ();
-				Iterator <IndexableField> itr = fields.iterator ();
-				
-				while (itr.hasNext ()) {
-					IndexableField field = itr.next ();
-					
-					String  value = field.stringValue ();
-		    		Matcher matcher = pattern.matcher (value);
-		    		
-		     		if (matcher.find ()) {
-		     		
-		     		}
-				}
-				
+			GrassrootsJSON json_doc = GrassrootsDocumentFactory.getJSON (doc, highlights, i);
+
+			if (json_doc != null) {
+				JSONObject json = json_doc.getAsJSON ();
+				docs.add (json);
 			}
-			
-			docs.add (doc);
 		}
-		
-		
-		DoUnifiedHighlighting (query, searcher, reader, qu_analyzer, results);
-				
+					
 		return docs;
 	}
 	

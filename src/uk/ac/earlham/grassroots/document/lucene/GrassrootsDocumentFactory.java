@@ -111,23 +111,23 @@ public class GrassrootsDocumentFactory {
 			
 			switch (datatype) {
 				case "Grassroots:FieldTrial":
-					grassroots_json = new FieldTrialJSON (doc, highlights);
+					grassroots_json = new FieldTrialJSON (doc, highlights, highlight_index);
 					break;
 					
 				case "Grassroots:Study": 
-					grassroots_json = new StudyJSON (doc, highlights);					
+					grassroots_json = new StudyJSON (doc, highlights, highlight_index);					
 					break;
 
 				case "Grassroots:MeasuredVariable": 
-					grassroots_json = new TreatmentJSON (doc, highlights);						
+					grassroots_json = new TreatmentJSON (doc, highlights, highlight_index);						
 					break;
 					
 				case "Grassroots:Location": 
-					grassroots_json = new AddressJSON (doc, highlights);					
+					grassroots_json = new AddressJSON (doc, highlights, highlight_index);					
 					break;
 
 				case "Grassroots:Programme": 
-					grassroots_json = new ProgrammeJSON (doc, highlights);					
+					grassroots_json = new ProgrammeJSON (doc, highlights, highlight_index);					
 					break;
 
 				case "Grassroots:Service": {
@@ -139,11 +139,11 @@ public class GrassrootsDocumentFactory {
 							case "BlastN":
 							case "BlastP":
 							case "BlastX":
-								grassroots_json = new BlastServiceJSON (doc, highlights);		
+								grassroots_json = new BlastServiceJSON (doc, highlights, highlight_index);		
 								break;
 
 							case "Scaffold":
-								grassroots_json = new SamtoolsServiceJSON (doc, highlights);	
+								grassroots_json = new SamtoolsServiceJSON (doc, highlights, highlight_index);	
 								break;
 								
 							default:
@@ -155,7 +155,7 @@ public class GrassrootsDocumentFactory {
 				break;
 					
 				case "Grassroots:Project":
-					grassroots_json = new ProjectJSON (doc, highlights);	
+					grassroots_json = new ProjectJSON (doc, highlights, highlight_index);	
 					break;
 				
 				default:

@@ -27,6 +27,9 @@ abstract public class GrassrootsDocument {
 	static public String GD_DEFAULT_SEARCH_KEY = "default";
 	static public String GD_STRING_SEARCH_KEY = "indexed_string";
 	static public String GD_LUCENE_ID = "id";
+	static public final String GD_PRIVATE_TYPE = "@type";
+	static public final String GD_ICON = "so:image";
+	static public final String GD_TYPE_DESCRIPTION = "type_description";
 	
 	/** 
 	 * The key for the url to use  the web-based client. 
@@ -58,33 +61,30 @@ abstract public class GrassrootsDocument {
 		gd_unique_id = null; 
 		
 		if (setId (json_doc)) {
-			final String PRIVATE_TYPE = "@type";
-			final String ICON = "so:image";
-			final String TYPE_DESCRIPTION = "type_description";
 
-			String s = (String) json_doc.get (PRIVATE_TYPE);
+			String s = (String) json_doc.get (GD_PRIVATE_TYPE);
 			
 			if (s != null) {
 			
 				wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
-				addNonIndexedString (PRIVATE_TYPE, s);
+				addNonIndexedString (GD_PRIVATE_TYPE, s);
 				addString (GD_LUCENE_ID, gd_unique_id);
 							
 				/*
 				 * icon
 				 */
-				s = (String) json_doc.get (ICON);
+				s = (String) json_doc.get (GD_ICON);
 				if (s != null) {
-					addNonIndexedString (ICON, s);					
+					addNonIndexedString (GD_ICON, s);					
 				}
 
 				
 				/*
 				 * user-friendly type name
 				 */
-				s = (String) json_doc.get (TYPE_DESCRIPTION);
+				s = (String) json_doc.get (GD_TYPE_DESCRIPTION);
 				if (s != null) {
-					addNonIndexedString (TYPE_DESCRIPTION, s);					
+					addNonIndexedString (GD_TYPE_DESCRIPTION, s);					
 				} else {
 					
 				}
@@ -97,7 +97,7 @@ abstract public class GrassrootsDocument {
 				
 
 			} else {
-				System.err.println ("No " + PRIVATE_TYPE + " in " + json_doc);
+				System.err.println ("No " + GD_PRIVATE_TYPE + " in " + json_doc);
 				throw new IllegalArgumentException (json_doc.toJSONString ());			
 			}
 			

@@ -15,13 +15,13 @@ public class ProgrammeJSON extends MongoJSON {
 	final public static String PJ_PI = "principal_investigator";
 	final public static String PJ_URL = "so:url";
 
-	public ProgrammeJSON (Document doc, Map <String, String []> highlights) {
-		super (doc, highlights);	
+	public ProgrammeJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
+		super (doc, highlights, highlighter_index);	
 	}
 	
 
-	public boolean addToJSON (Document doc, Map <String, String []> highlights) {
-		boolean b = super.addToJSON (doc, highlights);
+	public boolean addToJSON (Document doc) {
+		boolean b = super.addToJSON (doc);
 		
 		if (b) {
 			if (addJSONField (doc, ProgrammeDocument.PD_PI, ProgrammeJSON.PJ_PI)) {

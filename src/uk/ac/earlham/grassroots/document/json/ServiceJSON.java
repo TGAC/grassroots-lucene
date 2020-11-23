@@ -7,13 +7,13 @@ import org.apache.lucene.document.Document;
 
 public class ServiceJSON extends GrassrootsJSON {
 
-	public ServiceJSON (Document doc, Map <String, String []> highlights) {
-		super (doc, highlights);	
+	public ServiceJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
+		super (doc, highlights, highlighter_index);	
 	}
 	
 
-	public boolean addToJSON (Document doc, Map <String, String []> highlights) {
-		boolean b = super.addToJSON (doc, highlights);
+	public boolean addToJSON (Document doc) {
+		boolean b = super.addToJSON (doc);
 		
 		return b;
 	}

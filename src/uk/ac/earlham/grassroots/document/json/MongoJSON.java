@@ -11,20 +11,16 @@ public class MongoJSON extends GrassrootsJSON {
 	final public static String MJ_ID = "_id";
 	
 	
-	public MongoJSON (Document doc, Map <String, String []> highlights) {
-		super (doc, highlights);	
+	public MongoJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
+		super (doc, highlights, highlighter_index);	
 	}
 	
 
-	public boolean addToJSON (Document doc, Map <String, String []> highlights) {
-		boolean b = super.addToJSON (doc, highlights);
+	public boolean addToJSON (Document doc) {
+		boolean b = super.addToJSON (doc);
 		
 		if (b) {
-			String id = doc.get (MongoDocument.MD_ID);
-			
-			if (id != null) {
-				gj_json.put (MongoJSON.MJ_ID, id);
-			} else {
+			if (!addJSONField (doc, MongoDocument.MD_ID, MongoJSON.MJ_ID)) {
 				b = false;
 			}
 		}

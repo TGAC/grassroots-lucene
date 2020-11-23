@@ -12,17 +12,17 @@ import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 public class TreatmentDocument extends MongoDocument {
 	final static private String TD_PREFIX = "treatment-";
-	final static private String TD_TRAIT_NAME = TD_PREFIX + "trait_name";
-	final static private String TD_TRAIT_DESCRIPTION = TD_PREFIX + "trait_description";
-	final static private String TD_TRAIT_ABBREVIATION = TD_PREFIX + "trait_abbreviation";
-	final static private String TD_TRAIT_ID = TD_PREFIX + "trait_id";
-	final static private String TD_MEASUREMENT_NAME = TD_PREFIX + "measurement_name";
-	final static private String TD_MEASUREMENT_DESCRIPTION = TD_PREFIX + "measurement_description";
-	final static private String TD_MEASUREMENT_ID = TD_PREFIX + "measurement_id";
-	final static private String TD_UNIT_NAME = TD_PREFIX + "unit_name";
-	final static private String TD_UNIT_ID = TD_PREFIX + "unit_id";
-	final static private String TD_VARIABLE_NAME = TD_PREFIX + "variable_name";
-	final static private String TD_VARIABLE_ID = TD_PREFIX + "variable_id";
+	final static public String TD_TRAIT_NAME = TD_PREFIX + "trait_name";
+	final static public String TD_TRAIT_DESCRIPTION = TD_PREFIX + "trait_description";
+	final static public String TD_TRAIT_ABBREVIATION = TD_PREFIX + "trait_abbreviation";
+	final static public String TD_TRAIT_ID = TD_PREFIX + "trait_id";
+	final static public String TD_MEASUREMENT_NAME = TD_PREFIX + "measurement_name";
+	final static public String TD_MEASUREMENT_DESCRIPTION = TD_PREFIX + "measurement_description";
+	final static public String TD_MEASUREMENT_ID = TD_PREFIX + "measurement_id";
+	final static public String TD_UNIT_NAME = TD_PREFIX + "unit_name";
+	final static public String TD_UNIT_ID = TD_PREFIX + "unit_id";
+	final static public String TD_VARIABLE_NAME = TD_PREFIX + "variable_name";
+	final static public String TD_VARIABLE_ID = TD_PREFIX + "variable_id";
 	
 	
 	public TreatmentDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -63,29 +63,29 @@ public class TreatmentDocument extends MongoDocument {
 			JSONObject child = (JSONObject) json_doc.get (TreatmentJSON.TJ_TRAIT);
 
 			if (child != null) {
-				addText (child, "so:name", "trait_name");
-				addText (child, "so:description", "trait_description");
-				addString (child, "abbreviation", "trait_abbreviation");
-				addString (child, "so:sameAs", "trait_id");				
+				addText (child, TreatmentJSON.TJ_TERM_NAME, TreatmentDocument.TD_TRAIT_NAME);
+				addText (child, TreatmentJSON.TJ_TERM_DESCRIPTION, TreatmentDocument.TD_TRAIT_DESCRIPTION);
+				addString (child, TreatmentJSON.TJ_TERM_ABBREVIATION, TreatmentDocument.TD_TRAIT_ABBREVIATION);
+				addString (child, TreatmentJSON.TJ_TERM_URL, TreatmentDocument.TD_TRAIT_ID);				
 			}
 
 			child = (JSONObject) json_doc.get (TreatmentJSON.TJ_MEASUREMENT);
 			if (child != null) {
-				addText (child, "so:name", "measurement_name");
-				addText (child, "so:description", "measurement_description");
-				addString (child, "so:sameAs", "trait_id");				
+				addText (child, TreatmentJSON.TJ_TERM_NAME, TreatmentDocument.TD_MEASUREMENT_NAME);
+				addText (child, TreatmentJSON.TJ_TERM_DESCRIPTION, TreatmentDocument.TD_MEASUREMENT_DESCRIPTION);
+				addString (child, TreatmentJSON.TJ_TERM_URL, TreatmentDocument.TD_MEASUREMENT_ID);				
 			}
 
 			child = (JSONObject) json_doc.get (TreatmentJSON.TJ_UNIT);
 			if (child != null) {
-				addText (child, "so:name", "unit_name");
-				addString (child, "so:sameAs", "unit_id");				
+				addText (child, TreatmentJSON.TJ_TERM_NAME, TreatmentDocument.TD_UNIT_NAME);
+				addString (child, TreatmentJSON.TJ_TERM_URL, TreatmentDocument.TD_UNIT_ID);				
 			}
 			
 			child = (JSONObject) json_doc.get (TreatmentJSON.TJ_VARIABLE);
 			if (child != null) {
-				addText (child, "so:name", "variable_name");
-				addString (child, "so:sameAs", "variable_id");				
+				addText (child, TreatmentJSON.TJ_TERM_NAME, TreatmentDocument.TD_VARIABLE_NAME);
+				addString (child, TreatmentJSON.TJ_TERM_URL, TreatmentDocument.TD_VARIABLE_ID);				
 			}
 			
 			success_flag = true;
