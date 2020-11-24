@@ -10,7 +10,7 @@ import uk.ac.earlham.grassroots.document.lucene.ProjectDocument;
 public class ProjectJSON extends GrassrootsJSON {
 	final public static String PR_AUTHORS = "authors";
 	final public static String PR_PROJECT_CODES = "project_codes";
-	final public static String PR_URL = "url";
+	final public static String PR_URL = "so:url";
 	final public static String PR_ID = "uuid";
 
 	public ProjectJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
