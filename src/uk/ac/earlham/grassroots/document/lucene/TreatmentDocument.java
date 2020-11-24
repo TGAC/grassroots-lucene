@@ -101,11 +101,6 @@ public class TreatmentDocument extends MongoDocument {
 	}
 
 	
-	public String getNameKey () {
-		return null;
-	}
-	
-
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
 		fields.add (TD_TRAIT_NAME);
 		fields.add (TD_TRAIT_DESCRIPTION);

@@ -46,11 +46,14 @@ public class TreatmentJSON extends GrassrootsJSON {
 		boolean success_flag = false;
 		String name = getString (doc, TreatmentDocument.TD_TRAIT_NAME);
 		
-		if (name != null) {
+		if (name != null) {			
 			String id = getString (doc, TreatmentDocument.TD_TRAIT_ID);
 
 			if (id != null) {
 				JSONObject trait = new JSONObject ();
+
+				String highlighted_value = getHighlightedValue (name, TreatmentDocument.TD_TRAIT_NAME);
+
 				
 				trait.put (TreatmentJSON.TJ_TERM_NAME, name);
 				trait.put (TreatmentJSON.TJ_TERM_URL, id);
@@ -156,11 +159,16 @@ public class TreatmentJSON extends GrassrootsJSON {
 
 
 	
+	
 	private String getString (Document doc, String key) {
-		String value = getHighlightedValue (key);
-		
-		if (value == null) {
-			value = doc.get (key);
+		String value = doc.get (key);
+
+		if (value != null) {
+			String highlighted_value = getHighlightedValue (value, key);
+			
+			if (highlighted_value != null) {
+				value = highlighted_value;
+			}
 		}
 		
 		return value;
