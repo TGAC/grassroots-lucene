@@ -24,7 +24,7 @@ public class ProjectJSON extends GrassrootsJSON {
 		if (b) {
 			addJSONMultiValuedField (doc, ProjectDocument.PD_AUTHOR, ProjectJSON.PR_AUTHORS);
 			addJSONMultiValuedField (doc, ProjectDocument.PD_GRANT_CODE, ProjectJSON.PR_PROJECT_CODES);
-			addJSONMultiValuedField (doc, GrassrootsDocument.GD_PUBLIC_LINK, ProjectJSON.PR_URL);
+			addJSONField (doc, GrassrootsDocument.GD_PUBLIC_LINK, ProjectJSON.PR_URL);
 		}
 		
 		return b;

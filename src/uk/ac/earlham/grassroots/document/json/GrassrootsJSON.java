@@ -38,6 +38,7 @@ public class GrassrootsJSON {
 		String id = getIdKey ();
 		
 		if (id != null) {
+			addJSONField (doc, GrassrootsDocument.GD_LUCENE_ID, GrassrootsDocument.GD_LUCENE_ID, false);
 			addJSONField (doc, GrassrootsDocument.GD_LUCENE_ID, id, false);
 
 			addJSONField (doc, GrassrootsDocument.GD_UNIQUE_NAME, GrassrootsDocument.GD_UNIQUE_NAME);
