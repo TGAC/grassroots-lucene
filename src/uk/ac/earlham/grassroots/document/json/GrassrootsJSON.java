@@ -87,7 +87,11 @@ public class GrassrootsJSON {
 		String value = doc.get (input_key);
 				
 		if ((do_highlighting == true) && (gj_highlights != null)) {
-			value = getHighlightedValue (value, input_key);
+			String highlighted_value = getHighlightedValue (value, input_key);
+			
+			if (highlighted_value != null) {
+				value = highlighted_value;
+			}
 		}
 		
 		
