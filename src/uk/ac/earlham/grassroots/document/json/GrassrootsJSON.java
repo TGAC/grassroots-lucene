@@ -33,18 +33,29 @@ public class GrassrootsJSON {
 	}
 	
 	public boolean addToJSON (Document doc) {
-		boolean b = true;
-		
-		addJSONField (doc, GrassrootsDocument.GD_UNIQUE_NAME, GrassrootsDocument.GD_UNIQUE_NAME);
+		boolean b = false;
 
-		addJSONField (doc, GrassrootsDocument.GD_DESCRIPTION, GrassrootsDocument.GD_DESCRIPTION);
-		addJSONField (doc, GrassrootsDocument.GD_PRIVATE_TYPE, GrassrootsDocument.GD_PRIVATE_TYPE, false);
-		addJSONField (doc, GrassrootsDocument.GD_ICON, GrassrootsDocument.GD_ICON, false);
-		addJSONField (doc, GrassrootsDocument.GD_TYPE_DESCRIPTION, GrassrootsDocument.GD_TYPE_DESCRIPTION, false);
+		String id = getIdKey ();
+		
+		if (id != null) {
+			addJSONField (doc, GrassrootsDocument.GD_LUCENE_ID, id, false);
+
+			addJSONField (doc, GrassrootsDocument.GD_UNIQUE_NAME, GrassrootsDocument.GD_UNIQUE_NAME);
+
+			addJSONField (doc, GrassrootsDocument.GD_DESCRIPTION, GrassrootsDocument.GD_DESCRIPTION);
+			addJSONField (doc, GrassrootsDocument.GD_PRIVATE_TYPE, GrassrootsDocument.GD_PRIVATE_TYPE, false);
+			addJSONField (doc, GrassrootsDocument.GD_ICON, GrassrootsDocument.GD_ICON, false);
+			addJSONField (doc, GrassrootsDocument.GD_TYPE_DESCRIPTION, GrassrootsDocument.GD_TYPE_DESCRIPTION, false);
+		}	
 		
 		return b;
 	}
 	
+	
+	public String getIdKey () {
+		return GrassrootsDocument.GD_LUCENE_ID;
+	}
+
 	
 	protected String getHighlightedValue (String key) {
 		String value = null;

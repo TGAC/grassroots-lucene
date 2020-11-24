@@ -5,6 +5,7 @@ import java.util.Map;
 import org.apache.lucene.document.Document;
 import org.json.simple.JSONObject;
 
+import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
 import uk.ac.earlham.grassroots.document.lucene.MongoDocument;
 
 public class MongoJSON extends GrassrootsJSON {
@@ -26,6 +27,11 @@ public class MongoJSON extends GrassrootsJSON {
 		}
 		
 		return b;
+	}
+
+	
+	public String getIdKey () {
+		return MongoJSON.MJ_ID;
 	}
 
 }
