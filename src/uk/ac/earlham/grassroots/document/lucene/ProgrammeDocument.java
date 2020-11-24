@@ -23,7 +23,7 @@ public class ProgrammeDocument extends MongoDocument {
 	
 	@Override
 	public String getUserFriendlyTypename() {
-		return "Program";
+		return "Programme";
 	}
 
 	protected boolean addFields (JSONObject json_doc) {
