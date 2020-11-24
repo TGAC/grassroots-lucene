@@ -15,7 +15,7 @@ public class TreatmentJSON extends GrassrootsJSON {
 	final public static String TJ_TERM_URL = "so:sameAs";
 	final public static String TJ_TERM_NAME = "so:name";
 	final public static String TJ_TERM_ABBREVIATION = "abbreviation";
-	final public static String TJ_TERM_DESCRIPTION = "description";
+	final public static String TJ_TERM_DESCRIPTION = "so:description";
 
 	
 	public TreatmentJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
