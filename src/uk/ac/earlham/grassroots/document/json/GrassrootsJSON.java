@@ -60,7 +60,7 @@ public class GrassrootsJSON {
 	}
 
 	
-	protected String getHighlightedValue (String key) {
+	protected String getHighlightedValue (String doc_value, String key) {
 		String value = null;
 		String [] values = gj_highlights.get (key);
 		
@@ -69,9 +69,11 @@ public class GrassrootsJSON {
 			
 			if (highlighted_value != null) {
 	    		Matcher matcher = GrassrootsJSON.gj_highlighted_pattern.matcher (highlighted_value);
-				
+					    		
 				if (matcher.find ()) {
-					value = highlighted_value;
+		    		String s = highlighted_value.replaceAll ("<b>", "").replaceAll ("</b>", "");
+
+		    		value = doc_value.replace (s, highlighted_value);
 				}
 			}
 		}
@@ -82,15 +84,12 @@ public class GrassrootsJSON {
 	
 	protected boolean addJSONField (Document doc, String input_key, String output_key, boolean do_highlighting) {
 		boolean b = false;
-		String value = null;
+		String value = doc.get (input_key);
 				
 		if ((do_highlighting == true) && (gj_highlights != null)) {
-			value = getHighlightedValue (input_key);
+			value = getHighlightedValue (value, input_key);
 		}
 		
-		if (value == null) {
-			value = doc.get (input_key);
-		}
 		
 		if (value != null) {
 			gj_json.put (output_key, value);
