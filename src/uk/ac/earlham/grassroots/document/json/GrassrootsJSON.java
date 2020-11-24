@@ -47,6 +47,8 @@ public class GrassrootsJSON {
 			addJSONField (doc, GrassrootsDocument.GD_PRIVATE_TYPE, GrassrootsDocument.GD_PRIVATE_TYPE, false);
 			addJSONField (doc, GrassrootsDocument.GD_ICON, GrassrootsDocument.GD_ICON, false);
 			addJSONField (doc, GrassrootsDocument.GD_TYPE_DESCRIPTION, GrassrootsDocument.GD_TYPE_DESCRIPTION, false);
+			
+			b = true;
 		}	
 		
 		return b;
