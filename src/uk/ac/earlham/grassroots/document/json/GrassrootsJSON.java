@@ -110,7 +110,7 @@ public class GrassrootsJSON {
 	}
 	
 	
-	protected boolean addJSONMultiValuedField (Document doc, String input_key, String output_key) {
+	protected boolean addJSONMultiValuedField (Document doc, String input_key, String output_key, boolean do_highlighting) {
 		boolean b = false;
 		String [] values = doc.getValues (input_key);
 		
@@ -118,6 +118,14 @@ public class GrassrootsJSON {
 			JSONArray json_values = new JSONArray ();
 			
 			for (String value : values) {
+				if ((do_highlighting == true) && (gj_highlights != null)) {
+					String highlighted_value = getHighlightedValue (value, input_key);
+					
+					if (highlighted_value != null) {
+						value = highlighted_value;
+					}
+				}
+								
 				json_values.add (value);
 			}
 			
@@ -128,6 +136,11 @@ public class GrassrootsJSON {
 		return b;
 	}
 
+	
+	protected boolean addJSONMultiValuedField (Document doc, String input_key, String output_key) {
+		return addJSONMultiValuedField (doc, input_key, output_key, true); 
+	}
+	
 	
 	protected boolean addJSONObject (String key, JSONObject obj) {
 		gj_json.put (key, obj);
