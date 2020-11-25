@@ -3,20 +3,16 @@ package uk.ac.earlham.grassroots.app.lucene;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -122,7 +118,6 @@ public class QueryUtil {
 		
 		for (int i = 0; i < limit; ++ i) {
 			ScoreDoc score_doc = hits [i];
-			int doc_id = score_doc.doc;
 			Document doc = searcher.doc (score_doc.doc);
 			
 			GrassrootsJSON json_doc = GrassrootsDocumentFactory.getJSON (doc, highlights, i);
@@ -194,11 +189,12 @@ public class QueryUtil {
 			
 			final int num_keys = keys.length;
 
+		    Pattern pattern = Pattern.compile ("<b>(\\S+)</b>");
+			
 			for (int i = 0; i < num_keys; ++ i) {
 			    System.out.println (keys [i] + ":");
 			    String [] values = highlights.get (keys [i]);
 
-			    Pattern pattern = Pattern.compile ("<b>(\\S+)</b>");
 			    
 			    int j = 0;
 			    

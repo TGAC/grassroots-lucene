@@ -3,10 +3,9 @@ package uk.ac.earlham.grassroots.document.json;
 import java.util.Map;
 
 import org.apache.lucene.document.Document;
-import org.json.simple.JSONObject;
 
-import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
 import uk.ac.earlham.grassroots.document.lucene.MongoDocument;
+
 
 public class MongoJSON extends GrassrootsJSON {
 	final public static String MJ_ID = "_id";

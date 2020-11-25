@@ -51,9 +51,6 @@ public class TreatmentJSON extends GrassrootsJSON {
 
 			if (id != null) {
 				JSONObject trait = new JSONObject ();
-
-				String highlighted_value = getHighlightedValue (name, TreatmentDocument.TD_TRAIT_NAME);
-
 				
 				trait.put (TreatmentJSON.TJ_TERM_NAME, name);
 				trait.put (TreatmentJSON.TJ_TERM_URL, id);

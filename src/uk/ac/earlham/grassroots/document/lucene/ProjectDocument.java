@@ -3,7 +3,6 @@ package uk.ac.earlham.grassroots.document.lucene;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.lucene.search.BooleanQuery;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 

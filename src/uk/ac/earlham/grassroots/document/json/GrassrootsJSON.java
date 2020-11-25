@@ -129,10 +129,8 @@ public class GrassrootsJSON {
 	}
 
 	
-	protected boolean addJSONObject (String key, JSONObject obj) {
+	protected void addJSONObject (String key, JSONObject obj) {
 		gj_json.put (key, obj);
-		
-		return true;
 	}
 
 

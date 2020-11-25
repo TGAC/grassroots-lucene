@@ -25,10 +25,8 @@ package uk.ac.earlham.grassroots.app.lucene;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.StringReader;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -37,14 +35,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.facet.DrillDownQuery;
 import org.apache.lucene.facet.DrillSideways;
@@ -59,40 +51,21 @@ import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.highlight.Formatter;
-import org.apache.lucene.search.highlight.Fragmenter;
-import org.apache.lucene.search.highlight.Highlighter;
-import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
-import org.apache.lucene.search.highlight.QueryScorer;
-import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
-import org.apache.lucene.search.highlight.SimpleSpanFragmenter;
-import org.apache.lucene.search.highlight.TokenSources;
 import org.apache.lucene.store.Directory;
-
-import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 
 
 import org.apache.lucene.store.FSDirectory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import uk.ac.earlham.grassroots.document.json.GrassrootsJSON;
-import uk.ac.earlham.grassroots.document.lucene.AddressDocument;
-import uk.ac.earlham.grassroots.document.lucene.FieldTrialDocument;
-import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
 import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocumentFactory;
-import uk.ac.earlham.grassroots.document.lucene.ProjectDocument;
-import uk.ac.earlham.grassroots.document.lucene.StudyDocument;
-import uk.ac.earlham.grassroots.document.lucene.TreatmentDocument;
 
 
 class DrillDownData {
@@ -510,7 +483,6 @@ public class Searcher {
 		FacetsCollector fc = new FacetsCollector ();
 		final int MAX_NUM_RESULTS = 1024;
 		List <FacetResult> all_facets = null;
-		Analyzer analyzer = QueryUtil.getAnalyzer ();
 		
 	    // Passing no baseQuery means we drill down on all
 	    // documents ("browse only"):
@@ -532,20 +504,11 @@ public class Searcher {
 
 	    
 	    TopDocs resultDocs = FacetsCollector.search (se_index_searcher, q, MAX_NUM_RESULTS, fc);
-
-	    List <FacetsCollector.MatchingDocs> matching_docs = fc.getMatchingDocs ();
 	    
 	    // Retrieve facets
 	    Facets facet_counts = new FastTaxonomyFacetCounts (se_taxonomy_reader, se_config, fc);
 
     	all_facets = facet_counts.getAllDims (MAX_NUM_RESULTS);
-    	
-    	if (all_facets != null) {
-    		int num_facets = all_facets.size ();
-			System.out.println ("all_facets size" + num_facets);	
-    	} else {
-			System.out.println ("all_facets is null");		    		
-    	}
 	    
 	    if ((facets != null) && (!facets.isEmpty ())) {
 	    	for (AbstractMap.SimpleEntry <String, String> facet : facets) {
@@ -579,8 +542,6 @@ public class Searcher {
 			Map <String, String []> highlights = QueryUtil.GetHighlightingData (q, se_index_searcher, se_index_reader, QueryUtil.getAnalyzer (), resultDocs);
 
 			for (int i = start; i <= end; ++ i) {
-				ScoreDoc score_doc = hits [i];
-				int doc_id = score_doc.doc;
 				Document doc = se_index_searcher.doc (hits [i].doc);
 				
 				GrassrootsJSON json_doc = GrassrootsDocumentFactory.getJSON (doc, highlights, i);

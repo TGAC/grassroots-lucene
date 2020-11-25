@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.apache.lucene.document.Document;
 
-import uk.ac.earlham.grassroots.document.lucene.BlastServiceDocument;
 import uk.ac.earlham.grassroots.document.lucene.ServiceDocument;
 
 

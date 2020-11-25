@@ -5,7 +5,7 @@ import java.util.Map;
 import org.apache.lucene.document.Document;
 
 import uk.ac.earlham.grassroots.document.lucene.AddressDocument;
-import uk.ac.earlham.grassroots.document.lucene.MongoDocument;
+
 
 public class AddressJSON extends GrassrootsJSON {
 	final public static String AJ_STREET = "streetAddress";
