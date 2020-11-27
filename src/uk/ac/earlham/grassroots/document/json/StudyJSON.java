@@ -4,7 +4,9 @@ import java.util.Map;
 
 import org.apache.lucene.document.Document;
 
+import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
 import uk.ac.earlham.grassroots.document.lucene.MongoDocument;
+import uk.ac.earlham.grassroots.document.lucene.StudyDocument;
 
 public class StudyJSON extends MongoJSON {
 	final static public String SJ_PARENT_TRIAL = "parent_field_trial";
@@ -35,6 +37,9 @@ public class StudyJSON extends MongoJSON {
 			
 			if (id != null) {
 				gj_json.put (MongoJSON.MJ_ID, id);
+				
+				addJSONField (doc, StudyDocument.SD_STUDY_DESIGN, StudyJSON.SJ_STUDY_DESIGN);
+
 			} else {
 				b = false;
 			}

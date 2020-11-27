@@ -65,7 +65,7 @@ public class AddressDocument extends MongoDocument {
 	}
 
 
-	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (AD_STREET);
 		fields.add (AD_LOCALITY);
 		fields.add (AD_REGION);

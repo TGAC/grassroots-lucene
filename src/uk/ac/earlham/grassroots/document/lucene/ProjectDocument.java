@@ -116,7 +116,7 @@ public class ProjectDocument extends GrassrootsDocument {
 	}
 
 
-	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (ProjectDocument.PD_AUTHOR);
 		fields.add (ProjectDocument.PD_GRANT_CODE);
 	}

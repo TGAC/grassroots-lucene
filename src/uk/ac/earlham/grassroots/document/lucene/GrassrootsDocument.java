@@ -446,7 +446,7 @@ abstract public class GrassrootsDocument {
 	abstract public boolean setId (JSONObject json_doc);
 
 
-	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (GD_UNIQUE_NAME);
 		fields.add (GD_DESCRIPTION);
 	//	fields.add (GD_DEFAULT_SEARCH_KEY);

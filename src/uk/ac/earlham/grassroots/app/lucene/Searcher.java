@@ -189,7 +189,6 @@ public class Searcher {
 			} else if ("-tax".equals (args [i])) {
 				tax_dirname = args [++ i];
 			} else if ("-query".equals (args [i])) {
-				
 				while (++ i < args.length) {
 					queries.add (args [i]);
 				}

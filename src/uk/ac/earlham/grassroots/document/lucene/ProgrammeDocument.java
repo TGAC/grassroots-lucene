@@ -43,7 +43,7 @@ public class ProgrammeDocument extends MongoDocument {
 	}
 	
 	
-	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (ProgrammeDocument.PD_ABBREVIATION);
 		fields.add (ProgrammeDocument.PD_CROP);
 		fields.add (ProgrammeDocument.PD_PI);
@@ -52,6 +52,13 @@ public class ProgrammeDocument extends MongoDocument {
 		if (boosts != null) {
 			boosts.put (ProgrammeDocument.PD_ABBREVIATION, ProgrammeDocument.GD_DESCRIPTION_BOOST);
 		}
+		
+		if (string_fields != null) {
+			string_fields.put (ProgrammeDocument.PD_ABBREVIATION, ProgrammeDocument.PD_ABBREVIATION);
+			string_fields.put (ProgrammeDocument.PD_CROP, ProgrammeDocument.PD_CROP);
+			string_fields.put (ProgrammeDocument.PD_URL, ProgrammeDocument.PD_URL);
+		}
+
 	}
 
 }

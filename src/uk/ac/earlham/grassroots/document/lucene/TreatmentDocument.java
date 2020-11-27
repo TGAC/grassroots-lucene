@@ -101,7 +101,7 @@ public class TreatmentDocument extends MongoDocument {
 	}
 
 	
-	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (TD_TRAIT_NAME);
 		fields.add (TD_TRAIT_DESCRIPTION);
 		fields.add (TD_TRAIT_ABBREVIATION);
@@ -118,6 +118,14 @@ public class TreatmentDocument extends MongoDocument {
 			boosts.put (TD_TRAIT_NAME, GD_NAME_BOOST);
 			boosts.put (TD_MEASUREMENT_NAME, GD_NAME_BOOST);
 			boosts.put (TD_UNIT_NAME, GD_NAME_BOOST);
+		}
+		
+		if (string_fields != null) {
+			string_fields.put (TD_TRAIT_ABBREVIATION, TD_TRAIT_ABBREVIATION);
+			string_fields.put (TD_TRAIT_ID, TD_TRAIT_ID);
+			string_fields.put (TD_MEASUREMENT_ID, TD_MEASUREMENT_ID);
+			string_fields.put (TD_UNIT_ID, TD_UNIT_ID);
+			string_fields.put (TD_VARIABLE_ID, TD_VARIABLE_ID);
 		}
 	}
 	

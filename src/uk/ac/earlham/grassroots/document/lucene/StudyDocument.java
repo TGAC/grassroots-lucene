@@ -211,7 +211,7 @@ public class StudyDocument extends MongoDocument {
 	}
 	
 
-	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (SD_PARENT_TRIAL);
 		fields.add (SD_PHENOTYPE_GATHERING);
 		fields.add (SD_SOIL);
@@ -228,6 +228,12 @@ public class StudyDocument extends MongoDocument {
 			boosts.put (SD_ACCESSION, GD_NAME_BOOST);
 			boosts.put (SD_PHENOTYPE_NAME, GD_NAME_BOOST);
 		}
+		
+		if (string_fields != null) {
+			string_fields.put (SD_ACCESSION, SD_ACCESSION);
+			string_fields.put (SD_ASPECT, SD_ASPECT);
+		}
+		
 	}
 
 	

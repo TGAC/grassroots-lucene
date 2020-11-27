@@ -39,7 +39,7 @@ public class FieldTrialDocument extends MongoDocument {
 	}
 
 
-	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts) {
+	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (FieldTrialDocument.FTD_TEAM);
 	}
 	

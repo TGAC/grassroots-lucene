@@ -10,17 +10,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
+import org.apache.lucene.search.BooleanClause;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -42,7 +48,7 @@ public class QueryUtil {
 	
 	public static Analyzer getAnalyzer () {
 		if (qu_analyzer == null) {
-			qu_analyzer = new StandardAnalyzer (); // KeywordAnalyzer ();
+			qu_analyzer = new StandardAnalyzer ();
 		}
 		
 		return qu_analyzer;
@@ -57,14 +63,14 @@ public class QueryUtil {
 	}
 
 	
-	private static void getFields (List <String> fields, Map <String, Float> boosts) {
-		GrassrootsDocument.addQueryTerms (fields, boosts);		
-		AddressDocument.addQueryTerms (fields, boosts);
-		FieldTrialDocument.addQueryTerms (fields, boosts);
-		ProjectDocument.addQueryTerms (fields, boosts);
-		StudyDocument.addQueryTerms (fields, boosts);
-		TreatmentDocument.addQueryTerms (fields, boosts);	
-		ProgrammeDocument.addQueryTerms (fields, boosts);		
+	private static void getFields (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
+		GrassrootsDocument.addQueryTerms (fields, boosts, string_fields);		
+		AddressDocument.addQueryTerms (fields, boosts, string_fields);
+		FieldTrialDocument.addQueryTerms (fields, boosts, string_fields);
+		ProjectDocument.addQueryTerms (fields, boosts, string_fields);
+		StudyDocument.addQueryTerms (fields, boosts, string_fields);
+		TreatmentDocument.addQueryTerms (fields, boosts, string_fields);	
+		ProgrammeDocument.addQueryTerms (fields, boosts, string_fields);		
 	}
 	
 	
@@ -73,29 +79,78 @@ public class QueryUtil {
 		
 		List <String> fields = new ArrayList <String> ();
 		Map <String, Float> boosts = new HashMap <String, Float> ();
-			
-		getFields (fields, boosts);
+		Map <String, String> string_fields = new HashMap <String, String> ();
+
+		getFields (fields, boosts, string_fields);
 		
-		String [] fields_array = fields.toArray (new String [0]);
-		QueryParser parser = new MultiFieldQueryParser (fields_array, getAnalyzer (), boosts);
+//		String [] fields_array = fields.toArray (new String [0]);
+//		QueryParser parser = new MultiFieldQueryParser (fields_array, getAnalyzer (), boosts);
 
 		StringBuilder sb = new StringBuilder ();
-		
+
 		for (String query : queries) {
-			sb.append (query);
+			for (String field : fields) {
+				
+				Float boost = boosts.get (field);
+
+				sb.append ("(");
+
+				if (field.contains (":")) {
+					String s = field.replaceAll (":", "\\\\:");					
+					sb.append (s);
+				} else {
+					sb.append (field);					
+				}
+					 
+				sb.append (":");
+					
+				if ((query.contains (" ")) && (!string_fields.containsKey (field))) {
+					sb.append ("\"");
+					sb.append (query);
+					sb.append ("\"");				
+				} else {
+					sb.append (query);
+				}
+
+				sb.append (")");
+
+				if (boost != null) {
+					sb.append ("^");
+					sb.append (boost);
+				}			
+
+				sb.append (" ");
+			}			
+
+		}
+		/*
+		for (String query : queries) {
+			if (query.contains (" ")) {
+				sb.append ("\"");
+				sb.append (query);
+				sb.append ("\"");				
+			} else {
+				sb.append (query);
+			}
+ 			
 			sb.append (" ");
 		}
-		
-		System.out.println ("raw query: " + sb.toString ());		
-		
-		try {				
-			q = parser.parse (sb.toString ());
+		*/
+
+		QueryParser parser = new QueryParser ("", getAnalyzer ());
+		String raw_query = sb.toString ();
+
+		System.out.println ("raw query: " + raw_query);		
+
+		try {
+			q = parser.parse (raw_query);
 		} catch (ParseException e) {
-			System.err.println ("Failed to parse query \"" + q + "\", exception: "+ e);
+			e.printStackTrace();
 		}
 
-		System.out.println ("parsed query: " + q.toString ());		
-
+		if (q != null) {
+			System.out.println ("parsed query: " + q.toString ());		
+		}
 		
 		return q;
 	}
@@ -160,7 +215,7 @@ public class QueryUtil {
 		UnifiedHighlighter highlighter = new UnifiedHighlighter (searcher, analyzer);        
 		List <String> fields = new ArrayList <String> ();
 		
-		getFields (fields, null);
+		getFields (fields, null, null);
 		
 		String [] fields_array = (String []) fields.toArray (new String [0]);
 	
