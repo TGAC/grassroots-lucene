@@ -51,6 +51,7 @@ import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
@@ -238,13 +239,21 @@ public class Searcher {
 				
 				if (!queries.isEmpty ()) {					
 					q = QueryUtil.buildGrassrootsQueryUsingParser (queries);
+					
+					/*
 					Query temp = QueryUtil.buildGrassrootsQuery (queries);
 					
+					System.out.println ("q:");
+					QueryUtil.PrintBooleanQuery ((BooleanQuery) q);
+					System.out.println ("temp:");
+					QueryUtil.PrintBooleanQuery ((BooleanQuery) temp); 
+
 					if (q.equals (temp)) {
 						System.out.println ("queries equal");
 					} else {
 						System.out.println ("queries not equal");						
 					}
+					*/
 					
 				} else {
 					q = new MatchAllDocsQuery ();					

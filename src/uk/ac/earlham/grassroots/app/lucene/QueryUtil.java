@@ -75,7 +75,7 @@ public class QueryUtil {
 	}
 	
 	
-	private static void addQueryToBuilder (String field, String query, Float boost, BooleanQuery.Builder query_builder) {
+	private static void addTermQueryToBuilder (String field, String query, Float boost, BooleanQuery.Builder query_builder) {
 		Query q;
 		TermQuery term_query = new TermQuery (new Term (field, query));
 		
@@ -88,6 +88,18 @@ public class QueryUtil {
 		query_builder.add (q, BooleanClause.Occur.SHOULD);
 	}
 	
+	private static void addPhraseQueryToBuilder (String field, String query, Float boost, BooleanQuery.Builder query_builder) {
+		Query q;
+		PhraseQuery phrase_query = new PhraseQuery (field, query);
+
+		if (boost != null) {
+			q = new BoostQuery (phrase_query, boost);
+		} else {
+			q = phrase_query;
+		}
+
+		query_builder.add (q, BooleanClause.Occur.SHOULD);
+	}
 	
 
 	public static Query buildGrassrootsQueryUsingParser (List <String> queries) {
@@ -106,7 +118,7 @@ public class QueryUtil {
 			
 			for (String field : fields) {
 				boolean string_field_flag = string_fields.containsKey (field);
-				
+				String escaped_field;
 				Float boost = boosts.get (field);
 
 				if (boost != null) {
@@ -114,20 +126,30 @@ public class QueryUtil {
 				}
 				
 				if (field.contains (":")) {
-					String s = field.replaceAll (":", "\\\\:");					
-					sb.append (s);
+					escaped_field = field.replaceAll (":", "\\\\:");					
 				} else {
-					sb.append (field);					
+					escaped_field = field;
 				}
 					 
-				sb.append (":");
 					
 								
 				if (phrase_query_flag && !string_field_flag) {
+					sb.append (escaped_field);
+					sb.append (":");					
 					sb.append ("\"");
 					sb.append (q);
 					sb.append ("\"");				
 				} else {
+					String [] subqueries = q.split (" ");
+
+					for (String subquery : subqueries) {
+						sb.append (escaped_field);
+						sb.append (":");					
+						sb.append (subquery);
+						sb.append (" ");					
+					}
+					
+					
 					sb.append (q);
 				}
 
@@ -160,6 +182,53 @@ public class QueryUtil {
 	}
 	
 	
+	public static void PrintBooleanQuery (BooleanQuery query) {
+		List <BooleanClause> clauses = query.clauses ();
+		int i = 0;
+		
+		for (BooleanClause clause : clauses) {
+			Query clause_query = clause.getQuery ();
+			String field = null;
+			Term [] terms_array = new Term [1];
+			Term [] terms = null;
+				
+			if (clause_query instanceof BoostQuery) {
+				clause_query = ((BoostQuery) clause_query).getQuery ();
+			}
+			
+			if (clause_query instanceof PhraseQuery) {
+				PhraseQuery pq = (PhraseQuery) clause_query;
+				
+				field = pq.getField ();
+				terms =	pq.getTerms ();
+			} else if (clause_query instanceof TermQuery) {
+				TermQuery tq = (TermQuery) clause_query;
+				
+				Term term = tq.getTerm ();
+				field = term.field ();
+
+				terms_array [0] = term;
+				terms = terms_array;
+			} else {
+				System.out.println ("query is a " + clause_query.getClass ().getSimpleName ());
+			}
+
+			System.out.print ("i: " + i + ", " + clause_query.getClass ().getSimpleName () + ": ");
+
+			if (terms != null) {
+				System.out.print (" field: " + field + " terms: ");
+				for (Term term : terms) {
+					System.out.print ("\"" + term.text () + "\", ");				
+				}
+			}
+			
+			System.out.println ("");
+			
+			++ i;
+		}
+	}
+	
+	
 	public static Query buildGrassrootsQuery (List <String> queries) {
 		Query query = null;		
 		
@@ -181,18 +250,16 @@ public class QueryUtil {
 
 				if (query_str.contains (" ")) {
 					if (string_fields.containsKey (field)) {
-						addQueryToBuilder (field, query_str, boost, query_builder);	
+						addTermQueryToBuilder (field, query_str, boost, query_builder);	
 					} else {
 						StringBuilder sb = new StringBuilder ();
 						
-						sb.append ("\"");
 						sb.append (query_str);
-						sb.append ("\"");
 						
-						addQueryToBuilder (field, sb.toString (), boost, query_builder);						
+						addPhraseQueryToBuilder (field, sb.toString (), boost, query_builder);						
 					}
 				} else {
-					addQueryToBuilder (field, query_str, boost, query_builder);
+					addTermQueryToBuilder (field, query_str, boost, query_builder);
 				}
 			}			
 
