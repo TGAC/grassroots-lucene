@@ -19,6 +19,7 @@ import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BoostQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
@@ -74,8 +75,93 @@ public class QueryUtil {
 	}
 	
 	
+	private static void addQueryToBuilder (String field, String query, Float boost, BooleanQuery.Builder query_builder) {
+		Query q;
+		TermQuery term_query = new TermQuery (new Term (field, query));
+		
+		if (boost != null) {
+			q = new BoostQuery (term_query, boost);
+		} else {
+			q = term_query;
+		}
+
+		query_builder.add (q, BooleanClause.Occur.SHOULD);
+	}
+	
+	
+
+	public static Query buildGrassrootsQueryUsingParser (List <String> queries) {
+		Query query = null;		
+		
+		List <String> fields = new ArrayList <String> ();
+		Map <String, Float> boosts = new HashMap <String, Float> ();
+		Map <String, String> string_fields = new HashMap <String, String> ();
+
+		getFields (fields, boosts, string_fields);
+		
+		StringBuilder sb = new StringBuilder ();
+
+		for (String q : queries) {
+			boolean phrase_query_flag = q.contains (" ");
+			
+			for (String field : fields) {
+				boolean string_field_flag = string_fields.containsKey (field);
+				
+				Float boost = boosts.get (field);
+
+				if (boost != null) {
+					sb.append ("(");
+				}
+				
+				if (field.contains (":")) {
+					String s = field.replaceAll (":", "\\\\:");					
+					sb.append (s);
+				} else {
+					sb.append (field);					
+				}
+					 
+				sb.append (":");
+					
+								
+				if (phrase_query_flag && !string_field_flag) {
+					sb.append ("\"");
+					sb.append (q);
+					sb.append ("\"");				
+				} else {
+					sb.append (q);
+				}
+
+				if (boost != null) {
+					sb.append (")^");
+					sb.append (boost);
+				}
+
+				sb.append (" ");
+			}			
+
+		}
+
+		QueryParser parser = new QueryParser ("", getAnalyzer ());
+		String raw_query = sb.toString ();
+
+		System.out.println ("raw query: " + raw_query);		
+
+		try {
+			query = parser.parse (raw_query);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		if (query != null) {
+			System.out.println ("parsed query: " + query.toString ());		
+		}
+		
+		return query;
+	}
+	
+	
 	public static Query buildGrassrootsQuery (List <String> queries) {
-		Query q = null;		
+		Query query = null;		
 		
 		List <String> fields = new ArrayList <String> ();
 		Map <String, Float> boosts = new HashMap <String, Float> ();
@@ -86,73 +172,39 @@ public class QueryUtil {
 //		String [] fields_array = fields.toArray (new String [0]);
 //		QueryParser parser = new MultiFieldQueryParser (fields_array, getAnalyzer (), boosts);
 
-		StringBuilder sb = new StringBuilder ();
-
-		for (String query : queries) {
+		BooleanQuery.Builder query_builder = new BooleanQuery.Builder ();
+		
+		for (String query_str : queries) {
 			for (String field : fields) {
 				
 				Float boost = boosts.get (field);
 
-				sb.append ("(");
-
-				if (field.contains (":")) {
-					String s = field.replaceAll (":", "\\\\:");					
-					sb.append (s);
+				if (query_str.contains (" ")) {
+					if (string_fields.containsKey (field)) {
+						addQueryToBuilder (field, query_str, boost, query_builder);	
+					} else {
+						StringBuilder sb = new StringBuilder ();
+						
+						sb.append ("\"");
+						sb.append (query_str);
+						sb.append ("\"");
+						
+						addQueryToBuilder (field, sb.toString (), boost, query_builder);						
+					}
 				} else {
-					sb.append (field);					
+					addQueryToBuilder (field, query_str, boost, query_builder);
 				}
-					 
-				sb.append (":");
-					
-				if ((query.contains (" ")) && (!string_fields.containsKey (field))) {
-					sb.append ("\"");
-					sb.append (query);
-					sb.append ("\"");				
-				} else {
-					sb.append (query);
-				}
-
-				sb.append (")");
-
-				if (boost != null) {
-					sb.append ("^");
-					sb.append (boost);
-				}			
-
-				sb.append (" ");
 			}			
 
 		}
-		/*
-		for (String query : queries) {
-			if (query.contains (" ")) {
-				sb.append ("\"");
-				sb.append (query);
-				sb.append ("\"");				
-			} else {
-				sb.append (query);
-			}
- 			
-			sb.append (" ");
-		}
-		*/
-
-		QueryParser parser = new QueryParser ("", getAnalyzer ());
-		String raw_query = sb.toString ();
-
-		System.out.println ("raw query: " + raw_query);		
-
-		try {
-			q = parser.parse (raw_query);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-
-		if (q != null) {
-			System.out.println ("parsed query: " + q.toString ());		
+		
+		query = query_builder.build ();
+		
+		if (query != null) {
+			System.out.println ("parsed query: " + query.toString ());		
 		}
 		
-		return q;
+		return query;
 	}
 	
 	public static JSONArray search (Query query, IndexReader reader, IndexSearcher searcher) throws IOException {

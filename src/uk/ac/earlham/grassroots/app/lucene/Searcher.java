@@ -237,7 +237,15 @@ public class Searcher {
 				Query q = null;
 				
 				if (!queries.isEmpty ()) {					
-					q = QueryUtil.buildGrassrootsQuery (queries);
+					q = QueryUtil.buildGrassrootsQueryUsingParser (queries);
+					Query temp = QueryUtil.buildGrassrootsQuery (queries);
+					
+					if (q.equals (temp)) {
+						System.out.println ("queries equal");
+					} else {
+						System.out.println ("queries not equal");						
+					}
+					
 				} else {
 					q = new MatchAllDocsQuery ();					
 				}
