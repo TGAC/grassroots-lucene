@@ -33,13 +33,9 @@ public class StudyJSON extends MongoJSON {
 		boolean b = super.addToJSON (doc);
 		
 		if (b) {
-			String id = doc.get (MongoDocument.MD_ID);
 			
-			if (id != null) {
-				gj_json.put (MongoJSON.MJ_ID, id);
-				
-				addJSONField (doc, StudyDocument.SD_STUDY_DESIGN, StudyJSON.SJ_STUDY_DESIGN);
-
+			if (addJSONField (doc, StudyDocument.SD_STUDY_DESIGN, StudyJSON.SJ_STUDY_DESIGN)) {
+				b = true;
 			} else {
 				b = false;
 			}

@@ -32,7 +32,7 @@ public class TreatmentDocument extends MongoDocument {
 		if (super.addFields (json_doc)) {
 			
 			if (addString (json_doc, TreatmentJSON.TJ_ONTOLOGY_ID, TreatmentDocument.TD_ONTOLOGY_ID)) {
-				
+				addSynonyms (json_doc);
 			}
 					
 			success_flag = true;
@@ -55,7 +55,7 @@ public class TreatmentDocument extends MongoDocument {
 
 					String synonym = o.toString ();
 					
-					addString (TreatmentDocument.TD_SYNONYM, synonym);					
+					addText (TreatmentDocument.TD_SYNONYM, synonym);					
 				}
 			}			
 		}
