@@ -40,7 +40,7 @@ import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocumentFactory;
 import uk.ac.earlham.grassroots.document.lucene.ProgrammeDocument;
 import uk.ac.earlham.grassroots.document.lucene.ProjectDocument;
 import uk.ac.earlham.grassroots.document.lucene.StudyDocument;
-import uk.ac.earlham.grassroots.document.lucene.TreatmentDocument;
+import uk.ac.earlham.grassroots.document.lucene.MeasuredVariableDocument;
 
 
 public class QueryUtil {
@@ -70,7 +70,7 @@ public class QueryUtil {
 		FieldTrialDocument.addQueryTerms (fields, boosts, string_fields);
 		ProjectDocument.addQueryTerms (fields, boosts, string_fields);
 		StudyDocument.addQueryTerms (fields, boosts, string_fields);
-		TreatmentDocument.addQueryTerms (fields, boosts, string_fields);	
+		MeasuredVariableDocument.addQueryTerms (fields, boosts, string_fields);	
 		ProgrammeDocument.addQueryTerms (fields, boosts, string_fields);		
 	}
 	

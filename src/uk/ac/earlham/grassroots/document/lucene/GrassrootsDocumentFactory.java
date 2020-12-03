@@ -14,7 +14,7 @@ import uk.ac.earlham.grassroots.document.json.ProgrammeJSON;
 import uk.ac.earlham.grassroots.document.json.ProjectJSON;
 import uk.ac.earlham.grassroots.document.json.SamtoolsServiceJSON;
 import uk.ac.earlham.grassroots.document.json.StudyJSON;
-import uk.ac.earlham.grassroots.document.json.TreatmentJSON;
+import uk.ac.earlham.grassroots.document.json.MeasuredVariableJSON;
 import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 
@@ -53,7 +53,7 @@ public class GrassrootsDocumentFactory {
 					break;
 
 				case "Grassroots:MeasuredVariable": 
-					doc = new TreatmentDocument (json_doc, wrapper);					
+					doc = new MeasuredVariableDocument (json_doc, wrapper);					
 					break;
 					
 				case "Grassroots:Location": 
@@ -119,7 +119,7 @@ public class GrassrootsDocumentFactory {
 					break;
 
 				case "Grassroots:MeasuredVariable": 
-					grassroots_json = new TreatmentJSON (doc, highlights, highlight_index);						
+					grassroots_json = new MeasuredVariableJSON (doc, highlights, highlight_index);						
 					break;
 					
 				case "Grassroots:Location": 
