@@ -11,18 +11,18 @@ import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 
 public class MeasuredVariableDocument extends MongoDocument {
-	final static private String TD_PREFIX = "treatment-";
-	final static public String TD_TRAIT_NAME = TD_PREFIX + "trait_name";
-	final static public String TD_TRAIT_DESCRIPTION = TD_PREFIX + "trait_description";
-	final static public String TD_TRAIT_ABBREVIATION = TD_PREFIX + "trait_abbreviation";
-	final static public String TD_TRAIT_ID = TD_PREFIX + "trait_id";
-	final static public String TD_MEASUREMENT_NAME = TD_PREFIX + "measurement_name";
-	final static public String TD_MEASUREMENT_DESCRIPTION = TD_PREFIX + "measurement_description";
-	final static public String TD_MEASUREMENT_ID = TD_PREFIX + "measurement_id";
-	final static public String TD_UNIT_NAME = TD_PREFIX + "unit_name";
-	final static public String TD_UNIT_ID = TD_PREFIX + "unit_id";
-	final static public String TD_VARIABLE_NAME = TD_PREFIX + "variable_name";
-	final static public String TD_VARIABLE_ID = TD_PREFIX + "variable_id";
+	final static private String MVD_PREFIX = "measured_variable-";
+	final static public String MVD_TRAIT_NAME = MVD_PREFIX + "trait_name";
+	final static public String MVD_TRAIT_DESCRIPTION = MVD_PREFIX + "trait_description";
+	final static public String MVD_TRAIT_ABBREVIATION = MVD_PREFIX + "trait_abbreviation";
+	final static public String MVD_TRAIT_ID = MVD_PREFIX + "trait_id";
+	final static public String MVD_MEASUREMENT_NAME = MVD_PREFIX + "measurement_name";
+	final static public String MVD_MEASUREMENT_DESCRIPTION = MVD_PREFIX + "measurement_description";
+	final static public String MVD_MEASUREMENT_ID = MVD_PREFIX + "measurement_id";
+	final static public String MVD_UNIT_NAME = MVD_PREFIX + "unit_name";
+	final static public String MVD_UNIT_ID = MVD_PREFIX + "unit_id";
+	final static public String MVD_VARIABLE_NAME = MVD_PREFIX + "variable_name";
+	final static public String MVD_VARIABLE_ID = MVD_PREFIX + "variable_id";
 	
 	
 	public MeasuredVariableDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -63,29 +63,29 @@ public class MeasuredVariableDocument extends MongoDocument {
 			JSONObject child = (JSONObject) json_doc.get (MeasuredVariableJSON.TJ_TRAIT);
 
 			if (child != null) {
-				addText (child, MeasuredVariableJSON.TJ_TERM_NAME, MeasuredVariableDocument.TD_TRAIT_NAME);
-				addText (child, MeasuredVariableJSON.TJ_TERM_DESCRIPTION, MeasuredVariableDocument.TD_TRAIT_DESCRIPTION);
-				addString (child, MeasuredVariableJSON.TJ_TERM_ABBREVIATION, MeasuredVariableDocument.TD_TRAIT_ABBREVIATION);
-				addString (child, MeasuredVariableJSON.TJ_TERM_URL, MeasuredVariableDocument.TD_TRAIT_ID);				
+				addText (child, MeasuredVariableJSON.TJ_TERM_NAME, MeasuredVariableDocument.MVD_TRAIT_NAME);
+				addText (child, MeasuredVariableJSON.TJ_TERM_DESCRIPTION, MeasuredVariableDocument.MVD_TRAIT_DESCRIPTION);
+				addString (child, MeasuredVariableJSON.TJ_TERM_ABBREVIATION, MeasuredVariableDocument.MVD_TRAIT_ABBREVIATION);
+				addString (child, MeasuredVariableJSON.TJ_TERM_URL, MeasuredVariableDocument.MVD_TRAIT_ID);				
 			}
 
 			child = (JSONObject) json_doc.get (MeasuredVariableJSON.TJ_MEASUREMENT);
 			if (child != null) {
-				addText (child, MeasuredVariableJSON.TJ_TERM_NAME, MeasuredVariableDocument.TD_MEASUREMENT_NAME);
-				addText (child, MeasuredVariableJSON.TJ_TERM_DESCRIPTION, MeasuredVariableDocument.TD_MEASUREMENT_DESCRIPTION);
-				addString (child, MeasuredVariableJSON.TJ_TERM_URL, MeasuredVariableDocument.TD_MEASUREMENT_ID);				
+				addText (child, MeasuredVariableJSON.TJ_TERM_NAME, MeasuredVariableDocument.MVD_MEASUREMENT_NAME);
+				addText (child, MeasuredVariableJSON.TJ_TERM_DESCRIPTION, MeasuredVariableDocument.MVD_MEASUREMENT_DESCRIPTION);
+				addString (child, MeasuredVariableJSON.TJ_TERM_URL, MeasuredVariableDocument.MVD_MEASUREMENT_ID);				
 			}
 
 			child = (JSONObject) json_doc.get (MeasuredVariableJSON.TJ_UNIT);
 			if (child != null) {
-				addText (child, MeasuredVariableJSON.TJ_TERM_NAME, MeasuredVariableDocument.TD_UNIT_NAME);
-				addString (child, MeasuredVariableJSON.TJ_TERM_URL, MeasuredVariableDocument.TD_UNIT_ID);				
+				addText (child, MeasuredVariableJSON.TJ_TERM_NAME, MeasuredVariableDocument.MVD_UNIT_NAME);
+				addString (child, MeasuredVariableJSON.TJ_TERM_URL, MeasuredVariableDocument.MVD_UNIT_ID);				
 			}
 			
 			child = (JSONObject) json_doc.get (MeasuredVariableJSON.TJ_VARIABLE);
 			if (child != null) {
-				addText (child, MeasuredVariableJSON.TJ_TERM_NAME, MeasuredVariableDocument.TD_VARIABLE_NAME);
-				addString (child, MeasuredVariableJSON.TJ_TERM_URL, MeasuredVariableDocument.TD_VARIABLE_ID);				
+				addText (child, MeasuredVariableJSON.TJ_TERM_NAME, MeasuredVariableDocument.MVD_VARIABLE_NAME);
+				addString (child, MeasuredVariableJSON.TJ_TERM_URL, MeasuredVariableDocument.MVD_VARIABLE_ID);				
 			}
 			
 			success_flag = true;
@@ -102,30 +102,30 @@ public class MeasuredVariableDocument extends MongoDocument {
 
 	
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
-		fields.add (TD_TRAIT_NAME);
-		fields.add (TD_TRAIT_DESCRIPTION);
-		fields.add (TD_TRAIT_ABBREVIATION);
-		fields.add (TD_TRAIT_ID);
-		fields.add (TD_MEASUREMENT_NAME);
-		fields.add (TD_MEASUREMENT_DESCRIPTION);
-		fields.add (TD_MEASUREMENT_ID);
-		fields.add (TD_UNIT_NAME);
-		fields.add (TD_UNIT_ID);		
-		fields.add (TD_VARIABLE_NAME);
-		fields.add (TD_VARIABLE_ID);
+		fields.add (MVD_TRAIT_NAME);
+		fields.add (MVD_TRAIT_DESCRIPTION);
+		fields.add (MVD_TRAIT_ABBREVIATION);
+		fields.add (MVD_TRAIT_ID);
+		fields.add (MVD_MEASUREMENT_NAME);
+		fields.add (MVD_MEASUREMENT_DESCRIPTION);
+		fields.add (MVD_MEASUREMENT_ID);
+		fields.add (MVD_UNIT_NAME);
+		fields.add (MVD_UNIT_ID);		
+		fields.add (MVD_VARIABLE_NAME);
+		fields.add (MVD_VARIABLE_ID);
 		
 		if (boosts != null) {
-			boosts.put (TD_TRAIT_NAME, GD_NAME_BOOST);
-			boosts.put (TD_MEASUREMENT_NAME, GD_NAME_BOOST);
-			boosts.put (TD_UNIT_NAME, GD_NAME_BOOST);
+			boosts.put (MVD_TRAIT_NAME, GD_NAME_BOOST);
+			boosts.put (MVD_MEASUREMENT_NAME, GD_NAME_BOOST);
+			boosts.put (MVD_UNIT_NAME, GD_NAME_BOOST);
 		}
 		
 		if (string_fields != null) {
-			string_fields.put (TD_TRAIT_ABBREVIATION, TD_TRAIT_ABBREVIATION);
-			string_fields.put (TD_TRAIT_ID, TD_TRAIT_ID);
-			string_fields.put (TD_MEASUREMENT_ID, TD_MEASUREMENT_ID);
-			string_fields.put (TD_UNIT_ID, TD_UNIT_ID);
-			string_fields.put (TD_VARIABLE_ID, TD_VARIABLE_ID);
+			string_fields.put (MVD_TRAIT_ABBREVIATION, MVD_TRAIT_ABBREVIATION);
+			string_fields.put (MVD_TRAIT_ID, MVD_TRAIT_ID);
+			string_fields.put (MVD_MEASUREMENT_ID, MVD_MEASUREMENT_ID);
+			string_fields.put (MVD_UNIT_ID, MVD_UNIT_ID);
+			string_fields.put (MVD_VARIABLE_ID, MVD_VARIABLE_ID);
 		}
 	}
 	
