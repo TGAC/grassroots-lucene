@@ -50,7 +50,7 @@ public class ProgrammeDocument extends MongoDocument {
 		fields.add (ProgrammeDocument.PD_URL);
 	
 		if (boosts != null) {
-			boosts.put (ProgrammeDocument.PD_ABBREVIATION, ProgrammeDocument.GD_DESCRIPTION_BOOST);
+			boosts.put (ProgrammeDocument.PD_ABBREVIATION, GrassrootsDocument.GD_DESCRIPTION_BOOST);
 		}
 		
 		if (string_fields != null) {
