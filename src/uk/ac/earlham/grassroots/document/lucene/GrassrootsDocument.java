@@ -163,14 +163,19 @@ abstract public class GrassrootsDocument {
 		return true;
 	}
 	
+	
 	public boolean addMongoId (JSONObject json_doc, String key) {
+		return addMongoId (json_doc, key, key);
+	}
+
+	public boolean addMongoId (JSONObject json_doc, String input_key, String output_key) {
 		boolean success_flag = false;
-		JSONObject id_obj = (JSONObject) json_doc.get (key);
+		JSONObject id_obj = (JSONObject) json_doc.get (input_key);
 		
 		String oid = (String) id_obj.get ("$oid");
 		
 		if (oid != null) {
-			gd_wrapper.addString (key, oid);
+			gd_wrapper.addString (output_key, oid);
 			
 			success_flag = true;
 		}
@@ -178,6 +183,7 @@ abstract public class GrassrootsDocument {
 		return success_flag;
 	}
 
+	
 	
 	/**
 	 * Add a TextField to the Lucene document with a given boost value for search scoring.

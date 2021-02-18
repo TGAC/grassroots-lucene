@@ -433,6 +433,7 @@ public class Indexer {
 			grassroots_doc = GrassrootsDocumentFactory.createDocument (json_obj, wrapper);
 		} catch (Exception e) {
 			System.err.println ("GrassrootsDocumentFactory.createDocument () failed for " + json_obj + " exception: " + e.getMessage ());
+			e.printStackTrace();
 		}
 		
 		if (grassroots_doc != null) {

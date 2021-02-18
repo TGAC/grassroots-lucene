@@ -45,7 +45,7 @@ public class StudyDocument extends MongoDocument {
 			}
 
 			if (json_doc.get (StudyJSON.SJ_ADDRESS_ID) != null) {
-				addMongoId (json_doc, StudyDocument.SD_ADDRESS);
+				addMongoId (json_doc, StudyJSON.SJ_ADDRESS_ID, StudyDocument.SD_ADDRESS);
 			}
 							
 			/*
