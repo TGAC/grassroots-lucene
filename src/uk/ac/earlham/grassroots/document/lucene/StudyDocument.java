@@ -26,6 +26,9 @@ public class StudyDocument extends MongoDocument {
 	final static public String SD_PHENOTYPE_DESCRIPTION = SD_PREFIX + "phenotype_description";
 	final static public String SD_ACCESSION = SD_PREFIX + "accession";
 	final static public String SD_ADDRESS = SD_PREFIX + "address_id";
+	final static public String SD_TREATMENT_NAME = SD_PREFIX + "treatment_name";
+	final static public String SD_TREATMENT_SYNONYM = SD_PREFIX + "treatment_synonym";
+	final static public String SD_TREATMENT_DESCRIPTION = SD_PREFIX + "treatment_description";
 	
 	
 	public StudyDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -77,6 +80,8 @@ public class StudyDocument extends MongoDocument {
 			// acccessions
 			addAccessions (json_doc);
 	
+			// treatments
+			addTreatments (json_doc);
 			
 			success_flag = true;
 						
@@ -203,6 +208,64 @@ public class StudyDocument extends MongoDocument {
 		
 	}
 
+
+	void addTreatments (JSONObject doc) {		
+		Object o = doc.get (StudyJSON.SJ_TREATMENTS);
+		
+		if (o != null) {
+			if (o instanceof JSONArray) {
+				JSONArray treatment_factors = (JSONArray) o;				
+				final int num_factors = treatment_factors.size ();
+				
+				for (int i = 0; i < num_factors; ++ i) {
+					JSONObject treatment_factor = (JSONObject) treatment_factors.get (i);
+
+					o = treatment_factor.get ("treatment");
+					
+					if ((o != null) && (o instanceof JSONObject)) {
+						JSONObject treatment = (JSONObject) o;
+						
+						o = treatment.get ("so:name");						
+						if (o != null) {
+							String name = o.toString ();
+							addText (SD_TREATMENT_NAME, name);						
+						}
+
+						o = treatment.get ("so:description");						
+						if (o != null) {
+							String desc = o.toString ();
+							addText (SD_TREATMENT_DESCRIPTION, desc);						
+						}
+
+						o = treatment.get ("synonyms");
+						if (o != null) {
+							if (o instanceof JSONArray) {
+								JSONArray synonyms = (JSONArray) o;
+								final int num_synonyms = synonyms.size ();
+								
+								for (int j = 0; j < num_synonyms; ++ j) {
+									o = synonyms.get (j);
+									
+									String synonym = o.toString ();
+									addText (SD_TREATMENT_SYNONYM, synonym);															
+								}
+								
+							} else if (o instanceof JSONObject) {
+								JSONObject synonym = (JSONObject) o;
+								String syn_value = o.toString ();
+								addText (SD_TREATMENT_SYNONYM, syn_value);																							
+							}
+								
+						}
+					}
+					
+				}
+			}
+			
+		}
+		
+	}
+	
 	
 	
 	@Override
@@ -223,10 +286,15 @@ public class StudyDocument extends MongoDocument {
 		fields.add (SD_PHENOTYPE_NAME);
 		fields.add (SD_PHENOTYPE_DESCRIPTION);
 		fields.add (SD_ACCESSION);
+		fields.add (SD_TREATMENT_NAME);
+		fields.add (SD_TREATMENT_DESCRIPTION);
+		fields.add (SD_TREATMENT_SYNONYM);
 		
 		if (boosts != null) {
 			boosts.put (SD_ACCESSION, GD_NAME_BOOST);
 			boosts.put (SD_PHENOTYPE_NAME, GD_NAME_BOOST);
+			boosts.put (SD_TREATMENT_NAME, GD_NAME_BOOST);
+			boosts.put (SD_TREATMENT_SYNONYM, GD_NAME_BOOST);
 		}
 		
 		if (string_fields != null) {
@@ -239,6 +307,8 @@ public class StudyDocument extends MongoDocument {
 	
 	static public boolean isFieldMultiValued (String field) {		
 		if ((field.equals (SD_PHENOTYPE_NAME)) || (field.equals (SD_PHENOTYPE_DESCRIPTION)) || (field.equals (SD_ACCESSION))) {
+			return true;
+		} else if ((field.equals (SD_TREATMENT_NAME)) || (field.equals (SD_TREATMENT_DESCRIPTION)) || (field.equals (SD_TREATMENT_SYNONYM))) {
 			return true;
 		} else {		
 			return MongoDocument.isFieldMultiValued (field);

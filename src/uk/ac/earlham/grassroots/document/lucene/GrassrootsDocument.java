@@ -212,14 +212,18 @@ abstract public class GrassrootsDocument {
 	 */
 	public boolean addText (JSONObject json_doc, String input_key, String output_key) throws IllegalArgumentException {
 		boolean success_flag = false;
-		String value = (String) json_doc.get (input_key);
+		Object o = json_doc.get (input_key);
 		
-		if (value != null) {
-			gd_wrapper.addText (output_key, value);
+		if (o != null) {
+			String value = o.toString (); 
 			
-			success_flag = true;
-		} 
-
+			if (value != null) {
+				gd_wrapper.addText (output_key, value);
+				
+				success_flag = true;
+			} 
+		}
+		
 		return success_flag;
 	}
 

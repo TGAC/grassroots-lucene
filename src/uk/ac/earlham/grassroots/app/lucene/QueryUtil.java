@@ -150,7 +150,7 @@ public class QueryUtil {
 					}
 					
 					
-					sb.append (q);
+//					sb.append (q);
 				}
 
 				if (boost != null) {

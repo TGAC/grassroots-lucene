@@ -23,6 +23,7 @@ public class StudyJSON extends MongoJSON {
 	final static public String SJ_ACCESSIONS = "accessions";
 	final static public String SJ_ADDRESS = "address";
 	final static public String SJ_ADDRESS_ID = "address_id";
+	final static public String SJ_TREATMENTS = "treatment_factors";
 	
 	
 	public StudyJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
