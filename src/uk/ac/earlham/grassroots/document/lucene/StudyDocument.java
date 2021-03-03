@@ -92,7 +92,18 @@ public class StudyDocument extends MongoDocument {
 	
 	
 	void addCrop (JSONObject doc, String crop_key, String lucene_key) {
-		addText (doc, crop_key, lucene_key);
+		Object o = doc.get (crop_key);
+		
+		if (o != null) {
+			if (o instanceof JSONObject) {
+				o = ((JSONObject) o).get ("so:name");
+				
+				if (o != null)  {
+					String s = o.toString ();
+					addText (doc, lucene_key, s);
+				}
+			}
+		}
 	}
 	
 	void addAspect (JSONObject doc) {		

@@ -36,6 +36,9 @@ public class StudyJSON extends MongoJSON {
 		if (b) {
 			
 			if (addJSONField (doc, StudyDocument.SD_STUDY_DESIGN, StudyJSON.SJ_STUDY_DESIGN)) {
+				
+				addJSONField (doc, StudyDocument.SD_PHENOTYPE_GATHERING, StudyJSON.SJ_PHENOTYPE_GATHERING);
+				
 				b = true;
 			} else {
 				b = false;
