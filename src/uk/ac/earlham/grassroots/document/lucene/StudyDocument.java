@@ -28,7 +28,9 @@ public class StudyDocument extends MongoDocument {
 	final static public String SD_ADDRESS = SD_PREFIX + "address_id";
 	final static public String SD_TREATMENT_NAME = SD_PREFIX + "treatment_name";
 	final static public String SD_TREATMENT_SYNONYM = SD_PREFIX + "treatment_synonym";
-	final static public String SD_TREATMENT_DESCRIPTION = SD_PREFIX + "treatment_description";
+	final static public String SD_TREATMENT_DESCRIPTION = SD_PREFIX + "treatment_description";	
+	final static public String SD_CURATOR = SD_PREFIX + "curator";
+	final static public String SD_CONTACT = SD_PREFIX + "contact";
 	
 	
 	public StudyDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -82,6 +84,11 @@ public class StudyDocument extends MongoDocument {
 	
 			// treatments
 			addTreatments (json_doc);
+			
+			// people
+			addPerson (json_doc, StudyJSON.SJ_CURATOR, StudyDocument.SD_CURATOR);
+			addPerson (json_doc, StudyJSON.SJ_CONTACT, StudyDocument.SD_CONTACT);
+
 			
 			success_flag = true;
 						
@@ -202,8 +209,7 @@ public class StudyDocument extends MongoDocument {
 	
 	void addParentFieldTrial (JSONObject doc) {		
 		Object o = doc.get (StudyJSON.SJ_PARENT_TRIAL);
-
-		
+	
 		if (o != null) {
 			if (o instanceof JSONObject) {
 				JSONObject field_trial = (JSONObject) o;
@@ -219,7 +225,26 @@ public class StudyDocument extends MongoDocument {
 		
 	}
 
+	
+	void addPerson (JSONObject doc, String input_json_key, String output_doc_key) {
+		Object o = doc.get (input_json_key);
 
+		if (o != null) {
+			if (o instanceof JSONObject) {
+				JSONObject curator = (JSONObject) o;
+								
+				o = curator.get ("so:name");
+				
+				if (o != null) {
+					String name = o.toString ();
+					addText (output_doc_key, name);						
+				}
+			}
+		}
+		
+	}
+
+	
 	void addTreatments (JSONObject doc) {		
 		Object o = doc.get (StudyJSON.SJ_TREATMENTS);
 		
@@ -300,6 +325,8 @@ public class StudyDocument extends MongoDocument {
 		fields.add (SD_TREATMENT_NAME);
 		fields.add (SD_TREATMENT_DESCRIPTION);
 		fields.add (SD_TREATMENT_SYNONYM);
+		fields.add (SD_CURATOR);
+		fields.add (SD_CONTACT);
 		
 		if (boosts != null) {
 			boosts.put (SD_ACCESSION, GD_NAME_BOOST);
