@@ -32,8 +32,14 @@ public class ProjectDocument extends GrassrootsDocument {
 				if (addProjectCodes (json_doc)) {
 					if (addUrl (json_doc)) {
 						success_flag = true;
+					} else {
+						System.err.println ("ProjectDocument.addUrl failed");
 					}
+				} else {
+					System.err.println ("ProjectDocument.addProjectCodes failed");
 				}
+			} else {
+				System.err.println ("ProjectDocumentb.addAuthors failed");
 			}
 		}
 	
