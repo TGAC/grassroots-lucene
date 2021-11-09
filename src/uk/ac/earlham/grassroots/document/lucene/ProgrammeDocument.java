@@ -33,9 +33,14 @@ public class ProgrammeDocument extends MongoDocument {
 			
 			addString (json_doc, ProgrammeJSON.PJ_ABBREVIATION, ProgrammeDocument.PD_ABBREVIATION);
 			addString (json_doc, ProgrammeJSON.PJ_CROP, ProgrammeDocument.PD_CROP);
-			addText (json_doc, ProgrammeJSON.PJ_PI, ProgrammeDocument.PD_PI);
 			addString (json_doc, ProgrammeJSON.PJ_URL, ProgrammeDocument.PD_URL);
-					
+
+			JSONObject o = (JSONObject) json_doc.get (ProgrammeJSON.PJ_PI);
+			
+			if (o != null) {
+				addText (json_doc, "so:name", ProgrammeDocument.PD_PI);	
+			}
+			
 			success_flag = true;
 		}
 	
