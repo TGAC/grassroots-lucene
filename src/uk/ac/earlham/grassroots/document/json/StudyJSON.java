@@ -26,7 +26,9 @@ public class StudyJSON extends MongoJSON {
 	final static public String SJ_TREATMENTS = "treatment_factors";
 	final static public String SJ_CURATOR = "curator";
 	final static public String SJ_CONTACT = "contact";
-	
+	final static public String SJ_PLAN_CHANGES = "plan_changes";
+	final static public String SJ_DATA_NOT_INCLUDED = "data_not_included";
+	final static public String SJ_PHYSICAL_SAMPLES_COLLECTED = "physical_samples_collected";
 	
 	public StudyJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
 		super (doc, highlights, highlighter_index);		
