@@ -34,27 +34,41 @@ public class MeasuredVariableDocument extends MongoDocument {
 		boolean success_flag = false;
 		
 		/*
-		 {
-		    "_id" : ObjectId("5bd87c047b797f6947791b55"),
-		    "trait" : {
-		        "so:sameAs" : "CO_321:0000013",
-		        "so:name" : "Grain yield",
-		        "so:description" : "Amount (weight) of grains that was harvested.",
-		        "abbreviation" : "GY"
-		    },
-		    "measurement" : {
-		        "so:sameAs" : "CO_321:0001028",
-		        "so:name" : "GY Computation",
-		        "so:description" : "Use formulae to calculate grain yield in g/m2"
-		    },
-		    "unit" : {
-		        "so:sameAs" : "CO_321:0000432",
-		        "so:name" : "t/ha"
-		    },
-		    "internal_name" : "GRYLD",
-		    "@type" : "Grassroots:Phenotype"
-		}
-		 */
+		{
+			"unit": {
+				"so:name": "ppm",
+				"so:sameAs": "ROTH_UNIT:000239",
+				"so:description": "ppm",
+				"abbreviation": "ppm"
+			},
+			"@type": "Grassroots:MeasuredVariable",
+			"variable": {
+				"so:name": "ZnDe_CalcIcpYldRe_ppm",
+				"so:sameAs": "ROTH_VARIABLE:000538",
+				"so:description": "ZnDe_CalcIcpYldRe_ppm"
+			},
+			"trait": {
+				"so:name": "Zinc deviation",
+				"so:sameAs": "ROTH_TRAIT:000507",
+				"so:description": "Zinc deviation from a regression line plotted through concentration against grain yield.",
+				"abbreviation": "ZnDe"
+			},
+			"scale": {
+				"so:name": "Numerical",
+				"class_type": "xsd:double"
+			},
+			"_id": {
+				"$oid": "625ebcac721eed64c607472c"
+			},
+			"measurement": {
+				"so:name": "Calculation from ICP data and grain yield (at 100% DM) data.",
+				"so:sameAs": "ROTH_MEAS:000494",
+				"so:description": "Zinc deviation calculated from a regression line plotted on grain concentration (from ICP analysis) against grain yield at 100% Dry Matter.",
+				"abbreviation": "CalcIcpYldRe"
+			},
+			"type_description": "Measured Variable"
+		}		 
+		*/
 		
 		if (super.addFields (json_doc)) {
 			/*
@@ -98,6 +112,11 @@ public class MeasuredVariableDocument extends MongoDocument {
 	@Override
 	public String getUserFriendlyTypename() {
 		return "Measured Variable";
+	}
+
+	
+	public String getNameKey () {
+		return null;
 	}
 
 	
