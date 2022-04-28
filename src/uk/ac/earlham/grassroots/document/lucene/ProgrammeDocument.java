@@ -38,7 +38,7 @@ public class ProgrammeDocument extends MongoDocument {
 			JSONObject o = (JSONObject) json_doc.get (ProgrammeJSON.PJ_PI);
 			
 			if (o != null) {
-				addText (json_doc, "so:name", ProgrammeDocument.PD_PI);	
+				addText (o, "so:name", ProgrammeDocument.PD_PI);	
 			}
 			
 			success_flag = true;
