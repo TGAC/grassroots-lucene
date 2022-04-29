@@ -14,6 +14,7 @@ public class ProgrammeDocument extends MongoDocument {
 	final static public String PD_CROP = PD_PREFIX + "crop";
 	final static public String PD_PI = PD_PREFIX + "pi";
 	final static public String PD_URL = PD_PREFIX + "url";
+	final static public String PD_PI_NAME = "so:name";
 
 	
 	public ProgrammeDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -31,14 +32,14 @@ public class ProgrammeDocument extends MongoDocument {
 		
 		if (super.addFields (json_doc)) {
 			
-			addString (json_doc, ProgrammeJSON.PJ_ABBREVIATION, ProgrammeDocument.PD_ABBREVIATION);
+			addText (json_doc, ProgrammeJSON.PJ_ABBREVIATION, ProgrammeDocument.PD_ABBREVIATION);
 			addString (json_doc, ProgrammeJSON.PJ_CROP, ProgrammeDocument.PD_CROP);
 			addString (json_doc, ProgrammeJSON.PJ_URL, ProgrammeDocument.PD_URL);
 
 			JSONObject o = (JSONObject) json_doc.get (ProgrammeJSON.PJ_PI);
 			
 			if (o != null) {
-				addText (o, "so:name", ProgrammeDocument.PD_PI);	
+				addText (o, PD_PI_NAME, ProgrammeDocument.PD_PI);	
 			}
 			
 			success_flag = true;
@@ -59,7 +60,6 @@ public class ProgrammeDocument extends MongoDocument {
 		}
 		
 		if (string_fields != null) {
-			string_fields.put (ProgrammeDocument.PD_ABBREVIATION, ProgrammeDocument.PD_ABBREVIATION);
 			string_fields.put (ProgrammeDocument.PD_CROP, ProgrammeDocument.PD_CROP);
 			string_fields.put (ProgrammeDocument.PD_URL, ProgrammeDocument.PD_URL);
 		}

@@ -24,9 +24,9 @@ public class FieldTrialDocument extends MongoDocument {
 			/*
 			 * Add the field trial-specific fields
 			 */
-			if (addText (json_doc, "team", FieldTrialDocument.FTD_TEAM)) {
-				success_flag = true;
-			}
+			addText (json_doc, "team", FieldTrialDocument.FTD_TEAM);
+			
+			success_flag = true;
 		}
 	
 		return success_flag;

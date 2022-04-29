@@ -83,6 +83,12 @@ public class GrassrootsJSON {
 
 	
 	protected boolean addJSONField (Document doc, String input_key, String output_key, boolean do_highlighting) {
+		return addJSONField (doc, gj_json, input_key, output_key, do_highlighting);
+	}
+
+
+	
+	protected boolean addJSONField (Document doc, JSONObject output_json, String input_key, String output_key, boolean do_highlighting) {
 		boolean b = false;
 		String value = doc.get (input_key);
 				
@@ -96,17 +102,21 @@ public class GrassrootsJSON {
 		
 		
 		if (value != null) {
-			gj_json.put (output_key, value);
+			output_json.put (output_key, value);
 			b = true;
 		}
 		
 		return b;
 	}
-
-
+	
 	
 	protected boolean addJSONField (Document doc, String input_key, String output_key) {
 		return addJSONField (doc, input_key, output_key, true);
+	}
+	
+	
+	protected boolean addJSONField (Document doc, JSONObject output_json, String input_key, String output_key) {
+		return addJSONField (doc, output_json, input_key, output_key, true);
 	}
 	
 	
