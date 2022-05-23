@@ -34,6 +34,7 @@ public class StudyDocument extends MongoDocument {
 	final static public String SD_PLAN_CHANGES = SD_PREFIX + "plan_changes";
 	final static public String SD_DATA_NOT_INCLUDED = SD_PREFIX + "data_not_included";
 	final static public String SD_PHYSICAL_SAMPLES_COLLECTED = SD_PREFIX + "physical_samples_collected";
+	final static public String SD_IMAGE_NOTES = SD_PREFIX + "image_collection_notes";
 	
 	public StudyDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
@@ -65,6 +66,7 @@ public class StudyDocument extends MongoDocument {
 			addText (json_doc, StudyJSON.SJ_PLAN_CHANGES, SD_PLAN_CHANGES);
 			addText (json_doc, StudyJSON.SJ_DATA_NOT_INCLUDED, SD_DATA_NOT_INCLUDED);
 			addText (json_doc, StudyJSON.SJ_PHYSICAL_SAMPLES_COLLECTED, SD_PHYSICAL_SAMPLES_COLLECTED);
+			addText (json_doc, StudyJSON.SJ_IMAGE_NOTES, SD_IMAGE_NOTES);
 
 			addDateString (json_doc, StudyJSON.SJ_SOWING_DATE, SD_SOWING_DATE);
 			addDateString (json_doc, StudyJSON.SJ_HARVEST_DATE, SD_HARVEST_DATE);
@@ -336,7 +338,7 @@ public class StudyDocument extends MongoDocument {
         fields.add (SD_PLAN_CHANGES);
         fields.add (SD_DATA_NOT_INCLUDED);
         fields.add (SD_PHYSICAL_SAMPLES_COLLECTED);
-
+        fields.add (SD_IMAGE_NOTES);
 
 		if (boosts != null) {
 			boosts.put (SD_ACCESSION, GD_NAME_BOOST);

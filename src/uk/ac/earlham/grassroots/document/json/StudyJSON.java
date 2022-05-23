@@ -29,6 +29,7 @@ public class StudyJSON extends MongoJSON {
 	final static public String SJ_PLAN_CHANGES = "plan_changes";
 	final static public String SJ_DATA_NOT_INCLUDED = "data_not_included";
 	final static public String SJ_PHYSICAL_SAMPLES_COLLECTED = "physical_samples_collected";
+	final static public String SJ_IMAGE_NOTES = "image_collection_notes";
 	
 	public StudyJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
 		super (doc, highlights, highlighter_index);		
@@ -42,6 +43,12 @@ public class StudyJSON extends MongoJSON {
 			if (addJSONField (doc, StudyDocument.SD_STUDY_DESIGN, StudyJSON.SJ_STUDY_DESIGN)) {
 				
 				addJSONField (doc, StudyDocument.SD_PHENOTYPE_GATHERING, StudyJSON.SJ_PHENOTYPE_GATHERING);
+				addJSONField (doc, StudyDocument.SD_CURATOR, StudyJSON.SJ_CURATOR);
+				addJSONField (doc, StudyDocument.SD_CONTACT, StudyJSON.SJ_CONTACT);
+				addJSONField (doc, StudyDocument.SD_PLAN_CHANGES, StudyJSON.SJ_PLAN_CHANGES);
+				addJSONField (doc, StudyDocument.SD_DATA_NOT_INCLUDED, StudyJSON.SJ_DATA_NOT_INCLUDED);
+				addJSONField (doc, StudyDocument.SD_PHYSICAL_SAMPLES_COLLECTED, StudyJSON.SJ_PHYSICAL_SAMPLES_COLLECTED);
+				addJSONField (doc, StudyDocument.SD_IMAGE_NOTES, StudyJSON.SJ_IMAGE_NOTES);
 				
 				b = true;
 			} else {
