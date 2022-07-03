@@ -1,0 +1,22 @@
+{
+  "@type": "Grassroots:Service", 
+  "service": "BlastN",
+  "id": "http://localhost:8080/grassroots/public/service/blast/blastn/paragon",
+  "so:image": "http://localhost:8080/grassroots/images/BlastN%20service",    
+  "internal_url": "http://localhost:8080/grassroots/public",
+  "payload": {
+    "services": [{
+      "so:name": "BlastN",
+      "refresh_service": true,
+      "parameter_set": {
+        "level": "simple",
+        "parameters": [{
+          "param": "Available Databases provided by billy public -> Paragon",
+          "current_value": true
+        }]
+      }
+    }]
+  },
+  "so:name": "Paragon",
+  "so:description": "Version 1.1 assembly of Triticum aestivum generated from filtering v1.0 assemblies to remove non-wheat sequences and scaffolds below 1 kb"
+}
