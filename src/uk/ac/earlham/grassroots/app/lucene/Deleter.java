@@ -77,6 +77,7 @@ public class Deleter {
 		if (index_writer != null) {
 			try {
 				index_writer.deleteDocuments (query);
+				index_writer.commit ();
 			    success_flag = true;
 			} catch (CorruptIndexException cie) {
 				System.err.println ("index_writer.deleteDocuments (): " + cie.getMessage());			    													
@@ -84,14 +85,12 @@ public class Deleter {
 				System.err.println ("index_writer.deleteDocuments (): " + ioe.getMessage());			    													
 			}
 
-			if (success_flag) {
 				try {
 				    index_writer.close ();
 				} catch (IOException ioe) {
 				    success_flag = false;
 					System.err.println ("index_writer.close (): " + ioe.getMessage());			    													
 				}
-			}
 		}
 		
 		return success_flag;
