@@ -101,6 +101,37 @@ public class QueryUtil {
 		query_builder.add (q, BooleanClause.Occur.SHOULD);
 	}
 	
+	
+	private static void addQuery (String field, String value, Map <String, String> string_fields, StringBuilder sb) {
+		boolean phrase_query_flag = value.contains (" ");
+		boolean string_field_flag = string_fields.containsKey (field);
+		String escaped_field = null;
+		
+		if (field.contains (":")) {
+			escaped_field = field.replaceAll (":", "\\\\:");					
+		} else {
+			escaped_field = field;
+		}
+		
+		if (phrase_query_flag && !string_field_flag) {
+			sb.append (escaped_field);
+			sb.append (":");					
+			sb.append ("\"");
+			sb.append (value);
+			sb.append ("\"");				
+		} else {
+			String [] subqueries = value.split (" ");
+
+			for (String subquery : subqueries) {
+				sb.append (escaped_field);
+				sb.append (":");					
+				sb.append (subquery);
+				sb.append (" ");					
+			}
+			
+		}
+
+	}
 
 	public static Query buildGrassrootsQueryUsingParser (List <String> queries) {
 		Query query = null;		
@@ -114,52 +145,36 @@ public class QueryUtil {
 		StringBuilder sb = new StringBuilder ();
 
 		for (String q : queries) {
-			boolean phrase_query_flag = q.contains (" ");
-			
-			for (String field : fields) {
-				boolean string_field_flag = string_fields.containsKey (field);
-				String escaped_field;
-				Float boost = boosts.get (field);
-
-				if (boost != null) {
-					sb.append ("(");
-				}
+			if (q.contains ("=")) {
+				String [] parts = q.split ("=");
 				
-				if (field.contains (":")) {
-					escaped_field = field.replaceAll (":", "\\\\:");					
-				} else {
-					escaped_field = field;
-				}
-					 
+				if (parts.length == 2) {
+					String field = parts [0];
+					String value = parts [1];
+										
+					addQuery (field, value, string_fields, sb);
+				}		
 					
-								
-				if (phrase_query_flag && !string_field_flag) {
-					sb.append (escaped_field);
-					sb.append (":");					
-					sb.append ("\"");
-					sb.append (q);
-					sb.append ("\"");				
-				} else {
-					String [] subqueries = q.split (" ");
+			} else {
+				
+				for (String field : fields) {
+					Float boost = boosts.get (field);
 
-					for (String subquery : subqueries) {
-						sb.append (escaped_field);
-						sb.append (":");					
-						sb.append (subquery);
-						sb.append (" ");					
+					if (boost != null) {
+						sb.append ("(");
 					}
-					
-					
-//					sb.append (q);
-				}
+																										
+					addQuery (field, q, string_fields, sb);
 
-				if (boost != null) {
-					sb.append (")^");
-					sb.append (boost);
-				}
+					if (boost != null) {
+						sb.append (")^");
+						sb.append (boost);
+					}
 
-				sb.append (" ");
-			}			
+					sb.append (" ");
+				}			
+
+			}		// for (String field : fields)
 
 		}
 
@@ -244,27 +259,24 @@ public class QueryUtil {
 		BooleanQuery.Builder query_builder = new BooleanQuery.Builder ();
 		
 		for (String query_str : queries) {
-			for (String field : fields) {
+			if (query_str.contains ("=")) {
+				String [] parts = query_str.split ("=");
 				
-				Float boost = boosts.get (field);
+				if (parts.length == 2) {
+					String key = parts [0];
+					String value = parts [1];
+					
+					AddQuery (key, value, query_builder, string_fields, boosts);				}
+				 
+			} else {
+				for (String field : fields) {			
+					AddQuery (field, query_str, query_builder, string_fields, boosts);
+				}		
 
-				if (query_str.contains (" ")) {
-					if (string_fields.containsKey (field)) {
-						addTermQueryToBuilder (field, query_str, boost, query_builder);	
-					} else {
-						StringBuilder sb = new StringBuilder ();
-						
-						sb.append (query_str);
-						
-						addPhraseQueryToBuilder (field, sb.toString (), boost, query_builder);						
-					}
-				} else {
-					addTermQueryToBuilder (field, query_str, boost, query_builder);
-				}
-			}			
+			}		// for (String field : fields)
 
 		}
-		
+	
 		query = query_builder.build ();
 		
 		if (query != null) {
@@ -407,4 +419,23 @@ public class QueryUtil {
 		
 	}
 	
+	
+	static private void AddQuery (String field, String value, BooleanQuery.Builder query_builder, Map <String, String> string_fields, Map <String, Float> boosts) {
+		Float boost = boosts.get (field);
+
+		if (value.contains (" ")) {
+			if (string_fields.containsKey (field)) {
+				addTermQueryToBuilder (field, value, boost, query_builder);	
+			} else {
+				StringBuilder sb = new StringBuilder ();
+				
+				sb.append (value);
+				
+				addPhraseQueryToBuilder (field, sb.toString (), boost, query_builder);						
+			}
+		} else {
+			addTermQueryToBuilder (field, value, boost, query_builder);
+		}
+
+	}
 }
