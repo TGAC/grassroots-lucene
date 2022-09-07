@@ -81,6 +81,8 @@ public class MeasuredVariableJSON extends GrassrootsJSON {
 		String name = getString (doc, MeasuredVariableDocument.MVD_MEASUREMENT_NAME);
 		
 		if (name != null) {
+			doc.put (MeasuredVariableJSON.MVJ_TERM_NAME, name);
+			
 			String id = getString (doc, MeasuredVariableDocument.MVD_MEASUREMENT_ID);
 
 			if (id != null) {
