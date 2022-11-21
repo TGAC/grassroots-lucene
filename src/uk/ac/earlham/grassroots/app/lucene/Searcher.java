@@ -182,11 +182,13 @@ public class Searcher {
 		List <AbstractMap.SimpleEntry <String, String>> facets = new ArrayList <AbstractMap.SimpleEntry <String, String>> ();
 		String search_type = "default";
 		PrintStream output_stm = System.out;
-		
+		boolean terms_query_flag = false;
 		
 		for (int i = 0; i < args.length; ++ i) {
-			if ("-index".equals (args [i])) {
-				index = args [++ i];
+			if ("-terms_query".equals (args [i])) {
+				terms_query_flag = true;
+			} else if ("-index".equals (args [i])) {
+				index = args [++ i];			
 			} else if ("-tax".equals (args [i])) {
 				tax_dirname = args [++ i];
 			} else if ("-query".equals (args [i])) {
@@ -237,8 +239,13 @@ public class Searcher {
 			if (searcher != null) {
 				Query q = null;
 				
-				if (!queries.isEmpty ()) {					
-					q = QueryUtil.buildGrassrootsQueryUsingParser (queries);
+				if (!queries.isEmpty ()) {		
+					
+					if (terms_query_flag) {
+						q = QueryUtil.buildGrassrootsQuery (queries);
+					} else {
+						q = QueryUtil.buildGrassrootsQueryUsingParser (queries);						
+					}
 					
 					/*
 					Query temp = QueryUtil.buildGrassrootsQuery (queries);
