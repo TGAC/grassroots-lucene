@@ -1,14 +1,17 @@
 package uk.ac.earlham.grassroots.document.lucene;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.json.StudyJSON;
 import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
+
 
 public class StudyDocument extends MongoDocument {
 	final static public String SD_PREFIX = "study-";
@@ -152,6 +155,35 @@ public class StudyDocument extends MongoDocument {
 		
 	}
 	
+	
+	/*
+  "phenotypes": {
+    "BM_Calc_tha": {
+      "definition": {
+        "@type": "Grassroots:MeasuredVariable",
+        "type_description": "Measured Variable",
+        "variable": {
+          "so:sameAs": "CO_321:0001036",
+          "so:name": "BM_Calc_tha"
+        },
+        "trait": {
+          "so:sameAs": "CO_321:0000005",
+          "so:name": "Aboveground biomass at maturity",
+          "so:description": "All above-ground biomass at maturity.",
+          "abbreviation": "BM"
+        },
+        "measurement": {
+          "so:sameAs": "CO_321:0001027",
+          "so:name": "BM Computation",
+          "so:description": "Cut all aboveground biomass in a predetermined area (A). Avoid border effects by sampling away from edges of plot. Biomass as other yield components can be calculated or measured individually (Bell and Fischer, 1994; Reynolds et al., 2001; Pask et al., 2012), decide which method suit better for your objectives."
+        },
+        "unit": {
+          "so:sameAs": "CO_321:0000432",
+          "so:name": "t/ha"
+        }
+      }
+    },
+	 */
 
 	void addPhenotypes (JSONObject doc) {		
 		Object o = doc.get (StudyJSON.SJ_PHENOTYPES);
@@ -159,36 +191,36 @@ public class StudyDocument extends MongoDocument {
 		HashMap <String, String> descriptions_map = new HashMap <String, String> ();
 		
 		if (o != null) {
-			if (o instanceof JSONArray) {
-				JSONArray phenotypes = (JSONArray) o;				
-				final int num_phenotypes = phenotypes.size ();
-				
-				for (int i = 0; i < num_phenotypes; ++ i) {
-					JSONObject phenotype = (JSONObject) phenotypes.get (i);
-
-					Object value = phenotype.get ("so:name");
-					if (value != null) {
-						String name = value.toString ();
-						
-						if (!names_map.containsKey (name)) {
-							addText (SD_PHENOTYPE_NAME, name);						
-							names_map.put (name, name);
-						}
-					}
-
-					value = phenotype.get ("so:description");
-					if (value != null) {
-						String description = value.toString ();
-						
-						if (!descriptions_map.containsKey (description)) {
-							addText (SD_PHENOTYPE_DESCRIPTION, description);						
-							descriptions_map.put (description, description);
-						}
-
-					}
-				}
-			}
 			
+			if (o instanceof JSONObject) {
+				JSONObject phenotypes = (JSONObject) o;								
+				Set keys = phenotypes.keySet ();
+				Iterator itr = keys.iterator ();
+				
+				while (itr.hasNext ()) {					
+					String key = itr.next ().toString ();
+					
+					o = phenotypes.get (key);
+					
+					if (o instanceof JSONObject) {
+						o = ((JSONObject) o).get ("definition");
+						
+						if (o != null) {
+							if (o instanceof JSONObject) {
+								JSONObject definition = (JSONObject) o;
+
+								MeasuredVariableDocument.indexMeasuredVariable (this, definition);								
+							}
+								
+						}
+						
+						
+					}
+						
+				}
+				
+			}
+					
 		}
 		
 	}

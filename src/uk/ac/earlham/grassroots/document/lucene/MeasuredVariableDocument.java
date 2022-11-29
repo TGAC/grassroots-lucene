@@ -71,36 +71,7 @@ public class MeasuredVariableDocument extends MongoDocument {
 		*/
 		
 		if (super.addFields (json_doc)) {
-			/*
-			 * Add the treatment-specific fields
-			 */
-			JSONObject child = (JSONObject) json_doc.get (MeasuredVariableJSON.MVJ_TRAIT);
-
-			if (child != null) {
-				addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_TRAIT_NAME);
-				addText (child, MeasuredVariableJSON.MVJ_TERM_DESCRIPTION, MeasuredVariableDocument.MVD_TRAIT_DESCRIPTION);
-				addString (child, MeasuredVariableJSON.MVJ_TERM_ABBREVIATION, MeasuredVariableDocument.MVD_TRAIT_ABBREVIATION);
-				addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_TRAIT_ID);				
-			}
-
-			child = (JSONObject) json_doc.get (MeasuredVariableJSON.MVJ_MEASUREMENT);
-			if (child != null) {
-				addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_MEASUREMENT_NAME);
-				addText (child, MeasuredVariableJSON.MVJ_TERM_DESCRIPTION, MeasuredVariableDocument.MVD_MEASUREMENT_DESCRIPTION);
-				addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_MEASUREMENT_ID);				
-			}
-
-			child = (JSONObject) json_doc.get (MeasuredVariableJSON.MVJ_UNIT);
-			if (child != null) {
-				addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_UNIT_NAME);
-				addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_UNIT_ID);				
-			}
-			
-			child = (JSONObject) json_doc.get (MeasuredVariableJSON.MVJ_VARIABLE);
-			if (child != null) {
-				addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_VARIABLE_NAME);
-				addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_VARIABLE_ID);				
-			}
+			MeasuredVariableDocument.indexMeasuredVariable (this, json_doc);
 			
 			success_flag = true;
 		}
@@ -108,6 +79,40 @@ public class MeasuredVariableDocument extends MongoDocument {
 		return success_flag;
 	}
 	
+	
+	public static void indexMeasuredVariable (GrassrootsDocument grassroots_doc, JSONObject json_doc) {
+		/*
+		 * Add the treatment-specific fields
+		 */
+		JSONObject child = (JSONObject) json_doc.get (MeasuredVariableJSON.MVJ_TRAIT);
+
+		if (child != null) {
+			grassroots_doc.addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_TRAIT_NAME);
+			grassroots_doc.addText (child, MeasuredVariableJSON.MVJ_TERM_DESCRIPTION, MeasuredVariableDocument.MVD_TRAIT_DESCRIPTION);
+			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_TERM_ABBREVIATION, MeasuredVariableDocument.MVD_TRAIT_ABBREVIATION);
+			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_TRAIT_ID);				
+		}
+
+		child = (JSONObject) json_doc.get (MeasuredVariableJSON.MVJ_MEASUREMENT);
+		if (child != null) {
+			grassroots_doc.addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_MEASUREMENT_NAME);
+			grassroots_doc.addText (child, MeasuredVariableJSON.MVJ_TERM_DESCRIPTION, MeasuredVariableDocument.MVD_MEASUREMENT_DESCRIPTION);
+			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_MEASUREMENT_ID);				
+		}
+
+		child = (JSONObject) json_doc.get (MeasuredVariableJSON.MVJ_UNIT);
+		if (child != null) {
+			grassroots_doc.addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_UNIT_NAME);
+			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_UNIT_ID);				
+		}
+		
+		child = (JSONObject) json_doc.get (MeasuredVariableJSON.MVJ_VARIABLE);
+		if (child != null) {
+			grassroots_doc.addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_VARIABLE_NAME);
+			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_VARIABLE_ID);				
+		}
+		
+	}
 	
 	@Override
 	public String getUserFriendlyTypename() {
