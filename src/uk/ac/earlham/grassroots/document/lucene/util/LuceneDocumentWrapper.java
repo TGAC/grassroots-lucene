@@ -1,4 +1,4 @@
-#package uk.ac.earlham.grassroots.document.lucene.util;
+package uk.ac.earlham.grassroots.document.lucene.util;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
