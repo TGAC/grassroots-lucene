@@ -1,4 +1,4 @@
-package uk.ac.earlham.grassroots.document.lucene.util;
+#package uk.ac.earlham.grassroots.document.lucene.util;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -54,7 +54,7 @@ public class LuceneDocumentWrapper implements DocumentWrapper {
 
 	@Override
 	public boolean addString (String key, String value) {
-		Field f = new StringField (key, value.toLowerCase (), Field.Store.YES);
+		Field f = new StringField (key, value, Field.Store.YES);
 		ldw_document.add (f);
 		
 		addToDefaultBuffer (value);
