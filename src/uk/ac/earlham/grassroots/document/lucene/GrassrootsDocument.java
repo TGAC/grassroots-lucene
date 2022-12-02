@@ -218,7 +218,7 @@ abstract public class GrassrootsDocument {
 			String value = o.toString (); 
 			
 			if (value != null) {
-				gd_wrapper.addText (output_key, value.toLowerCase ());
+				gd_wrapper.addText (output_key, value);
 				
 				success_flag = true;
 			} 
