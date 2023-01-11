@@ -106,6 +106,7 @@ public class QueryUtil {
 		boolean phrase_query_flag = value.contains (" ");
 		boolean string_field_flag = string_fields.containsKey (field);
 		String escaped_field = null;
+		String escaped_value = null;
 		
 		if (field.contains (":")) {
 			escaped_field = field.replaceAll (":", "\\\\:");					
@@ -114,10 +115,16 @@ public class QueryUtil {
 		}
 		
 		if (phrase_query_flag && !string_field_flag) {
+			if (value.contains (":")) {
+				escaped_value = value.replaceAll (":", "\\\\:");					
+			} else {
+				escaped_value = value;
+			}
+			
 			sb.append (escaped_field);
 			sb.append (":");					
 			sb.append ("\"");
-			sb.append (value);
+			sb.append (escaped_value);
 			sb.append ("\"");				
 		} else {
 			String [] subqueries = value.split (" ");
@@ -125,7 +132,13 @@ public class QueryUtil {
 			for (String subquery : subqueries) {
 				sb.append (escaped_field);
 				sb.append (":");					
-				sb.append (subquery);
+
+				if (subquery.contains (":")) {
+					escaped_value = subquery.replaceAll (":", "\\\\:");					
+				} else {
+					escaped_value = subquery;
+				}
+				sb.append (escaped_value);
 				sb.append (" ");					
 			}
 			
