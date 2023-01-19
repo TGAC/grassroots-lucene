@@ -17,6 +17,8 @@ public class ProgrammeJSON extends MongoJSON {
 	final public static String PJ_PI = "principal_investigator";
 	final public static String PJ_URL = "so:url";
 	final static public String PJ_PI_NAME = "so:name";
+	final static public String PJ_FUNDER = "funders";
+	final static public String PJ_CODE = "code";
 	
 	public ProgrammeJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
 		super (doc, highlights, highlighter_index);	
@@ -37,7 +39,8 @@ public class ProgrammeJSON extends MongoJSON {
 				addJSONField (doc, ProgrammeDocument.PD_ABBREVIATION, ProgrammeJSON.PJ_ABBREVIATION);
 				addJSONField (doc, ProgrammeDocument.PD_CROP, ProgrammeJSON.PJ_CROP);
 				addJSONField (doc, ProgrammeDocument.PD_URL, ProgrammeJSON.PJ_URL);
-				
+				addJSONField (doc, ProgrammeDocument.PD_FUNDER, ProgrammeJSON.PJ_FUNDER);
+				addJSONField (doc, ProgrammeDocument.PD_CODE, ProgrammeJSON.PJ_CODE);				
 			} else {
 				b = false;
 			}

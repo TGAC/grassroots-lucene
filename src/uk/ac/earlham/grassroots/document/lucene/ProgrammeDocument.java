@@ -15,7 +15,8 @@ public class ProgrammeDocument extends MongoDocument {
 	final static public String PD_PI = PD_PREFIX + "pi";
 	final static public String PD_URL = PD_PREFIX + "url";
 	final static public String PD_PI_NAME = "so:name";
-
+	final static public String PD_FUNDER = PD_PREFIX + "funders";
+	final static public String PD_CODE = PD_PREFIX + "project_code";
 	
 	public ProgrammeDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
@@ -36,6 +37,9 @@ public class ProgrammeDocument extends MongoDocument {
 			addString (json_doc, ProgrammeJSON.PJ_CROP, ProgrammeDocument.PD_CROP);
 			addString (json_doc, ProgrammeJSON.PJ_URL, ProgrammeDocument.PD_URL);
 
+			addText (json_doc, ProgrammeJSON.PJ_FUNDER, ProgrammeDocument.PD_FUNDER);
+			addText (json_doc, ProgrammeJSON.PJ_CODE, ProgrammeDocument.PD_CODE);
+			
 			JSONObject o = (JSONObject) json_doc.get (ProgrammeJSON.PJ_PI);
 			
 			if (o != null) {
@@ -54,6 +58,8 @@ public class ProgrammeDocument extends MongoDocument {
 		fields.add (ProgrammeDocument.PD_CROP);
 		fields.add (ProgrammeDocument.PD_PI);
 		fields.add (ProgrammeDocument.PD_URL);
+		fields.add (ProgrammeDocument.PD_FUNDER);
+		fields.add (ProgrammeDocument.PD_CODE);
 	
 		if (boosts != null) {
 			boosts.put (ProgrammeDocument.PD_ABBREVIATION, GrassrootsDocument.GD_DESCRIPTION_BOOST);
