@@ -16,21 +16,38 @@
   	<filelist dir="lib" files="json-simple-1.1.1.jar" />
   	<filelist dir="${solr.dir}/dist/solrj-lib" files="slf4j-api-1.7.24.jar" />
 	</path>
+
 	
 	<!-- solr libs -->
+<!--
 	<path id="solr.class.path">
   	<filelist dir="${solr.dir}/dist" files="solr-core-${lucene.version}.jar, solr-solrj-${lucene.version}.jar" />
 	</path>
+-->
+
+	<path id="solr.class.path">
+  	<filelist dir="${solr.dir}" files="solr-core-${solr.version}.jar, solr-solrj-${solr.version}.jar" />
+	</path>
 
 	<!-- lucene libs -->
-  <path id="lucene.class.path">
+<!--
+	<path id="lucene.class.path">
     <pathelement path="${lucene.dir}/analysis/common/lucene-analyzers-common-${lucene.version}.jar" />
     <pathelement path="${lucene.dir}/core/lucene-core-${lucene.version}.jar" />
     <pathelement path="${lucene.dir}/queryparser/lucene-queryparser-${lucene.version}.jar" />
     <pathelement path="${lucene.dir}/facet/lucene-facet-${lucene.version}.jar" />
     <pathelement path="${lucene.dir}/highlighter/lucene-highlighter-${lucene.version}.jar" />
   </path>	
-	
+-->	
+
+  <path id="lucene.class.path">
+    <pathelement path="${lucene.dir}/modules/lucene-analyzers-common-${lucene.version}.jar" />
+    <pathelement path="${lucene.dir}/modules/lucene-core-${lucene.version}.jar" />
+    <pathelement path="${lucene.dir}/modules/lucene-queryparser-${lucene.version}.jar" />
+    <pathelement path="${lucene.dir}/modules/lucene-facet-${lucene.version}.jar" />
+    <pathelement path="${lucene.dir}/modules/lucene-highlighter-${lucene.version}.jar" />
+  </path>	
+
 
 	<target name="jars" depends="core-jar,lucene-app-jar,solr-app-jar"></target>
 	

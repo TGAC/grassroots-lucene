@@ -31,18 +31,24 @@ public class StudyJSON extends MongoJSON {
 	final static public String SJ_PHYSICAL_SAMPLES_COLLECTED = "physical_samples_collected";
 	final static public String SJ_IMAGE_NOTES = "image_collection_notes";
 	final static public String SJ_SHAPE_NOTES = "shape_data_notes";
-	
+	final static public String SJ_PERSON_NAME = "so:name";
+	final static public String SJ_PERSON_EMAIL = "so:email";
+	final static public String SJ_PERSON_ROLE = "so:roleName";
+	final static public String SJ_PERSON_AFFILIATION = "so:affiliation";
+	final static public String SJ_PERSON_ORCID = "orcid";
+
+
 	public StudyJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
-		super (doc, highlights, highlighter_index);		
+		super (doc, highlights, highlighter_index);
 	}
 
 	public boolean addToJSON (Document doc) {
 		boolean b = super.addToJSON (doc);
-		
+
 		if (b) {
-			
+
 			if (addJSONField (doc, StudyDocument.SD_STUDY_DESIGN, StudyJSON.SJ_STUDY_DESIGN)) {
-				
+
 				addJSONField (doc, StudyDocument.SD_PHENOTYPE_GATHERING, StudyJSON.SJ_PHENOTYPE_GATHERING);
 				addJSONField (doc, StudyDocument.SD_CURATOR, StudyJSON.SJ_CURATOR);
 				addJSONField (doc, StudyDocument.SD_CONTACT, StudyJSON.SJ_CONTACT);
@@ -51,13 +57,15 @@ public class StudyJSON extends MongoJSON {
 				addJSONField (doc, StudyDocument.SD_PHYSICAL_SAMPLES_COLLECTED, StudyJSON.SJ_PHYSICAL_SAMPLES_COLLECTED);
 				addJSONField (doc, StudyDocument.SD_IMAGE_NOTES, StudyJSON.SJ_IMAGE_NOTES);
 				addJSONField (doc, StudyDocument.SD_SHAPE_NOTES, StudyJSON.SJ_SHAPE_NOTES);
-				
+
 				b = true;
 			} else {
 				b = false;
 			}
 		}
-		
+
 		return b;
 	}
+
+//	private boolean addPerson (Document doc,
 }
