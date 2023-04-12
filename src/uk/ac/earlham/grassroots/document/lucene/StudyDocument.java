@@ -11,6 +11,7 @@ import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.json.StudyJSON;
 import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
+import uk.ac.earlham.grassroots.document.lucene.util.Person;
 
 
 public class StudyDocument extends MongoDocument {
@@ -39,14 +40,6 @@ public class StudyDocument extends MongoDocument {
 	final static public String SD_PHYSICAL_SAMPLES_COLLECTED = SD_PREFIX + "physical_samples_collected";
 	final static public String SD_IMAGE_NOTES = SD_PREFIX + "image_collection_notes";
 	final static public String SD_SHAPE_NOTES = SD_PREFIX + "shape_data_notes";
-
-	final static public String SD_CURATOR_NAME = SD_PREFIX + "curator_name";
-	final static public String SD_CURATOR_EMAIL = SD_PREFIX + "curator_email";
-	final static public String SD_CURATOR_ROLE = SD_PREFIX + "curator_role";
-	final static public String SD_CURATOR_AFFILIATION = SD_PREFIX + "curator_affiliation";
-	final static public String SD_CURATOR_ORCID = SD_PREFIX + "curator_orcid";
-
-
 
 	public StudyDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
@@ -107,9 +100,11 @@ public class StudyDocument extends MongoDocument {
 			addTreatments (json_doc);
 
 			// people
-			addPerson (json_doc, StudyJSON.SJ_CURATOR, StudyDocument.SD_CURATOR);
-			addPerson (json_doc, StudyJSON.SJ_CONTACT, StudyDocument.SD_CONTACT);
+			Person.addPerson (this, json_doc, StudyJSON.SJ_CURATOR, StudyDocument.SD_CURATOR);
+			Person.addPerson (this, json_doc, StudyJSON.SJ_CONTACT, StudyDocument.SD_CONTACT);
 
+
+			
 
 			success_flag = true;
 
@@ -276,51 +271,6 @@ public class StudyDocument extends MongoDocument {
 	}
 
 
-	void addPerson (JSONObject doc, String input_json_key, String output_name_key, String output_email_key, String output_role_key, String output_affiliation_key, String output_orcid_key) {
-		Object o = doc.get (input_json_key);
-
-		if (o != null) {
-			if (o instanceof JSONObject) {
-				JSONObject curator = (JSONObject) o;
-
-				/* name */
-				o = curator.get ("so:name");
-				if (o != null) {
-					String name = o.toString ();
-					addText (output_name_key, name);
-				}
-
-				/* email */
-				o = curator.get ("so:email");
-				if (o != null) {
-					String name = o.toString ();
-					addText (output_email_key, name);
-				}
-
-				/* role */
-				o = curator.get ("so:roleName");
-				if (o != null) {
-					String name = o.toString ();
-					addText (output_role_key, name);
-				}
-
-				/* affiliation */
-				o = curator.get ("so:affiliation");
-				if (o != null) {
-					String name = o.toString ();
-					addText (output_affiliation_key, name);
-				}
-
-				/* orcid */
-				o = curator.get ("orcid");
-				if (o != null) {
-					String name = o.toString ();
-					addString (output_orcid_key, name);
-				}
-			}
-		}
-
-	}
 
 
 	void addTreatments (JSONObject doc) {
@@ -403,13 +353,12 @@ public class StudyDocument extends MongoDocument {
 		fields.add (SD_TREATMENT_NAME);
 		fields.add (SD_TREATMENT_DESCRIPTION);
 		fields.add (SD_TREATMENT_SYNONYM);
-		fields.add (SD_CURATOR);
-		fields.add (SD_CONTACT);
-        fields.add (SD_PLAN_CHANGES);
-        fields.add (SD_DATA_NOT_INCLUDED);
-        fields.add (SD_PHYSICAL_SAMPLES_COLLECTED);
-        fields.add (SD_IMAGE_NOTES);
-        fields.add (SD_SHAPE_NOTES);
+
+    fields.add (SD_PLAN_CHANGES);
+    fields.add (SD_DATA_NOT_INCLUDED);
+    fields.add (SD_PHYSICAL_SAMPLES_COLLECTED);
+    fields.add (SD_IMAGE_NOTES);
+    fields.add (SD_SHAPE_NOTES);
 
 		if (boosts != null) {
 			boosts.put (SD_ACCESSION, GD_NAME_BOOST);
@@ -423,6 +372,8 @@ public class StudyDocument extends MongoDocument {
 			string_fields.put (SD_ASPECT, SD_ASPECT);
 		}
 
+		Person.addQueryTerms (SD_CONTACT, fields, boosts, string_fields);
+		Person.addQueryTerms (SD_CURATOR, fields, boosts, string_fields);
 	}
 
 
