@@ -15,7 +15,7 @@ install.lib.dir = ${install.dir}/lib
 
 # shared libs
 shared.path = \
-	lib/json-simple-1.1.1.jar:${solr.dir}/dist/solrj-lib/slf4j-api-1.7.24.jar
+	lib/json-simple-1.1.1.jar:lib/slf4j-api-2.0.7.jar
 	
 
 # Add in the appropriate irods libs and dependencies

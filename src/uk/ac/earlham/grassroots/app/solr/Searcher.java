@@ -9,6 +9,8 @@ import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.response.SolrQueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.solr.metrics.SolrMetricsContext;
+
 
 public class Searcher implements SolrRequestHandler {
 	 private static final Logger se_log = LoggerFactory.getLogger (MethodHandles.lookup ().lookupClass ());
@@ -44,4 +46,13 @@ public class Searcher implements SolrRequestHandler {
 		// TODO Auto-generated method stub
 	}
 
+
+	@Override
+	public SolrMetricsContext getSolrMetricsContext () {
+			return null;
+	}
+	
+	@Override
+	public void initializeMetrics​ (SolrMetricsContext parentContext, String scope) {
+	}
 }

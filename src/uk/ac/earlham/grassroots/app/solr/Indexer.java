@@ -10,6 +10,8 @@ import org.apache.solr.common.util.NamedList;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.response.SolrQueryResponse;
+import org.apache.solr.metrics.SolrMetricsContext;
+
 
 public class Indexer implements SolrRequestHandler {
 	 private static final Logger in_log = LoggerFactory.getLogger (MethodHandles.lookup ().lookupClass ());
@@ -46,4 +48,13 @@ public class Indexer implements SolrRequestHandler {
 		
 	}
 
+	
+	@Override
+	public SolrMetricsContext getSolrMetricsContext () {
+			return null;
+	}
+	
+	@Override
+	public void initializeMetrics​ (SolrMetricsContext parentContext, String scope) {
+	}
 }
