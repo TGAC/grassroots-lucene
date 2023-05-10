@@ -76,6 +76,7 @@ run-lucene-indexer: jars
 	
 
 install: jars
+	mkdir -p ${install.lib.dir}
 	cp ${core.jar} ${install.lib.dir}/${core.jar}
 	cp ${lucene.jar} ${install.lib.dir}/${lucene.jar}
 	cp ${solr.jar} ${install.lib.dir}/${solr.jar}
