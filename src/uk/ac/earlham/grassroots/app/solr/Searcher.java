@@ -41,18 +41,15 @@ public class Searcher implements SolrRequestHandler {
 		}
 	}
 
-	@Override
 	public void init (NamedList config) {
 		// TODO Auto-generated method stub
 	}
 
 
-	@Override
 	public SolrMetricsContext getSolrMetricsContext () {
 			return null;
 	}
 	
-	@Override
 	public void initializeMetrics​ (SolrMetricsContext parentContext, String scope) {
 	}
 }
