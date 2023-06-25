@@ -100,8 +100,8 @@ public class StudyDocument extends MongoDocument {
 			addTreatments (json_doc);
 
 			// people
-			Person.addPerson (this, json_doc, StudyJSON.SJ_CURATOR, StudyDocument.SD_CURATOR);
-			Person.addPerson (this, json_doc, StudyJSON.SJ_CONTACT, StudyDocument.SD_CONTACT);
+			Person.addPerson (this, json_doc, StudyJSON.SJ_CURATOR, StudyDocument.SD_CURATOR, null);
+			Person.addPerson (this, json_doc, StudyJSON.SJ_CONTACT, StudyDocument.SD_CONTACT, null);
 
 
 			

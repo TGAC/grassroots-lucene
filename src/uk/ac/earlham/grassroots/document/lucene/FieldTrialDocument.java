@@ -6,10 +6,15 @@ import java.util.Map;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
+import uk.ac.earlham.grassroots.document.lucene.util.Person;
+
+import uk.ac.earlham.grassroots.document.json.FieldTrialJSON;
+
 
 public class FieldTrialDocument extends MongoDocument {
 	final static private String FTD_PREFIX = "trial-";
 	final static public String FTD_TEAM = FTD_PREFIX + "team";
+	final static public String FTD_PEOPLE = FTD_PREFIX + "people";
 	
 	public FieldTrialDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
 		super (json_doc, wrapper);
@@ -26,6 +31,11 @@ public class FieldTrialDocument extends MongoDocument {
 			 */
 			addText (json_doc, "team", FieldTrialDocument.FTD_TEAM);
 			
+			
+			Person.addPeople (this, json_doc, FieldTrialJSON.FTJ_PEOPLE, FieldTrialDocument.FTD_PEOPLE);
+
+
+			
 			success_flag = true;
 		}
 	
@@ -41,6 +51,8 @@ public class FieldTrialDocument extends MongoDocument {
 
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (FieldTrialDocument.FTD_TEAM);
+
+		Person.addQueryTerms (FieldTrialDocument.FTD_PEOPLE, fields, boosts, string_fields);
 	}
 	
 }
