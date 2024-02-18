@@ -37,6 +37,7 @@ import uk.ac.earlham.grassroots.document.lucene.AddressDocument;
 import uk.ac.earlham.grassroots.document.lucene.FieldTrialDocument;
 import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
 import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocumentFactory;
+import uk.ac.earlham.grassroots.document.lucene.MartiDocument;
 import uk.ac.earlham.grassroots.document.lucene.ProgrammeDocument;
 import uk.ac.earlham.grassroots.document.lucene.ProjectDocument;
 import uk.ac.earlham.grassroots.document.lucene.StudyDocument;
@@ -72,6 +73,7 @@ public class QueryUtil {
 		StudyDocument.addQueryTerms (fields, boosts, string_fields);
 		MeasuredVariableDocument.addQueryTerms (fields, boosts, string_fields);	
 		ProgrammeDocument.addQueryTerms (fields, boosts, string_fields);		
+		MartiDocument.addQueryTerms (fields, boosts, string_fields);
 	}
 	
 	

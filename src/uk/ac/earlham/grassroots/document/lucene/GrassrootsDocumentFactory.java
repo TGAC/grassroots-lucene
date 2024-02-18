@@ -98,6 +98,11 @@ public class GrassrootsDocumentFactory {
 					doc = new ProjectDocument (json_doc, wrapper);
 					break;
 				
+				case "Grassroots:MARTiSample":
+					doc = new MartiDocument (json_doc, wrapper);
+					break;
+
+					
 				default:
 					System.err.println ("Unknown " + GDF_TYPE + ": \"" + datatype + "\"");
 					break;
