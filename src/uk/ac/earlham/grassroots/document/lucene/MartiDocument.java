@@ -40,7 +40,7 @@ public class MartiDocument extends MongoDocument {
 	}
 	
 	public String getUserFriendlyTypename () {
-		return "MARTi sample";
+		return "MARTi Sample";
 	}
 	
 	public String getNameKey () {
