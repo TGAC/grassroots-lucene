@@ -10,6 +10,7 @@ import uk.ac.earlham.grassroots.document.json.AddressJSON;
 import uk.ac.earlham.grassroots.document.json.BlastServiceJSON;
 import uk.ac.earlham.grassroots.document.json.FieldTrialJSON;
 import uk.ac.earlham.grassroots.document.json.GrassrootsJSON;
+import uk.ac.earlham.grassroots.document.json.MartiJSON;
 import uk.ac.earlham.grassroots.document.json.ProgrammeJSON;
 import uk.ac.earlham.grassroots.document.json.ProjectJSON;
 import uk.ac.earlham.grassroots.document.json.SamtoolsServiceJSON;
@@ -171,7 +172,12 @@ public class GrassrootsDocumentFactory {
 				case "Grassroots:Project":
 					grassroots_json = new ProjectJSON (doc, highlights, highlight_index);	
 					break;
-				
+
+				case "Grassroots:MARTiSample":
+					grassroots_json = new MartiJSON (doc, highlights, highlight_index);
+					break;
+					
+					
 				default:
 					System.err.println ("Unknown " + GDF_TYPE + ": \"" + datatype + "\"");
 					break;
