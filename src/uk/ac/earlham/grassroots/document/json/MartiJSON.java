@@ -12,6 +12,7 @@ public class MartiJSON extends GrassrootsJSON {
 	final public static String MA_URL = "so:url";
 	final public static String MA_ID = "_id";
 	final public static String MA_SITE = "site_name";
+	final public static String MA_TAXA = "taxa";
 	
 	public MartiJSON (Document doc, Map <String, String []> highlights, int highlighter_index) {
 		super (doc, highlights, highlighter_index);	
@@ -20,8 +21,10 @@ public class MartiJSON extends GrassrootsJSON {
 
 	public boolean addToJSON (Document doc) {
 		if (super.addToJSON (doc)) {
+
 			if (addJSONField (doc, GrassrootsDocument.GD_PUBLIC_LINK, MartiJSON.MA_URL)) {
 				if (addJSONField (doc, MartiDocument.MD_SITE, MartiJSON.MA_SITE)) {
+					addJSONMultiValuedField (doc, MartiDocument.MD_TAXA, MartiJSON.MA_TAXA);
 					return true;
 				}				
 			}

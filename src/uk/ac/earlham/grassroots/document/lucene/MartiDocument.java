@@ -13,6 +13,7 @@ import uk.ac.earlham.grassroots.document.lucene.util.Person;
 public class MartiDocument extends MongoDocument {
 	final static private String MD_PREFIX = "marti-";
 	final static public String MD_SITE = MD_PREFIX + "site";
+	final static public String MD_TAXA = MD_PREFIX + "taxa";
 
 
 	public MartiDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -64,9 +65,8 @@ public class MartiDocument extends MongoDocument {
 
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (MartiDocument.MD_SITE);
-
+		//string_fields.put (MartiDocument.MD_TAXA, MartiDocument.MD_TAXA);
+		fields.add (MartiDocument.MD_TAXA);
 	}
-
-
 
 }
