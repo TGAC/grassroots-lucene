@@ -13,6 +13,8 @@ public class MeasuredVariableJSON extends GrassrootsJSON {
 	final public static String MVJ_MEASUREMENT = "measurement";
 	final public static String MVJ_UNIT = "unit";
 	final public static String MVJ_VARIABLE = "variable";
+	final public static String MVJ_ONTOLOGY = "ontology";
+	final public static String MVJ_CROP = "crop";
 	final public static String MVJ_TERM_URL = "so:sameAs";
 	final public static String MVJ_TERM_NAME = "so:name";
 	final public static String MVJ_TERM_ABBREVIATION = "abbreviation";
@@ -32,8 +34,10 @@ public class MeasuredVariableJSON extends GrassrootsJSON {
 				if (addUnit (doc)) {
 					if (addMeasurement (doc)) {
 						if (addVariable (doc)) {
-							b = true;
-						}		
+							if (addOntology (doc)) {
+								b = true;
+							}
+						}
 					}					
 				}
 			}
@@ -158,6 +162,33 @@ public class MeasuredVariableJSON extends GrassrootsJSON {
 	}
 
 
+	private boolean addOntology (Document doc) {
+		boolean success_flag = false;
+		String name = getString (doc, MeasuredVariableDocument.MVD_ONTOLOGY_NAME);
+		
+		if (name != null) {
+			String id = getString (doc, MeasuredVariableDocument.MVD_ONTOLOGY_ID);
+
+			if (id != null) {
+				String crop = getString (doc, MeasuredVariableDocument.MVD_ONTOLOGY_CROP);
+
+				if (crop != null) {
+					JSONObject ontology = new JSONObject ();
+					
+					ontology.put (MeasuredVariableJSON.MVJ_TERM_NAME, name);
+					ontology.put (MeasuredVariableJSON.MVJ_TERM_URL, id);
+					ontology.put (MeasuredVariableJSON.MVJ_CROP, crop);
+	
+					addJSONObject (MeasuredVariableJSON.MVJ_ONTOLOGY, ontology);
+	
+					success_flag = true;
+				}
+			}
+			
+		}
+
+		return success_flag;
+	}
 	
 	
 	private String getString (Document doc, String key) {

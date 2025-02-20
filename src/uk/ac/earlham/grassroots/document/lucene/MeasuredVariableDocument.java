@@ -23,6 +23,9 @@ public class MeasuredVariableDocument extends MongoDocument {
 	final static public String MVD_UNIT_ID = MVD_PREFIX + "unit_id";
 	final static public String MVD_VARIABLE_NAME = MVD_PREFIX + "variable_name";
 	final static public String MVD_VARIABLE_ID = MVD_PREFIX + "variable_id";
+	final static public String MVD_ONTOLOGY_NAME = MVD_PREFIX + "ontology_name";
+	final static public String MVD_ONTOLOGY_ID = MVD_PREFIX + "ontology_id";
+	final static public String MVD_ONTOLOGY_CROP = MVD_PREFIX + "crop";
 	
 	
 	public MeasuredVariableDocument (JSONObject json_doc, DocumentWrapper wrapper) throws IllegalArgumentException {
@@ -111,6 +114,14 @@ public class MeasuredVariableDocument extends MongoDocument {
 			grassroots_doc.addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_VARIABLE_NAME);
 			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_VARIABLE_ID);				
 		}
+		
+		child = (JSONObject) json_doc.get (MeasuredVariableJSON.MVJ_ONTOLOGY);
+		if (child != null) {
+			grassroots_doc.addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_ONTOLOGY_NAME);
+			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_ONTOLOGY_ID);				
+			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_CROP, MeasuredVariableDocument.MVD_ONTOLOGY_CROP);				
+		}
+
 		
 	}
 	
