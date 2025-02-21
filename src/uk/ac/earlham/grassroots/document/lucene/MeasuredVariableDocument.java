@@ -120,7 +120,10 @@ public class MeasuredVariableDocument extends MongoDocument {
 			grassroots_doc.addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_ONTOLOGY_NAME);
 			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_ONTOLOGY_ID);				
 			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_CROP, MeasuredVariableDocument.MVD_ONTOLOGY_CROP);				
+		} else {
+			System.err.println ("No Ontology in " + child);
 		}
+			
 
 		
 	}
