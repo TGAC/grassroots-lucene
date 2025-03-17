@@ -3,6 +3,7 @@ package uk.ac.earlham.grassroots.document.lucene;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.facet.FacetsConfig;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -11,6 +12,7 @@ import uk.ac.earlham.grassroots.document.json.TreatmentJSON;
 import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 public class TreatmentDocument extends MongoDocument {
+	final static private String TD_TYPE_NAME = "Treatment";
 	final static private String TD_PREFIX = "treatment-";
 	final static public String TD_ONTOLOGY_ID = TD_PREFIX + "ontology_id";
 	final static public String TD_SYNONYM = TD_PREFIX + "synonym";
@@ -22,7 +24,7 @@ public class TreatmentDocument extends MongoDocument {
 	
 	@Override
 	public String getUserFriendlyTypename() {
-		return "Treatment";
+		return TreatmentDocument.TD_TYPE_NAME;
 	}
 
 	
@@ -59,6 +61,11 @@ public class TreatmentDocument extends MongoDocument {
 				}
 			}			
 		}
+	}
+	
+	
+	static public void setUpFacetsConfig (FacetsConfig facets_config) {
+		facets_config.setHierarchical (TreatmentDocument.TD_TYPE_NAME, true);
 	}
 
 

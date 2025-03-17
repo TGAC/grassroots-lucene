@@ -3,6 +3,7 @@ package uk.ac.earlham.grassroots.document.lucene;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.facet.FacetsConfig;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -117,6 +118,9 @@ public class ProjectDocument extends GrassrootsDocument {
 		return success_flag;
 	}
 
+
+	static public void setUpFacetsConfig (FacetsConfig facets_config) {
+	}
 
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (ProjectDocument.PD_AUTHOR);

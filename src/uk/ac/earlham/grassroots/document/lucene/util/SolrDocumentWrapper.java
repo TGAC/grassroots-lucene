@@ -3,6 +3,7 @@ package uk.ac.earlham.grassroots.document.lucene.util;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.facet.FacetField;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -48,6 +49,13 @@ public class SolrDocumentWrapper implements DocumentWrapper {
 		return false;
 	}
 
+	@Override
+	public boolean addFacet(FacetField facet) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	
 	@Override
 	public void addNonIndexedString(String key, String value) {
 		// TODO Auto-generated method stub

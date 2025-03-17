@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.lucene.facet.FacetsConfig;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -338,6 +339,10 @@ public class StudyDocument extends MongoDocument {
 	}
 
 
+	static public void setUpFacetsConfig (FacetsConfig facets_config) {
+	}
+
+	
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (SD_PARENT_TRIAL);
 		fields.add (SD_PHENOTYPE_GATHERING);

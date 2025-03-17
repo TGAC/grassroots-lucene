@@ -3,6 +3,7 @@ package uk.ac.earlham.grassroots.document.lucene;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.facet.FacetsConfig;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -100,6 +101,10 @@ public class MartiDocument extends MongoDocument {
 	
 	private boolean addUrl (JSONObject json_doc) {
 		return addString (json_doc, MartiJSON.MA_URL, GrassrootsDocument.GD_PUBLIC_LINK);
+	}
+
+	
+	static public void setUpFacetsConfig (FacetsConfig facets_config) {
 	}
 
 

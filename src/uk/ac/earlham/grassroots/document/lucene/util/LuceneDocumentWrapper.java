@@ -83,6 +83,11 @@ public class LuceneDocumentWrapper implements DocumentWrapper {
 		return true;
 	}
 
+	@Override
+	public boolean addFacet (FacetField facet) {
+		ldw_document.add (facet);
+		return true;
+	}
 	
 	protected void addToDefaultBuffer (String value) {
 		if (ldw_default_field_buffer.length () > 0) {

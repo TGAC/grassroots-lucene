@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.facet.FacetsConfig;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -66,7 +67,7 @@ abstract public class GrassrootsDocument {
 			
 			if (s != null) {
 			
-				wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
+				addFacet (json_doc);
 				addNonIndexedString (GD_PRIVATE_TYPE, s);
 				addString (GD_LUCENE_ID, gd_unique_id);
 							
@@ -155,11 +156,8 @@ abstract public class GrassrootsDocument {
 	}
 
 	
-	
-	public boolean addFacet (String key, String private_value, String public_value) {
-		gd_wrapper.addFacet (key, private_value);
-		gd_wrapper.addNonIndexedString (key, public_value);
-	
+	protected boolean addFacet (JSONObject json_doc) {
+		gd_wrapper.addFacet (GD_DATATYPE, getUserFriendlyTypename ());
 		return true;
 	}
 	
@@ -455,6 +453,11 @@ abstract public class GrassrootsDocument {
 
 	abstract public boolean setId (JSONObject json_doc);
 
+	
+	
+	static public void setUpFacetsConfig (FacetsConfig facets_config) {
+	}
+	
 
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (GD_UNIQUE_NAME);

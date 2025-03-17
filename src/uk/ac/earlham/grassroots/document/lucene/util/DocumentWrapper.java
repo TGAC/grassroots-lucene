@@ -1,5 +1,6 @@
 package uk.ac.earlham.grassroots.document.lucene.util;
 
+import org.apache.lucene.facet.FacetField;
 
 
 public interface DocumentWrapper {
@@ -12,6 +13,7 @@ public interface DocumentWrapper {
 
 	boolean addFacet (String key, String value);
 
+	boolean addFacet (FacetField facet);
 	
 	void addNonIndexedString (String key, String value);
 

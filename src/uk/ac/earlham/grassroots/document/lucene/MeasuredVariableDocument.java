@@ -4,6 +4,8 @@ package uk.ac.earlham.grassroots.document.lucene;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.facet.FacetField;
+import org.apache.lucene.facet.FacetsConfig;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.json.MeasuredVariableJSON;
@@ -11,6 +13,8 @@ import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
 
 
 public class MeasuredVariableDocument extends MongoDocument {
+	final static private String MVD_TYPE_NAME = "Measured Variable";
+	
 	final static private String MVD_PREFIX = "measured_variable-";
 	final static public String MVD_TRAIT_NAME = MVD_PREFIX + "trait_name";
 	final static public String MVD_TRAIT_DESCRIPTION = MVD_PREFIX + "trait_description";
@@ -74,7 +78,7 @@ public class MeasuredVariableDocument extends MongoDocument {
 		*/
 		
 		if (super.addFields (json_doc)) {
-			MeasuredVariableDocument.indexMeasuredVariable (this, json_doc);
+			indexMeasuredVariable (this, json_doc);
 			
 			success_flag = true;
 		}
@@ -82,6 +86,10 @@ public class MeasuredVariableDocument extends MongoDocument {
 		return success_flag;
 	}
 	
+	
+	public void index (JSONObject json_doc) {
+		MeasuredVariableDocument.indexMeasuredVariable (this, json_doc);
+	}
 	
 	public static void indexMeasuredVariable (GrassrootsDocument grassroots_doc, JSONObject json_doc) {
 		/*
@@ -119,7 +127,18 @@ public class MeasuredVariableDocument extends MongoDocument {
 		if (child != null) {
 			grassroots_doc.addText (child, MeasuredVariableJSON.MVJ_TERM_NAME, MeasuredVariableDocument.MVD_ONTOLOGY_NAME);
 			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_TERM_URL, MeasuredVariableDocument.MVD_ONTOLOGY_ID);				
-			grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_CROP, MeasuredVariableDocument.MVD_ONTOLOGY_CROP);				
+			
+			/* Add crop as facet rather than as string */
+			//grassroots_doc.addString (child, MeasuredVariableJSON.MVJ_CROP, MeasuredVariableDocument.MVD_ONTOLOGY_CROP);	
+			
+			String value = (String) json_doc.get (MeasuredVariableJSON.MVJ_CROP);
+			
+			if (value != null) {
+				FacetField crop_facet = new FacetField (MeasuredVariableDocument.MVD_ONTOLOGY_CROP, value);
+				grassroots_doc.gd_wrapper.addFacet (MeasuredVariableDocument.MVD_ONTOLOGY_CROP, value);
+			} 
+
+
 		} else {
 			System.err.println ("No Ontology in " + child);
 		}
@@ -130,14 +149,43 @@ public class MeasuredVariableDocument extends MongoDocument {
 	
 	@Override
 	public String getUserFriendlyTypename() {
-		return "Measured Variable";
+		return MVD_TYPE_NAME;
 	}
 
+	
+	@Override
+	protected boolean addFacet (JSONObject json_doc) {
+		FacetField crop_facet = null;
+		JSONObject child = (JSONObject) json_doc.get (MeasuredVariableJSON.MVJ_ONTOLOGY);
+
+		if (child != null) {
+			String value = (String) json_doc.get (MeasuredVariableJSON.MVJ_CROP);
+			
+			if (value != null) {
+				crop_facet = new FacetField (GD_DATATYPE, getUserFriendlyTypename (), value);
+			} 
+		}
+
+		if (crop_facet == null) {
+			crop_facet = new FacetField (GD_DATATYPE, getUserFriendlyTypename ());
+		}
+		
+		gd_wrapper.addFacet (crop_facet);
+
+		
+		return true;
+	}
+	
 	
 	public String getNameKey () {
 		return null;
 	}
 
+	
+	static public void setUpFacetsConfig (FacetsConfig facets_config) {
+		facets_config.setHierarchical (MeasuredVariableDocument.MVD_TYPE_NAME, true);
+	}
+	
 	
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (MVD_TRAIT_NAME);

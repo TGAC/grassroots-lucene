@@ -3,6 +3,7 @@ package uk.ac.earlham.grassroots.document.lucene;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.facet.FacetsConfig;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.json.ProgrammeJSON;
@@ -52,6 +53,9 @@ public class ProgrammeDocument extends MongoDocument {
 		return success_flag;
 	}
 	
+	static public void setUpFacetsConfig (FacetsConfig facets_config) {
+	}
+
 	
 	static public void addQueryTerms (List <String> fields, Map <String, Float> boosts, Map <String, String> string_fields) {
 		fields.add (ProgrammeDocument.PD_ABBREVIATION);

@@ -4,6 +4,7 @@ package uk.ac.earlham.grassroots.document.lucene;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.facet.FacetsConfig;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.json.AddressJSON;
@@ -62,6 +63,10 @@ public class AddressDocument extends MongoDocument {
 	@Override
 	public String getUserFriendlyTypename () {
 		return "Location";
+	}
+
+	
+	static public void setUpFacetsConfig (FacetsConfig facets_config) {
 	}
 
 

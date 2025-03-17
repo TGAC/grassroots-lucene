@@ -3,6 +3,7 @@ package uk.ac.earlham.grassroots.document.lucene;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.facet.FacetsConfig;
 import org.json.simple.JSONObject;
 
 import uk.ac.earlham.grassroots.document.lucene.util.DocumentWrapper;
@@ -46,6 +47,9 @@ public class FieldTrialDocument extends MongoDocument {
 	@Override
 	public String getUserFriendlyTypename() {
 		return "Field Trial";
+	}
+
+	static public void setUpFacetsConfig (FacetsConfig facets_config) {
 	}
 
 

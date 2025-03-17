@@ -40,8 +40,16 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import uk.ac.earlham.grassroots.document.lucene.AddressDocument;
+import uk.ac.earlham.grassroots.document.lucene.FieldTrialDocument;
 import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocument;
 import uk.ac.earlham.grassroots.document.lucene.GrassrootsDocumentFactory;
+import uk.ac.earlham.grassroots.document.lucene.MartiDocument;
+import uk.ac.earlham.grassroots.document.lucene.MeasuredVariableDocument;
+import uk.ac.earlham.grassroots.document.lucene.ProgrammeDocument;
+import uk.ac.earlham.grassroots.document.lucene.ProjectDocument;
+import uk.ac.earlham.grassroots.document.lucene.StudyDocument;
+import uk.ac.earlham.grassroots.document.lucene.TreatmentDocument;
 import uk.ac.earlham.grassroots.document.lucene.util.LuceneDocumentWrapper;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -129,6 +137,16 @@ public class Indexer {
 	
 	private Indexer () {
 		in_facets_config = new FacetsConfig ();
+		
+		GrassrootsDocument.setUpFacetsConfig (in_facets_config);		
+		AddressDocument.setUpFacetsConfig (in_facets_config);		
+		FieldTrialDocument.setUpFacetsConfig (in_facets_config);
+		MartiDocument.setUpFacetsConfig (in_facets_config);
+		MeasuredVariableDocument.setUpFacetsConfig (in_facets_config);		
+		ProgrammeDocument.setUpFacetsConfig (in_facets_config);		
+		ProjectDocument.setUpFacetsConfig (in_facets_config);
+		StudyDocument.setUpFacetsConfig (in_facets_config);
+		TreatmentDocument.setUpFacetsConfig (in_facets_config);		
 	}
 
 	/** Index all text files under a directory. */
